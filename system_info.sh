@@ -303,7 +303,8 @@ printf "${ESC}${BlueBack};${WhiteFont}mCPU info:${Reset}${ESC}\n"
 if [ -z "${OS/Linux/}" ]; then
   CPU="$(less /proc/cpuinfo | grep -i "model name" | cut -d: -f2 | sed 's/ //' | sort -u)"
   # Ex: CPU='Intel(R) Xeon(R) CPU E5-2640 v3 @ 2.60GHz'
-  NrCPU=1
+  Cores="$(grep "cpu cores" /proc/cpuinfo | sort -u | cut -d: -f2)"
+  NrCPU=$(echo "$(grep "^processor" /proc/cpuinfo | wc -l) / $(grep "^siblings" /proc/cpuinfo | sort -u | cut -d: -f2)" | bc)
 elif [ -z "${OS/Darwin/}" ]; then
   CPU="$(sysctl -n machdep.cpu.brand_string)"
   # Ex: CPU='Intel(R) Xeon(R) CPU E5-1650 v2 @ 3.50GHz'
