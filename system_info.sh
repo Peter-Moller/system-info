@@ -287,13 +287,23 @@ elif [ -z "${OS/Darwin/}" ]; then
 	fi
 fi
 
+### PRINT THE RESULT
+printf "${ESC}${BlackBack};${WhiteFont}mOS info for:${Reset}${ESC}${WhiteBack};${BlackFont}m $ComputerName ${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${ESC}${WhiteBack};${BlackFont}m $(date +%F", "%R) ${Reset}\n"
+printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")"
+[[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer"
+printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
+
+
 ###########################################
 ##############   CPU INFO   ###############
 ###########################################
 
+printf "${ESC}${BlueBack};${WhiteFont}mCPU info:${Reset}${ESC}\n"
+
 if [ -z "${OS/Linux/}" ]; then
-  CPU="$(less /proc/cpuinfo | grep -i "model name" | cut -d: -f2 | sed 's/ //')"
+  CPU="$(less /proc/cpuinfo | grep -i "model name" | cut -d: -f2 | sed 's/ //' | sort -u)"
   # Ex: CPU='Intel(R) Xeon(R) CPU E5-2640 v3 @ 2.60GHz'
+  NrCPU=1
 elif [ -z "${OS/Darwin/}" ]; then
   CPU="$(sysctl -n machdep.cpu.brand_string)"
   # Ex: CPU='Intel(R) Xeon(R) CPU E5-1650 v2 @ 3.50GHz'
@@ -302,16 +312,24 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Ex: NrCPU='1'
 fi
 
+Cores=$(echo "$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu) / 2" | bc)
+
+echo " CPU:   ${CPU} (${NrCPU} CPU; ${Cores} cores)"
+
 ###########################################
 #############   MEMORY INFO   #############
 ###########################################
 
+printf "${ESC}${BlueBack};${WhiteFont}mMemory info:${Reset}${ESC}\n"
+
 if [ -z "${OS/Linux/}" ]; then
-  Memory="$(less /proc/meminfo | grep -i MemTotal | cut -d: -f2 | sed 's/ *//')
-  # Ex: Memory='8011588 kB'
-  Memory="$(dmidecode --type 6,6 | grep "Installed Size" | grep -v "Not Installed" | cut -d: -f2 | sed 's/ *//')"
+  Memory="$(dmidecode --type 6,6 2>/dev/null | grep "Installed Size" | grep -v "Not Installed" | cut -d: -f2 | sed 's/ *//')"
   # Ex: Memory='8192 MB (Single-bank Connection)'
-  ECC="$(dmidecode --type memory | grep -A1 "Enabled Error Correcting Capabilities" | cut -d: -f2)"
+  if [ -z "$Memory" ]; then
+    Memory="$(less /proc/meminfo 2>/dev/null | grep -i MemTotal | cut -d: -f2 | sed 's/ *//')"
+  # Ex: Memory='8011588 kB'
+  fi
+  ECC="$(dmidecode --type memory 2>/dev/null | grep -A1 "Enabled Error Correcting Capabilities" | cut -d: -f2)"
   # Ex: ECC='None'
 elif [ -z "${OS/Darwin/}" ]; then
   Memory="$(system_profiler SPHardwareDataType | grep Memory | cut -d: -f2 | sed 's/\ *//')"
@@ -320,10 +338,14 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Ex: ECC='Enabled'
 fi
 
+echo "Memory size:   ${Memory} (ECC: $ECC)"
+
 
 ###########################################
 ##############   DISK INFO   ##############
 ###########################################
+
+printf "${ESC}${BlueBack};${WhiteFont}mDisk info:${Reset}${ESC}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   echo ""
@@ -336,12 +358,14 @@ fi
 ############   NETWORK INFO   #############
 ###########################################
 
+printf "${ESC}${BlueBack};${WhiteFont}mNetwork info:${Reset}${ESC}\n"
+
 if [ -z "${OS/Linux/}" ]; then
   # This doesn't work reliable
   EnabledInterfaces="$(ip link | egrep "state UP|state UNKNOWN" | grep -v "lo:" | cut -d: -f2 | sed -e 's/^ *//')"
   for i in $EnabledInterfaces
   do
-    printf "Interface: ${i}\nAddress:\n$(ip address show $i | egrep -o "^\ *inet[6]? [^\ ]*\ ")\n"
+    printf "Interface: ${i} has addresses:\n$(ip address show $i | egrep -o "^\ *inet[6]? [^\ ]*\ ")\n"
   done
 elif [ -z "${OS/Darwin/}" ]; then
   # This is a very short version of the 'network_info'-script
@@ -368,11 +392,15 @@ fi
 ############   SECURITY INFO   ############
 ###########################################
 
+printf "${ESC}${BlueBack};${WhiteFont}mSecurity info:${Reset}${ESC}\n"
 if [ -z "${OS/Linux/}" ]; then
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
   echo ""
 fi
+
+printf "Security:" "$Security"
+
 
 ###########################################
 #############   EXTRA INFO   ##############
@@ -384,15 +412,3 @@ elif [ -z "${OS/Darwin/}" ]; then
   echo ""
 fi
 
-
-
-###########################################
-############   PRINT RESULT    ############
-###########################################
-
-printf "${ESC}${BlackBack};${WhiteFont}mOS info for:${Reset}${ESC}${WhiteBack};${BlackFont}m $ComputerName ${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${ESC}${WhiteBack};${BlackFont}m $(date +%F", "%R) ${Reset}\n"
-
-printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")"
-[[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer"
-printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
-printf "$Formatstring\n" "Security:" "$Security"
