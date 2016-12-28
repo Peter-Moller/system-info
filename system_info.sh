@@ -24,7 +24,8 @@
 # system_info
 # Get information about the running OS
 # 2015-11-04 / Peter Möller
-# Version 0.1 - first release to GitHub
+# Version 0.1.1
+# Latest edit: 2016-12-28
 
 # Aim for the script:
 # To present basic information regarding the OS you are running
@@ -319,6 +320,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Ex: ECC='Enabled'
 fi
 
+
 ###########################################
 ##############   DISK INFO   ##############
 ###########################################
@@ -331,13 +333,42 @@ fi
 
 
 ###########################################
+############   NETWORK INFO   #############
+###########################################
+
+if [ -z "${OS/Linux/}" ]; then
+  # This doesn't work reliable
+  EnabledInterfaces="$(ip link | egrep "state UP|state UNKNOWN" | grep -v "lo:" | cut -d: -f2 | sed -e 's/^ *//')"
+  for i in $EnabledInterfaces
+  do
+    printf "Interface: ${i}\nAddress:\n$(ip address show $i | egrep -o "^\ *inet[6]? [^\ ]*\ ")\n"
+  done
+elif [ -z "${OS/Darwin/}" ]; then
+  # This is a very short version of the 'network_info'-script
+  NIfile="/tmp/NetworkInterfaces_$$.txt"
+  networksetup -listnetworkserviceorder | egrep "^\([0-9\*]*\)\ " | sed -e 's/^(//g' -e 's/) /:/' > $NIfile
+  printf "Interfaces:\n"
+  exec 4<"$NIfile"
+  while IFS=: read -u 4 IFNum IFName
+  do
+    Interface="$(networksetup -listallhardwareports 2>/dev/null | grep -A1 "Hardware Port: $IFName" | tail -1 | awk '{print $2}')"
+    # Ex: en0
+    MediaSpeed="$(networksetup -getMedia "$IFName" 2>/dev/null | grep "^Active" | cut -d: -f2-)"
+    # Ex: "1000baseT" or "autoselect"
+    IPaddress="$(networksetup -getinfo "$IFName" 2>/dev/null | grep "^IP address" | cut -d: -f2)"
+    # Ex: " 130.235.16.211"
+    printf "$IFNum" "$IFName" "$Interface" "${IPaddress# }" "${MediaSpeed}" 
+  done
+fi
+
+###########################################
 ############   SECURITY INFO   ############
 ###########################################
 
 if [ -z "${OS/Linux/}" ]; then
-  
+  echo ""
 elif [ -z "${OS/Darwin/}" ]; then
-  
+  echo ""
 fi
 
 ###########################################
@@ -345,9 +376,9 @@ fi
 ###########################################
 
 if [ -z "${OS/Linux/}" ]; then
-  
+  echo ""
 elif [ -z "${OS/Darwin/}" ]; then
-  
+  echo ""
 fi
 
 
