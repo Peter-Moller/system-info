@@ -326,9 +326,9 @@ fi
 ###########################################
 
 if [ -z "${OS/Linux/}" ]; then
-  
+  echo ""
 elif [ -z "${OS/Darwin/}" ]; then
-  
+  echo ""
 fi
 
 
@@ -351,15 +351,18 @@ elif [ -z "${OS/Darwin/}" ]; then
   exec 4<"$NIfile"
   while IFS=: read -u 4 IFNum IFName
   do
-    Interface="$(networksetup -listallhardwareports 2>/dev/null | grep -A1 "Hardware Port: $IFName" | tail -1 | awk '{print $2}')"
+    Interface="$(networksetup -listallhardwareports 2>/dev/null | grep -A1 "Hardware Port: $IFName" | tail -1 | awk '{print $2}' | sed -e 's/^ *//')"
     # Ex: en0
-    MediaSpeed="$(networksetup -getMedia "$IFName" 2>/dev/null | grep "^Active" | cut -d: -f2-)"
+    MediaSpeed="$(networksetup -getMedia "$IFName" 2>/dev/null | grep "^Active" | cut -d: -f2- | sed -e 's/^ *//')"
     # Ex: "1000baseT" or "autoselect"
-    IPaddress="$(networksetup -getinfo "$IFName" 2>/dev/null | grep "^IP address" | cut -d: -f2)"
+    IPaddress="$(networksetup -getinfo "$IFName" 2>/dev/null | grep "^IP address" | cut -d: -f2 | sed -e 's/^ *//')"
     # Ex: " 130.235.16.211"
-    printf "$IFNum" "$IFName" "$Interface" "${IPaddress# }" "${MediaSpeed}" 
+    if [ -n "$MediaSpeed" -a ! "$MediaSpeed" = " none" -a -n "$IPaddress" ]; then
+      echo "  Interface: \"$Interface\"  Name: \"$IFName\"  IP-address: \"${IPaddress# }\"  Media Speed: \"${MediaSpeed}\"" 
+    fi
   done
 fi
+
 
 ###########################################
 ############   SECURITY INFO   ############
