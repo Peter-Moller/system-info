@@ -232,6 +232,12 @@ OS_size="$(uname -m | sed -e "s/i.86/32/" -e "s/x86_64/64/" -e "s/armv7l/32/")"
 OS_arch="$(uname -m | sed -e "s/i386/i686/")"
 
 
+# Check for functions used
+if [ -z "${OS/Linux/}" ]; then
+  exists dmidecode || print_warning "Command 'dmidecode' not found: some memory-related information will be unavailable!"
+fi
+echo ""
+
 # Get things that differ
 
 # Linux
