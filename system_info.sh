@@ -70,6 +70,11 @@ OPTIONS:
 EOF
 }
 
+function exists()
+{
+  command -v "$1" >/dev/null 2>&1
+}
+
 # Check for update
 function CheckForUpdate() {
   NewScriptAvailable=f
@@ -192,6 +197,10 @@ Formatstring="%-18s%-30s"
 
 ##### Done setting basic variables
 
+function print_warning()
+{
+  printf "${ESC}${YellowBack};${BlackFont}mWarning: ${1}${Reset}\n" >&2
+}
 
 # Read the parameters
 while getopts "hu" OPTION
