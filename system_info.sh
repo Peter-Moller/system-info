@@ -421,7 +421,10 @@ elif [ -z "${OS/Darwin/}" ]; then
   echo ""
 fi
 
-printf "Security:" "$Security"
+if [ -z "${Security}" ]; then
+  Security='No known system detected'
+fi
+printf "Security: $Security"
 
 
 ###########################################
