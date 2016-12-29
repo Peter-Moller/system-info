@@ -53,8 +53,8 @@
 #   - if the computer is connected to a directory service (could be interesting, but not sure)
 #   - running server processes (also interesting, but may be too much)
 # 
-# One *may* also think about saving “fingerprints” of interesting binaries in a textfile
-# as a manual sequrity/change detection, but that is definetley saved for later
+# One *may* also think about saving “fingerprints” of interesting binaries in a text file
+# as a manual security/change detection, but that is definitely saved for later
 
 
 function usage()
