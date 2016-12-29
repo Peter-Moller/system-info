@@ -346,6 +346,12 @@ if [ -z "${OS/Linux/}" ]; then
   # Ex: Memory='8011588 kB'
   fi
   ECC="$(dmidecode --type memory 2>/dev/null | grep -A1 "Enabled Error Correcting Capabilities" | cut -d: -f2)"
+  if [ -z "${ECC}" ]; then
+    ECC="$(dmidecode --type memory 2>/dev/null | grep "Error Correction Type" | cut -d: -f2 | sed 's/ *//')"
+  fi
+  if [ -z "${ECC}" ]; then
+    ECC='No information provided'
+  fi
   # Ex: ECC='None'
 elif [ -z "${OS/Darwin/}" ]; then
   Memory="$(system_profiler SPHardwareDataType | grep Memory | cut -d: -f2 | sed 's/\ *//')"
