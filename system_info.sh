@@ -298,7 +298,7 @@ printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
 ##############   CPU INFO   ###############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mCPU info:${Reset}${ESC}\n"
+printf "${ESC}${BlueBack};${WhiteFont}mCPU info:${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   CPU="$(less /proc/cpuinfo | grep -i "model name" | cut -d: -f2 | sed 's/ //' | sort -u)"
@@ -321,7 +321,7 @@ echo " CPU:   ${CPU} (${NrCPU} CPU; ${Cores} cores)"
 #############   MEMORY INFO   #############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mMemory info:${Reset}${ESC}\n"
+printf "${ESC}${BlueBack};${WhiteFont}mMemory info:${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   Memory="$(dmidecode --type 6,6 2>/dev/null | grep "Installed Size" | grep -v "Not Installed" | cut -d: -f2 | sed 's/ *//')"
@@ -346,7 +346,7 @@ echo "Memory size:   ${Memory} (ECC: $ECC)"
 ##############   DISK INFO   ##############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mDisk info:${Reset}${ESC}\n"
+printf "${ESC}${BlueBack};${WhiteFont}mDisk info:${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   echo ""
@@ -359,7 +359,7 @@ fi
 ############   NETWORK INFO   #############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mNetwork info:${Reset}${ESC}\n"
+printf "${ESC}${BlueBack};${WhiteFont}mNetwork info:${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # This doesn't work reliable
@@ -393,7 +393,7 @@ fi
 ############   SECURITY INFO   ############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mSecurity info:${Reset}${ESC}\n"
+printf "${ESC}${BlueBack};${WhiteFont}mSecurity info:${Reset}\n"
 if [ -z "${OS/Linux/}" ]; then
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
