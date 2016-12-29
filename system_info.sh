@@ -303,7 +303,7 @@ elif [ -z "${OS/Darwin/}" ]; then
 fi
 
 ### PRINT THE RESULT
-printf "${ESC}${BlackBack};${WhiteFont}mOS info for:${Reset}${ESC}${WhiteBack};${BlackFont}m $ComputerName ${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${ESC}${WhiteBack};${BlackFont}m $(date +%F", "%R) ${Reset}\n"
+printf "${ESC}${BlackBack};${WhiteFont}mOS info for:${Reset} ${ESC}${WhiteBack};${BlackFont}m$ComputerName${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${Reset} ${ESC}${WhiteBack};${BlackFont}m$(date +%F", "%R)${Reset}\n"
 printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")"
 [[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer"
 printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
@@ -381,19 +381,19 @@ fi
 ###########################################
 
 printf "${ESC}${BlueBack};${WhiteFont}mNetwork info:${Reset}\n"
+printf "Interfaces:\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # This doesn't work reliable
   EnabledInterfaces="$(ip link | egrep "state UP|state UNKNOWN" | grep -v "lo:" | cut -d: -f2 | sed -e 's/^ *//')"
   for i in $EnabledInterfaces
   do
-    printf "Interface: ${i} has addresses:\n$(ip address show $i | egrep -o "^\ *inet[6]? [^\ ]*\ ")\n"
+    printf "  Interface: \"${i}\" has addresses:\n$(ip address show $i | egrep -o "^\ *inet[6]? [^\ ]*\ ")\n"
   done
 elif [ -z "${OS/Darwin/}" ]; then
   # This is a very short version of the 'network_info'-script
   NIfile="/tmp/NetworkInterfaces_$$.txt"
   networksetup -listnetworkserviceorder | egrep "^\([0-9\*]*\)\ " | sed -e 's/^(//g' -e 's/) /:/' > $NIfile
-  printf "Interfaces:\n"
   exec 4<"$NIfile"
   while IFS=: read -u 4 IFNum IFName
   do
