@@ -53,8 +53,8 @@
 #   - if the computer is connected to a directory service (could be interesting, but not sure)
 #   - running server processes (also interesting, but may be too much)
 # 
-# One *may* also think about saving “fingerprints” of interesting binaries in a textfile
-# as a manual sequrity/change detection, but that is definetley saved for later
+# One *may* also think about saving “fingerprints” of interesting binaries in a text file
+# as a manual security/change detection, but that is definitely saved for later
 
 
 function usage()
@@ -68,6 +68,11 @@ OPTIONS:
   -h      Show this message
   -u      Upgrade the script
 EOF
+}
+
+function exists()
+{
+  command -v "$1" >/dev/null 2>&1
 }
 
 # Check for update
@@ -192,6 +197,10 @@ Formatstring="%-18s%-30s"
 
 ##### Done setting basic variables
 
+function print_warning()
+{
+  printf "${ESC}${YellowBack};${BlackFont}mWarning: ${1}${Reset}\n" >&2
+}
 
 # Read the parameters
 while getopts "hu" OPTION
@@ -222,6 +231,12 @@ OS_size="$(uname -m | sed -e "s/i.86/32/" -e "s/x86_64/64/" -e "s/armv7l/32/")"
 # OS Architecture ('x86_64')
 OS_arch="$(uname -m | sed -e "s/i386/i686/")"
 
+
+# Check for functions used
+if [ -z "${OS/Linux/}" ]; then
+  exists dmidecode || print_warning "Command 'dmidecode' not found: some memory-related information will be unavailable!"
+fi
+echo ""
 
 # Get things that differ
 
@@ -288,7 +303,7 @@ elif [ -z "${OS/Darwin/}" ]; then
 fi
 
 ### PRINT THE RESULT
-printf "${ESC}${BlackBack};${WhiteFont}mOS info for:${Reset}${ESC}${WhiteBack};${BlackFont}m $ComputerName ${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${ESC}${WhiteBack};${BlackFont}m $(date +%F", "%R) ${Reset}\n"
+printf "${ESC}${BlackBack};${WhiteFont}mOS info for:${Reset} ${ESC}${WhiteBack};${BlackFont}m$ComputerName${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${Reset} ${ESC}${WhiteBack};${BlackFont}m$(date +%F", "%R)${Reset}\n"
 printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")"
 [[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer"
 printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
@@ -298,7 +313,7 @@ printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
 ##############   CPU INFO   ###############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mCPU info:${Reset}${ESC}\n"
+printf "${ESC}${BlueBack};${WhiteFont}mCPU info:${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   CPU="$(less /proc/cpuinfo | grep -i "model name" | cut -d: -f2 | sed 's/ //' | sort -u)"
@@ -321,7 +336,7 @@ echo " CPU:   ${CPU} (${NrCPU} CPU; ${Cores} cores)"
 #############   MEMORY INFO   #############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mMemory info:${Reset}${ESC}\n"
+printf "${ESC}${BlueBack};${WhiteFont}mMemory info:${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   Memory="$(dmidecode --type 6,6 2>/dev/null | grep "Installed Size" | grep -v "Not Installed" | cut -d: -f2 | sed 's/ *//')"
@@ -331,6 +346,12 @@ if [ -z "${OS/Linux/}" ]; then
   # Ex: Memory='8011588 kB'
   fi
   ECC="$(dmidecode --type memory 2>/dev/null | grep -A1 "Enabled Error Correcting Capabilities" | cut -d: -f2)"
+  if [ -z "${ECC}" ]; then
+    ECC="$(dmidecode --type memory 2>/dev/null | grep "Error Correction Type" | cut -d: -f2 | sed 's/ *//')"
+  fi
+  if [ -z "${ECC}" ]; then
+    ECC='No information provided'
+  fi
   # Ex: ECC='None'
 elif [ -z "${OS/Darwin/}" ]; then
   Memory="$(system_profiler SPHardwareDataType | grep Memory | cut -d: -f2 | sed 's/\ *//')"
@@ -346,7 +367,7 @@ echo "Memory size:   ${Memory} (ECC: $ECC)"
 ##############   DISK INFO   ##############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mDisk info:${Reset}${ESC}\n"
+printf "${ESC}${BlueBack};${WhiteFont}mDisk info:${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   echo ""
@@ -359,20 +380,20 @@ fi
 ############   NETWORK INFO   #############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mNetwork info:${Reset}${ESC}\n"
+printf "${ESC}${BlueBack};${WhiteFont}mNetwork info:${Reset}\n"
+printf "Interfaces:\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # This doesn't work reliable
   EnabledInterfaces="$(ip link | egrep "state UP|state UNKNOWN" | grep -v "lo:" | cut -d: -f2 | sed -e 's/^ *//')"
   for i in $EnabledInterfaces
   do
-    printf "Interface: ${i} has addresses:\n$(ip address show $i | egrep -o "^\ *inet[6]? [^\ ]*\ ")\n"
+    printf "  Interface: \"${i}\" has addresses:\n$(ip address show $i | egrep -o "^\ *inet[6]? [^\ ]*\ ")\n"
   done
 elif [ -z "${OS/Darwin/}" ]; then
   # This is a very short version of the 'network_info'-script
   NIfile="/tmp/NetworkInterfaces_$$.txt"
   networksetup -listnetworkserviceorder | egrep "^\([0-9\*]*\)\ " | sed -e 's/^(//g' -e 's/) /:/' > $NIfile
-  printf "Interfaces:\n"
   exec 4<"$NIfile"
   while IFS=: read -u 4 IFNum IFName
   do
@@ -393,14 +414,17 @@ fi
 ############   SECURITY INFO   ############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mSecurity info:${Reset}${ESC}\n"
+printf "${ESC}${BlueBack};${WhiteFont}mSecurity info:${Reset}\n"
 if [ -z "${OS/Linux/}" ]; then
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
   echo ""
 fi
 
-printf "Security:" "$Security"
+if [ -z "${Security}" ]; then
+  Security='No known system detected'
+fi
+printf "Security: $Security"
 
 
 ###########################################
