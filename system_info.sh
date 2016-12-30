@@ -151,7 +151,7 @@ PMSET="/tmp/pmset.txt"
 TempFile1="/tmp/sleep_info_temp1.txt"
 TempFile2="/tmp/sleep_info_temp2.txt"
 TempFile3="/tmp/sleep_info_temp3.txt"
-MacTempfile="/tmp/.SPHardwareDataType.$$.txt"
+MacTempfile="/tmp/.MacHardware.$$.txt"
 SysLogTemp="/tmp/syslog_temp"
 short="f"
 VER="0.1"
@@ -391,7 +391,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   NrCoresEachCPU=$(echo " $CoresTotal / $NrCPUs" | bc)
 fi
 
-printf "$Formatstring\n" "CPU:" "${CPU//(R)/®} (${NrCPUs} CPU$([[ $NrCPUs -gt 1 ]] && echo s); ${NrCoresEachCPU} cores$([[ $NrCPUs -gt 1 ]] && echo " each"))"
+printf "$Formatstring\n" "CPU:" "${CPU//(R)/®}"
 printf "$Formatstring\n" "Number of CPUs:" "${NrCPUs}"
 printf "$Formatstring\n" "Cores/CPU:" "${NrCoresEachCPU}"
 
@@ -403,28 +403,131 @@ printf "$Formatstring\n" "Cores/CPU:" "${NrCoresEachCPU}"
 printf "${ESC}${WhiteBack};${BlackFont}mMemory info:${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
-  Memory="$(dmidecode --type 6,6 2>/dev/null | grep "Installed Size" | grep -v "Not Installed" | cut -d: -f2 | sed 's/ *//')"
-  # Ex: Memory='8192 MB (Single-bank Connection)'
-  if [ -z "$Memory" ]; then
-    Memory="$(less /proc/meminfo 2>/dev/null | grep -i MemTotal | cut -d: -f2 | sed 's/ *//')"
-  # Ex: Memory='8011588 kB'
+  # This uses /proc/meminfo which is supposed to look like this:
+  # MemTotal:       264056956 kB
+  # MemFree:        225391912 kB
+  # Buffers:          918352 kB
+  # Cached:         27491600 kB
+  # SwapCached:            0 kB
+  # Active:         10859348 kB
+  # Inactive:       24936760 kB
+  # Active(anon):    7387320 kB
+  # Inactive(anon):   513520 kB
+  # Active(file):    3472028 kB
+  # Inactive(file): 24423240 kB
+  # Unevictable:          48 kB
+  # Mlocked:              48 kB
+  # SwapTotal:       1971196 kB
+  # SwapFree:        1971196 kB
+  # Dirty:               132 kB
+  # Writeback:             0 kB
+  # AnonPages:       7386064 kB
+  # Mapped:           845992 kB
+  # Shmem:            514684 kB
+  # Slab:             984336 kB
+  # SReclaimable:     829524 kB
+  # SUnreclaim:       154812 kB
+  # KernelStack:       15192 kB
+  # PageTables:        74108 kB
+  # NFS_Unstable:          0 kB
+  # Bounce:                0 kB
+  # WritebackTmp:          0 kB
+  # CommitLimit:    133999672 kB
+  # Committed_AS:   18338764 kB
+  # VmallocTotal:   34359738367 kB
+  # VmallocUsed:      776292 kB
+  # VmallocChunk:   34224659660 kB
+  # HardwareCorrupted:     0 kB
+  # AnonHugePages:   5292032 kB
+  # HugePages_Total:       0
+  # HugePages_Free:        0
+  # HugePages_Rsvd:        0
+  # HugePages_Surp:        0
+  # Hugepagesize:       2048 kB
+  # DirectMap4k:      708724 kB
+  # DirectMap2M:    18087936 kB
+  # DirectMap1G:    251658240 kB
+  # 
+  
+  # Also, 'dmidecode --type 17' is used. This creates a list like this:
+  # # dmidecode 2.12
+  # SMBIOS 2.6 present.
+  # 
+  # Handle 0x0040, DMI type 17, 28 bytes
+  # Memory Device
+  # 	Array Handle: 0x003E
+  # 	Error Information Handle: Not Provided
+  # 	Total Width: 72 bits
+  # 	Data Width: 64 bits
+  # 	Size: 16384 MB
+  # 	Form Factor: DIMM
+  # 	Set: None
+  # 	Locator: DIMM_A1
+  # 	Bank Locator: NODE 0 CHANNEL 0 DIMM 0
+  # 	Type: DDR3
+  # 	Type Detail: Synchronous
+  # 	Speed: 1600 MHz
+  # 	Manufacturer: Samsung         
+  # 	Serial Number: 13A941EC  
+  # 	Asset Tag: Unknown         
+  # 	Part Number: M393B2G70BH0-CK0  
+  # 	Rank: 2
+
+  if [ -z "${USER/root/}" ]; then
+    Memory="$(dmidecode --type 6,6 2>/dev/null | grep "Installed Size" | grep -v "Not Installed" | cut -d: -f2 | sed 's/ *//')"
+    # Ex: Memory='8192 MB (Single-bank Connection)'
+    if [ -z "$Memory" ]; then
+      Memory="$(less /proc/meminfo 2>/dev/null | grep -i MemTotal | cut -d: -f2 | sed 's/ *//')"
+    # Ex: Memory='8011588 kB'
+    fi
+    ECC="$(dmidecode --type memory 2>/dev/null | grep -A1 "Enabled Error Correcting Capabilities" | cut -d: -f2)"
+    if [ -z "${ECC}" ]; then
+      ECC="$(dmidecode --type memory 2>/dev/null | grep "Error Correction Type" | cut -d: -f2 | sed 's/ *//' | sort -u)"
+    fi
+    if [ -z "${ECC}" ]; then
+      ECC='No information provided'
+    fi
+    # Ex: ECC='None'
+    # Number of DIMMs
+    NrDIMMs=$(dmidecode --type 17 | egrep "^\sSize:" | cut -d: -f2 | wc -l | sed 's/^ //')
+    NrDIMMsInstalled=$(dmidecode --type 17 | egrep "^\sSize:" | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ //')
+    MemorySpeed="$(dmidecode --type 17 | egrep "^\sSpeed:" | cut -d: -f2 | sort -u | sed 's/^ //')"
+    MemoryType="$(dmidecode --type 17 | egrep "^\sType:" | cut -d: -f2 | sort -u | sed 's/^ //')"
   fi
-  ECC="$(dmidecode --type memory 2>/dev/null | grep -A1 "Enabled Error Correcting Capabilities" | cut -d: -f2)"
-  if [ -z "${ECC}" ]; then
-    ECC="$(dmidecode --type memory 2>/dev/null | grep "Error Correction Type" | cut -d: -f2 | sed 's/ *//')"
-  fi
-  if [ -z "${ECC}" ]; then
-    ECC='No information provided'
-  fi
-  # Ex: ECC='None'
 elif [ -z "${OS/Darwin/}" ]; then
-  Memory="$(system_profiler SPHardwareDataType | grep Memory | cut -d: -f2 | sed 's/\ *//')"
+  # Save memory information to file (for performance):
+  system_profiler SPMemoryDataType >> $MacTempfile
+  # This adds the following to $MacTempfile:
+  # Memory:
+  # 
+  #     Memory Slots:
+  # 
+  #       ECC: Enabled
+  #       Upgradeable Memory: Yes
+  # 
+  #         DIMM 1:
+  # 
+  #           Size: 4 GB
+  #           Type: DDR3 ECC
+  #           Speed: 1333 MHz
+  #           Status: OK
+  #           Manufacturer: 0x0198
+  #           Part Number: 0x393936353532352D3033332E4130304C4620
+  #           Serial Number: 0xD614209B
+  # And so on with one part per DIMM
+
+  Memory="$(grep Memory $MacTempfile | cut -d: -f2 | sed 's/\ *//')"
   # Ex: Memory='32 GB'
-  ECC="$(system_profiler SPHardwareDataType SPMemoryDataType | grep "^\ *ECC:" | cut -d: -f2 | sed 's/ *//')"
+  MemorySpeed="$(grep "^\ *Speed:" $MacTempfile | sort -u | cut -d: -f2 | sed 's/ *//')"
+  MemoryType="$(grep "^\ *Type:" $MacTempfile | sort -u | cut -d: -f2 | sed 's/ *//')"
+  ECC="$(grep "^\ *ECC:" $MacTempfile | cut -d: -f2 | sed 's/ *//')"
   # Ex: ECC='Enabled'
 fi
 
 printf "$Formatstring\n" "Memory size:" "${Memory} (ECC: $ECC)"
+printf "$Formatstring\n" "Memory type:" "${MemoryType:-No information available}"
+printf "$Formatstring\n" "Memory Speed:" "${MemorySpeed:-No information available}"
+printf "$Formatstring\n" "Nr of DIMMS:" "${NrDIMMs:-No information available} (${NrDIMMsInstalled} filled)"
 
 
 ###########################################
@@ -501,3 +604,5 @@ elif [ -z "${OS/Darwin/}" ]; then
   echo ""
 fi
 
+# Remove the temp file for Mac
+[[ -z "${OS/Darwin}" ]] && rm $MacTempfile
