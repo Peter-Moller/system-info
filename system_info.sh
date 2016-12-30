@@ -493,10 +493,10 @@ if [ -z "${OS/Linux/}" ]; then
     NrDIMMsInstalled=$(dmidecode --type 17 | egrep "^\sSize:" | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ //')
     MemorySpeed="$(dmidecode --type 17 | egrep "^\sSpeed:" | cut -d: -f2 | sort -u | sed 's/^ //')"
     MemoryType="$(dmidecode --type 17 | egrep "^\sType:" | cut -d: -f2 | sort -u | sed 's/^ //')"
+  else
+    echo "You are not running as \"root\": memory reporting will not work!"
   fi
 elif [ -z "${OS/Darwin/}" ]; then
-  # Save memory information to file (for performance):
-  system_profiler SPMemoryDataType >> $MacTempfile
   # This adds the following to $MacTempfile:
   # Memory:
   # 
@@ -515,13 +515,23 @@ elif [ -z "${OS/Darwin/}" ]; then
   #           Part Number: 0x393936353532352D3033332E4130304C4620
   #           Serial Number: 0xD614209B
   # And so on with one part per DIMM
+  # The line with the DIMM spec may also look like this:
+  #         BANK 0/DIMM0:
+  # or
+  #         DIMM Riser B/DIMM 2:
+  # An empty slot is marked with:
+  #           Size: Empty
 
   Memory="$(grep Memory $MacTempfile | cut -d: -f2 | sed 's/\ *//')"
   # Ex: Memory='32 GB'
+  # Save memory information to file (for performance):
+  system_profiler SPMemoryDataType >> $MacTempfile
   MemorySpeed="$(grep "^\ *Speed:" $MacTempfile | sort -u | cut -d: -f2 | sed 's/ *//')"
   MemoryType="$(grep "^\ *Type:" $MacTempfile | sort -u | cut -d: -f2 | sed 's/ *//')"
   ECC="$(grep "^\ *ECC:" $MacTempfile | cut -d: -f2 | sed 's/ *//')"
   # Ex: ECC='Enabled'
+  NrDIMMs=$(egrep "DIMM.*:" $MacTempfile | wc -l | sed 's/^ *//')
+  NrDIMMsInstalled=$(egrep "^\sSize:" $MacTempfile | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ *//')
 fi
 
 printf "$Formatstring\n" "Memory size:" "${Memory} (ECC: $ECC)"
