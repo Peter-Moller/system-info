@@ -531,7 +531,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   ECC="$(grep "^\ *ECC:" $MacTempfile | cut -d: -f2 | sed 's/ *//')"
   # Ex: ECC='Enabled'
   NrDIMMs=$(egrep "DIMM.*:" $MacTempfile | wc -l | sed 's/^ *//')
-  NrDIMMsInstalled=$(egrep "^\sSize:" $MacTempfile | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ *//')
+  NrDIMMsInstalled=$(egrep "Size:" $MacTempfile | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ *//')
 fi
 
 printf "$Formatstring\n" "Memory size:" "${Memory} (ECC: $ECC)"
