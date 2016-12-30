@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Copyright 2016 Peter Möller
+# 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 # 
@@ -79,10 +81,10 @@ function CheckForUpdate() {
   ERR=$?
   # Find, and print, errors from curl (we assume both curl's above generate the same errors, if any)
   if [ "$ERR" -ne 0 ] ; then
-  	# Get the appropriate error message from the curl man-page
-  	# Start with '       43     Internal error. A function was called with a bad parameter.'
-  	# end get it down to: ' 43: Internal error.'
-  	ErrorMessage="$(MANWIDTH=500 man curl | egrep -o "^\ *${ERR}\ \ *[^.]*." | perl -pe 's/[0-9](?=\ )/$&:/;s/  */ /g')"
+    # Get the appropriate error message from the curl man-page
+    # Start with '       43     Internal error. A function was called with a bad parameter.'
+    # end get it down to: ' 43: Internal error.'
+    ErrorMessage="$(MANWIDTH=500 man curl | egrep -o "^\ *${ERR}\ \ *[^.]*." | perl -pe 's/[0-9](?=\ )/$&:/;s/  */ /g')"
     echo $ErrorMessage
     echo "The file \"$ScriptName\" could not be fetched from \"http://fileadmin.cs.lth.se/cs/Personal/Peter_Moller/scripts/$ScriptName\""
   fi
@@ -144,6 +146,7 @@ PMSET="/tmp/pmset.txt"
 TempFile1="/tmp/sleep_info_temp1.txt"
 TempFile2="/tmp/sleep_info_temp2.txt"
 TempFile3="/tmp/sleep_info_temp3.txt"
+MacTempfile="/tmp/.SPHardwareDataType.$$.txt"
 SysLogTemp="/tmp/syslog_temp"
 short="f"
 VER="0.1"
@@ -227,11 +230,11 @@ OS_arch="$(uname -m | sed -e "s/i386/i686/")"
 
 # Linux
 if [ -z "${OS/Linux/}" ]; then
-	ComputerName="$(uname -n)"
+  ComputerName="$(uname -n)"
   # ComputerName=vm67.cs.lth.se
 
-	# Find out about SELinux
-	[[ -f /etc/selinux/config ]] && Security="SELinux is $(grep "^SELINUX=" /etc/selinux/config | awk -F= '{print $2}')" || Security="SELinux is not present"
+  # Find out about SELinux
+  [[ -f /etc/selinux/config ]] && Security="SELinux is $(grep "^SELINUX=" /etc/selinux/config | awk -F= '{print $2}')" || Security="SELinux is not present"
   # Security='SELinux is disabled'
 
   # Find out which Distro
@@ -257,34 +260,58 @@ if [ -z "${OS/Linux/}" ]; then
     Distro="Unknown Linux-distro"
   fi
 
-	# Get kernel version
-	KernelVer="$(uname -r | cut -d\. -f1,2 2>/dev/null)"
+  # Get kernel version
+  KernelVer="$(uname -r | cut -d\. -f1,2 2>/dev/null)"
   # KernelVer='3.10'
-	
+
 elif [ -z "${OS/Darwin/}" ]; then
-	# OK, so it's Darwin
-	Distro="$(sw_vers -productName)"
-	DistroVer="$(sw_vers -productVersion)"
-	ComputerName="$(networksetup -getcomputername)"
-	[[ -x /usr/bin/csrutil ]] && Security="SIP is $(csrutil status | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//')" || Security="SIP is not present"
-	# Find out if it's a server
-	# First step: does the name fromsw_vers include "server"?
-	if [ -z "$(echo "$SW_VERS" | grep -i server)" ]; then
-		# If not, it may still be a server. Beginning with OS X 10.8 all versions include the command serverinfo:
-		serverinfo --software 1>/dev/null
-		# Exit code 0 = server; 1 = NOT server
-		ServSoft=$?
-		if [ $ServSoft -eq 0 ]; then
-			# Is it configured?
-			serverinfo --configured 1>/dev/null
-			ServConfigured=$?
-			if [ $ServConfigured -eq 0 ]; then
-				OSX_server="$(serverinfo --productname) $(serverinfo --shortversion)"
-			else
-				OSX_server="$(serverinfo --productname) $(serverinfo --shortversion) - unconfigured"
-			fi
-		fi
-	fi
+  # OK, so it's Darwin
+  Distro="$(sw_vers -productName)"
+  DistroVer="$(sw_vers -productVersion)"
+  ComputerName="$(networksetup -getcomputername)"
+  # Get basic Mac info for later usage:
+  system_profiler SPHardwareDataType > $MacTempfile
+  # This produces a file like this:
+  # Hardware:
+  #
+  #    Hardware Overview:
+  #
+  #      Model Name: Mac Pro
+  #      Model Identifier: MacPro5,1
+  #      Processor Name: 6-Core Intel Xeon
+  #      Processor Speed: 2.93 GHz
+  #      Number of Processors: 2
+  #      Total Number of Cores: 12
+  #      L2 Cache (per Core): 256 KB
+  #      L3 Cache (per Processor): 12 MB
+  #      Memory: 24 GB
+  #      Processor Interconnect Speed: 6.4 GT/s
+  #      Boot ROM Version: MP51.007F.B03
+  #      SMC Version (system): 1.39f11
+  #      SMC Version (processor tray): 1.39f11
+  #      Serial Number (system): CK0XXXXXXXX
+  #      Serial Number (processor tray): J5031XXXXXXXX     
+  #      Hardware UUID: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+  
+  [[ -x /usr/bin/csrutil ]] && Security="SIP is $(csrutil status | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//')" || Security="SIP is not present"
+  # Find out if it's a server
+  # First step: does the name fromsw_vers include "server"?
+  if [ -z "$(echo "$SW_VERS" | grep -i server)" ]; then
+    # If not, it may still be a server. Beginning with OS X 10.8 all versions include the command serverinfo:
+    serverinfo --software 1>/dev/null
+    # Exit code 0 = server; 1 = NOT server
+    ServSoft=$?
+    if [ $ServSoft -eq 0 ]; then
+      # Is it configured?
+      serverinfo --configured 1>/dev/null
+      ServConfigured=$?
+      if [ $ServConfigured -eq 0 ]; then
+        OSX_server="$(serverinfo --productname) $(serverinfo --shortversion)"
+      else
+        OSX_server="$(serverinfo --productname) $(serverinfo --shortversion) - unconfigured"
+      fi
+    fi
+  fi
 fi
 
 ### PRINT THE RESULT
@@ -298,30 +325,67 @@ printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
 ##############   CPU INFO   ###############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mCPU info:${Reset}${ESC}\n"
+printf "${ESC}${WhiteBack};${BlackFont}mCPU info:${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
+  # /proc/cpuinfo is used. It consists of a number of specifications like this, each specifying a computational
+  # unit (a “real” core or a HyperThreaded “core” of which there usually are two per physical, “real”, core):
+  # processor       : 0
+  # vendor_id       : GenuineIntel
+  # cpu family      : 6
+  # model           : 45
+  # model name      : Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz
+  # stepping        : 7
+  # microcode       : 0x70d
+  # cpu MHz         : 1200.000
+  # cache size      : 15360 KB
+  # physical id     : 0
+  # siblings        : 12
+  # core id         : 0
+  # cpu cores       : 6
+  # apicid          : 0
+  # initial apicid  : 0
+  # fpu             : yes
+  # fpu_exception   : yes
+  # cpuid level     : 13
+  # wp              : yes
+  # flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid dca sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+  # bogomips        : 3990.25
+  # clflush size    : 64
+  # cache_alignment : 64
+  # address sizes   : 46 bits physical, 48 bits virtual
+  # power management:
+  # 
+  # Out of this, the following is used:
+  # * Model name: name of the CPU
+  # * siblings:   number of HyperThreaded cores on the physical CPU
+  # * cpu cores:  number of “real” cores on the physical CPU
+
   CPU="$(less /proc/cpuinfo | grep -i "model name" | cut -d: -f2 | sed 's/ //' | sort -u)"
   # Ex: CPU='Intel(R) Xeon(R) CPU E5-2640 v3 @ 2.60GHz'
-  Cores="$(grep "cpu cores" /proc/cpuinfo | sort -u | cut -d: -f2)"
-  NrCPU=$(echo "$(grep "^processor" /proc/cpuinfo | wc -l) / $(grep "^siblings" /proc/cpuinfo | sort -u | cut -d: -f2)" | bc)
+  #CoresTotal="$(grep "cpu cores" /proc/cpuinfo | sort -u | cut -d: -f2)"
+  NrCPUs=$(echo "$(grep "^processor" /proc/cpuinfo | wc -l) / $(grep "^siblings" /proc/cpuinfo | sort -u | cut -d: -f2)" | bc)
+  NrCoresEachCPU=$(grep "cpu cores" /proc/cpuinfo | sort -u | cut -d: -f2 | sed 's/^ //')
 elif [ -z "${OS/Darwin/}" ]; then
   CPU="$(sysctl -n machdep.cpu.brand_string)"
   # Ex: CPU='Intel(R) Xeon(R) CPU E5-1650 v2 @ 3.50GHz'
   # Ex: CPU='Intel(R) Core(TM)2 Duo CPU     P7350  @ 2.00GHz'
-  NrCPU="$(system_profiler SPHardwareDataType | grep Processors | cut -d: -f2 | sed 's/\ *//')"
-  # Ex: NrCPU='1'
+  NrCPUs=$(grep "Number of Processors:" $MacTempfile | cut -d: -f2 | sed 's/\ *//')
+  # Alternate method: NrCPU="$(sysctl -n hw.packages)"
+  CoresTotal=$(grep "Total Number of Cores:" $MacTempfile | cut -d: -f2 | sed 's/\ *//')
+  NrCoresEachCPU=$(echo " $CoresTotal / $NrCPUs" | bc)
 fi
 
-Cores=$(echo "$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu) / 2" | bc)
+printf "$Formatstring\n" "CPU:" "${CPU//(R)/®} (${NrCPUs} CPU$([[ $NrCPUs -gt 1 ]] && echo s); ${NrCoresEachCPU} cores$([[ $NrCPUs -gt 1 ]] && echo " each"))"
+printf "$Formatstring\n" "Number of CPUs:" "${NrCPUs}"
+printf "$Formatstring\n" "Cores/CPU:" "${NrCoresEachCPU}"
 
-echo " CPU:   ${CPU} (${NrCPU} CPU; ${Cores} cores)"
 
 ###########################################
 #############   MEMORY INFO   #############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mMemory info:${Reset}${ESC}\n"
+printf "${ESC}${WhiteBack};${BlackFont}mMemory info:${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   Memory="$(dmidecode --type 6,6 2>/dev/null | grep "Installed Size" | grep -v "Not Installed" | cut -d: -f2 | sed 's/ *//')"
@@ -339,14 +403,14 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Ex: ECC='Enabled'
 fi
 
-echo "Memory size:   ${Memory} (ECC: $ECC)"
+printf "$Formatstring\n" "Memory size:" "${Memory} (ECC: $ECC)"
 
 
 ###########################################
 ##############   DISK INFO   ##############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mDisk info:${Reset}${ESC}\n"
+printf "${ESC}${WhiteBack};${BlackFont}mDisk info:${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   echo ""
@@ -359,7 +423,7 @@ fi
 ############   NETWORK INFO   #############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mNetwork info:${Reset}${ESC}\n"
+printf "${ESC}${WhiteBack};${BlackFont}mNetwork info:${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # This doesn't work reliable
@@ -393,14 +457,14 @@ fi
 ############   SECURITY INFO   ############
 ###########################################
 
-printf "${ESC}${BlueBack};${WhiteFont}mSecurity info:${Reset}${ESC}\n"
+printf "${ESC}${WhiteBack};${BlackFont}mSecurity info:${Reset}\n"
 if [ -z "${OS/Linux/}" ]; then
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
   echo ""
 fi
 
-printf "Security:" "$Security"
+printf printf "$Formatstring\n" "Security:" "$Security"
 
 
 ###########################################
