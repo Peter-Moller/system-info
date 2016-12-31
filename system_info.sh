@@ -26,8 +26,8 @@
 # system_info
 # Get information about the running OS
 # 2015-11-04 / Peter Möller
-# Version 0.1.1
-# Latest edit: 2016-12-28
+# Version 0.2
+# Latest edit: 2016-12-31
 
 # Aim for the script:
 # To present basic information regarding the OS you are running
@@ -57,6 +57,13 @@
 # 
 # One *may* also think about saving “fingerprints” of interesting binaries in a text file
 # as a manual security/change detection, but that is definitely saved for later
+
+# Overall structure of the script:
+# - a number of segment, each dealing with one part of the system (OS, CPU, memory and so on)
+# - each part prints it's own info (makes for a better, quicker, printout)
+#   The “head” is printed before the work is done, though
+# - each part deals with the various OS:es (currently OS X and Linux) separatley, but
+#   tries to gather the same info so that one may use a single print phase
 
 
 function usage()
@@ -145,16 +152,10 @@ function UpdateScript() {
 
 ##### Done with functions
 
+
 ##### Set basic variables
 fetch_new=f
-PMSET="/tmp/pmset.txt"
-TempFile1="/tmp/sleep_info_temp1.txt"
-TempFile2="/tmp/sleep_info_temp2.txt"
-TempFile3="/tmp/sleep_info_temp3.txt"
-MacTempfile="/tmp/.MacHardware.$$.txt"
-SysLogTemp="/tmp/syslog_temp"
-short="f"
-VER="0.1"
+VER="0.2"
 
 # Find where the script resides (so updates update the correct version) -- without trailing slash
 DirName="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -168,6 +169,14 @@ else
 fi
 # Who owns the script?
 ScriptOwner="$(ls -ls ${DirName}/${ScriptName} | awk '{print $4":"$5}')"
+
+OSTempFile="/tmp/.${ScriptName}_OS.$$.txt"
+CPUTempFile="/tmp/.${ScriptName}_CPU.$$.txt"
+MemTempFile="/tmp/.${ScriptName}_Memory.$$.txt"
+DiskTempFile="/tmp/.${ScriptName}_Disk.$$.txt"
+NetworkTempFile="/tmp/.${ScriptName}_Network.$$.txt"
+SecurityTempFile="/tmp/.${ScriptName}_Security.$$.txt"
+
 
 # (Colors can be found at http://en.wikipedia.org/wiki/ANSI_escape_code, http://graphcomp.com/info/specs/ansi_col.html and other sites)
 Reset="\e[0m"
@@ -227,6 +236,8 @@ done
 ############   BASIC OS-INFO   ############
 ###########################################
 
+printf "${ESC}${BlackBack};${WhiteFont}mSystem info for:${Reset} ${ESC}${WhiteBack};${BlackFont}m$ComputerName${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${Reset} ${ESC}${WhiteBack};${BlackFont}m$(date +%F", "%R)${Reset}\n"
+
 # OS version (either 'Darwin' or 'Linux')
 OS="$(uname -s)"
 # OS Size ('32' / '64')
@@ -285,7 +296,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   DistroVer="$(sw_vers -productVersion)"
   ComputerName="$(networksetup -getcomputername)"
   # Get basic Mac info for later usage:
-  system_profiler SPHardwareDataType > $MacTempfile
+  system_profiler SPHardwareDataType > $OSTempFile
   # This produces a file like this:
   # Hardware:
   #
@@ -308,7 +319,6 @@ elif [ -z "${OS/Darwin/}" ]; then
   #      Serial Number (processor tray): J5031XXXXXXXX     
   #      Hardware UUID: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
   
-  [[ -x /usr/bin/csrutil ]] && Security="SIP is $(csrutil status | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//')" || Security="SIP is not present"
   # Find out if it's a server
   # First step: does the name fromsw_vers include "server"?
   if [ -z "$(echo "$SW_VERS" | grep -i server)" ]; then
@@ -330,7 +340,6 @@ elif [ -z "${OS/Darwin/}" ]; then
 fi
 
 ### PRINT THE RESULT
-printf "${ESC}${BlackBack};${WhiteFont}mOS info for:${Reset} ${ESC}${WhiteBack};${BlackFont}m$ComputerName${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${Reset} ${ESC}${WhiteBack};${BlackFont}m$(date +%F", "%R)${Reset}\n"
 printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")"
 [[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer"
 printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
@@ -340,7 +349,7 @@ printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
 ##############   CPU INFO   ###############
 ###########################################
 
-printf "${ESC}${WhiteBack};${BlackFont}mCPU info:${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont}mCPU info:                                         ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # /proc/cpuinfo is used. It consists of a number of specifications like this, each specifying a computational
@@ -385,9 +394,9 @@ elif [ -z "${OS/Darwin/}" ]; then
   CPU="$(sysctl -n machdep.cpu.brand_string)"
   # Ex: CPU='Intel(R) Xeon(R) CPU E5-1650 v2 @ 3.50GHz'
   # Ex: CPU='Intel(R) Core(TM)2 Duo CPU     P7350  @ 2.00GHz'
-  NrCPUs=$(grep "Number of Processors:" $MacTempfile | cut -d: -f2 | sed 's/\ *//')
+  NrCPUs=$(grep "Number of Processors:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
   # Alternate method: NrCPU="$(sysctl -n hw.packages)"
-  CoresTotal=$(grep "Total Number of Cores:" $MacTempfile | cut -d: -f2 | sed 's/\ *//')
+  CoresTotal=$(grep "Total Number of Cores:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
   NrCoresEachCPU=$(echo " $CoresTotal / $NrCPUs" | bc)
 fi
 
@@ -400,7 +409,7 @@ printf "$Formatstring\n" "Cores/CPU:" "${NrCoresEachCPU}"
 #############   MEMORY INFO   #############
 ###########################################
 
-printf "${ESC}${WhiteBack};${BlackFont}mMemory info:${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont}mMemory info:                                      ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # This uses /proc/meminfo which is supposed to look like this:
@@ -497,7 +506,7 @@ if [ -z "${OS/Linux/}" ]; then
     echo "You are not running as \"root\": memory reporting will not work!"
   fi
 elif [ -z "${OS/Darwin/}" ]; then
-  # This adds the following to $MacTempfile:
+  # This writes the following to $MemTempFile:
   # Memory:
   # 
   #     Memory Slots:
@@ -522,16 +531,16 @@ elif [ -z "${OS/Darwin/}" ]; then
   # An empty slot is marked with:
   #           Size: Empty
 
-  Memory="$(grep Memory $MacTempfile | cut -d: -f2 | sed 's/\ *//')"
+  Memory="$(grep Memory $OSTempFile | cut -d: -f2 | sed 's/\ *//')"
   # Ex: Memory='32 GB'
   # Save memory information to file (for performance):
-  system_profiler SPMemoryDataType >> $MacTempfile
-  MemorySpeed="$(grep "^\ *Speed:" $MacTempfile | sort -u | cut -d: -f2 | sed 's/ *//')"
-  MemoryType="$(grep "^\ *Type:" $MacTempfile | sort -u | cut -d: -f2 | sed 's/ *//')"
-  ECC="$(grep "^\ *ECC:" $MacTempfile | cut -d: -f2 | sed 's/ *//')"
+  system_profiler SPMemoryDataType >> $MemTempFile
+  MemorySpeed="$(grep "^\ *Speed:" $MemTempFile | sort -u | grep -v Empty | cut -d: -f2 | sed 's/ *//')"
+  MemoryType="$(grep "^\ *Type:" $MemTempFile | sort -u | grep -v Empty | cut -d: -f2 | sed 's/ *//')"
+  ECC="$(grep "^\ *ECC:" $MemTempFile | cut -d: -f2 | sed 's/ *//')"
   # Ex: ECC='Enabled'
-  NrDIMMs=$(egrep "DIMM.*:" $MacTempfile | wc -l | sed 's/^ *//')
-  NrDIMMsInstalled=$(egrep "Size:" $MacTempfile | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ *//')
+  NrDIMMs=$(egrep "DIMM.*:" $MemTempFile | wc -l | sed 's/^ *//')
+  NrDIMMsInstalled=$(egrep "Size:" $MemTempFile | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ *//')
 fi
 
 printf "$Formatstring\n" "Memory size:" "${Memory} (ECC: $ECC)"
@@ -544,7 +553,7 @@ printf "$Formatstring\n" "Nr of DIMMS:" "${NrDIMMs:-No information available} ($
 ##############   DISK INFO   ##############
 ###########################################
 
-printf "${ESC}${WhiteBack};${BlackFont}mDisk info:${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont}mDisk info:                                        ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   echo ""
@@ -557,7 +566,8 @@ fi
 ############   NETWORK INFO   #############
 ###########################################
 
-printf "${ESC}${WhiteBack};${BlackFont}mNetwork info:${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont}mNetwork info:                                     ${Reset}\n"
+
 printf "Interfaces:\n"
 
 if [ -z "${OS/Linux/}" ]; then
@@ -591,13 +601,32 @@ fi
 ############   SECURITY INFO   ############
 ###########################################
 
-printf "${ESC}${WhiteBack};${BlackFont}mSecurity info:${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont}mSecurity info:                                    ${Reset}\n"
+
 if [ -z "${OS/Linux/}" ]; then
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
-  echo ""
+  # If we are root, see if firmware password has been set
+  # Note that this adds some 10 seconds to the execution time
+  if [ -z "${USER/root/}" ]; then
+    # But only if there actually *is* a recovery HD
+    /usr/sbin/diskutil mount Recovery\ HD 1>/dev/null 
+    /usr/bin/hdiutil attach /Volumes/Recovery\ HD/com.apple.recovery.boot/BaseSystem.dmg -nobrowse -quiet
+    /Volumes/OS\ X\ Base\ System/Applications/Utilities/Firmware\ Password\ Utility.app/Contents/Resources/setregproptool -c
+    if [ $? -eq 0 ]; then
+      FirmwareLockMsg="Firware password is set"
+    else
+      FirmwareLockMsg="Firmware password is NOT set"
+    fi
+    /usr/sbin/diskutil unmount force /Volumes/Recovery\ HD 1>/dev/null
+  else
+    FirmwareLockMsg="You are not running as \"root\" and thus firmware lock status cannot be determined!"
+  fi
+  printf "$Formatstring\n" "Firmware-lock:" "$FirmwareLockMsg"
 fi
 
+# Is SIP enabled?
+[[ -x /usr/bin/csrutil ]] && Security="SIP is $(csrutil status | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//')" || Security="SIP is not present"
 printf "$Formatstring\n" "Security:" "$Security"
 if [ -z "${Security}" ]; then
   Security='No known system detected'
@@ -615,4 +644,9 @@ elif [ -z "${OS/Darwin/}" ]; then
 fi
 
 # Remove the temp file for Mac
-[[ -z "${OS/Darwin}" ]] && rm $MacTempfile
+rm $OSTempFile 2>/dev/null
+rm $CPUTempFile 2>/dev/null
+rm $MemTempFile 2>/dev/null
+rm $DiskTempFile 2>/dev/null
+rm $NetworkTempFile 2>/dev/null
+rm $SecurityTempFile 2>/dev/null
