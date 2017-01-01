@@ -207,6 +207,13 @@ Face="$RES"
 FontColor="$RES"
 
 Formatstring="%-18s%-40s%-30s"
+# 1 "123456789012345678"
+# 2 "1234567890123456789012345678901234567890"
+# 3 "123456789012345678901234567890"
+# FormatString is intended for:
+# "Head" "Value" "Extra information (-i flag)"
+Formatstring2="%-18s%-10s%-15s%-30s"
+# Formatstring2 is intended for the network listing
 
 ##### Done setting basic variables
 
@@ -407,9 +414,9 @@ elif [ -z "${OS/Darwin/}" ]; then
 fi
 
 #printf "$Formatstring\n" "CPU:" "${CPU//(R)/®}"
-printf "$Formatstring\n" "CPU:" "$(echo $CPU | sed -E -e 's/\(R\)/®/g' -e 's/\(TM\)/™/g')"
-printf "$Formatstring\n" "Number of CPUs:" "${NrCPUs}"
-printf "$Formatstring\n" "Cores/CPU:" "${NrCoresEachCPU}"
+printf "$Formatstring\n" "CPU:" "$(echo $CPU | sed -E -e 's/\(R\)/®/g' -e 's/\(TM\)/™/g')" ""
+printf "$Formatstring\n" "Number of CPUs:" "${NrCPUs}" ""
+printf "$Formatstring\n" "Cores/CPU:" "${NrCoresEachCPU}" ""
 
 
 ###########################################
@@ -550,10 +557,10 @@ elif [ -z "${OS/Darwin/}" ]; then
   NrDIMMsInstalled=$(egrep "Size:" $MemTempFile | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ *//')
 fi
 
-printf "$Formatstring\n" "Memory size:" "${Memory} (ECC: $ECC)"
-printf "$Formatstring\n" "Memory type:" "${MemoryType:-No information available}"
-printf "$Formatstring\n" "Memory Speed:" "${MemorySpeed:-No information available}"
-printf "$Formatstring\n" "Nr of DIMMS:" "${NrDIMMs:-No information available} (${NrDIMMsInstalled} filled)"
+printf "$Formatstring\n" "Memory size:" "${Memory} (ECC: $ECC)" ""
+printf "$Formatstring\n" "Memory type:" "${MemoryType:-No information available}" ""
+printf "$Formatstring\n" "Memory Speed:" "${MemorySpeed:-No information available}" ""
+printf "$Formatstring\n" "Nr of DIMMS:" "${NrDIMMs:-No information available} (${NrDIMMsInstalled} filled)" ""
 
 
 ###########################################
@@ -586,9 +593,8 @@ if [ -z "${OS/Linux/}" ]; then
   done
 elif [ -z "${OS/Darwin/}" ]; then
   # This is a very short version of the 'network_info'-script
-  NIfile="/tmp/NetworkInterfaces_$$.txt"
-  networksetup -listnetworkserviceorder | egrep "^\([0-9\*]*\)\ " | sed -e 's/^(//g' -e 's/) /:/' > $NIfile
-  exec 4<"$NIfile"
+  networksetup -listnetworkserviceorder | egrep "^\([0-9\*]*\)\ " | sed -e 's/^(//g' -e 's/) /:/' > $NetworkTempFile
+  exec 4<"$NetworkTempFile"
   while IFS=: read -u 4 IFNum IFName
   do
     Interface="$(networksetup -listallhardwareports 2>/dev/null | grep -A1 "Hardware Port: $IFName" | tail -1 | awk '{print $2}' | sed -e 's/^ *//')"
@@ -598,9 +604,11 @@ elif [ -z "${OS/Darwin/}" ]; then
     IPaddress="$(networksetup -getinfo "$IFName" 2>/dev/null | grep "^IP address" | cut -d: -f2 | sed -e 's/^ *//')"
     # Ex: " 130.235.16.211"
     if [ -n "$MediaSpeed" -a ! "$MediaSpeed" = " none" -a -n "$IPaddress" ]; then
-      echo "  Interface: \"$Interface\"  Name: \"$IFName\"  IP-address: \"${IPaddress# }\"  Media Speed: \"${MediaSpeed}\"" 
+      #echo "  Interface: \"$Interface\"  Name: \"$IFName\"  IP-address: \"${IPaddress# }\"  Media Speed: \"${MediaSpeed}\"" 
+      printf "$Formatstring2\n" "- $IFName" "$Interface" "$IPaddress" "$MediaSpeed"
     fi
   done
+  [[ $Info -eq 1 ]] &&  echo "(Use \"ifconfig\" and \"networksetup\" to see network details)"
 fi
 
 
@@ -632,15 +640,15 @@ elif [ -z "${OS/Darwin/}" ]; then
       /usr/sbin/diskutil unmount force /Volumes/Recovery\ HD 1>/dev/null
     fi
   else
-    FirmwareLockMsg="You are not running as \"root\" and thus firmware lock status cannot be determined!"
+    FirmwareLockMsg="\"root\" needed for firmware lock status!"
   fi
   printf "${ESC}1K${Reset}"
   printf "${ESC}100D${Reset}"
   printf "$Formatstring\n" "Firmware-lock:" "${FirmwareLockMsg}" "${Information}"
 
   # ALF -- Application Level Firewall
-  [[ $Info -eq 1 ]] &&  Information="(use \"socketfilterfw\" to manipulate ALF)" || Information=""
-  printf "$Formatstring\n" "ALF:" "$(/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate | cut -d\. -f1)" "${Information}"
+  [[ $Info -eq 1 ]] &&  Information="(use \"socketfilterfw\" to manipulate Application Level Firewall)" || Information=""
+  printf "$Formatstring\n" "ALF:" "$(/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate | cut -d\. -f1 | awk '{print $NF}')" "${Information}"
 
   # PF firewall
   # To see anything interesting, you need to be root!
@@ -648,17 +656,17 @@ elif [ -z "${OS/Darwin/}" ]; then
   if [ -z "${USER/root/}" ]; then
     PFMsg="$(pfctl -sa 2>/dev/null | grep ^Status: | awk '{print $2}')"
   else
-    PFMsg="You must be \"root\" to see the status of the firewall!"
+    PFMsg="\"root\" needed for Firewall status!"
   fi
   printf "$Formatstring\n" "PF-firewall:" "${PFMsg}" "${Information}"
 
   # SIP
-  [[ $Info -eq 1 ]] &&  Information="(use \"csrutil\" to manipulate SIP)" || Information=""
-  [[ -x /usr/bin/csrutil ]] && Security="System Integrity Protection is $(csrutil status | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//')" || Security="System Integrity Protection is not present"
+  [[ $Info -eq 1 ]] &&  Information="(use \"csrutil\" to manipulate System Integrity Protection)" || Information=""
+  [[ -x /usr/bin/csrutil ]] && Security="$(csrutil status | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//')" || Security="System Integrity Protection is not present"
   printf "$Formatstring\n" "SIP:" "${Security}" "${Information}"
   
   # GateKeeper
-  [[ $Info -eq 1 ]] &&  Information="(use \"spctl\" to manipulate GateKeeper)" || Information=""
+  [[ $Info -eq 1 ]] &&  Information="(use \"spctl\" to manipulate the GateKeeper application launch protection system)" || Information=""
   printf "$Formatstring\n" "GateKeeper:" "$(spctl --status | awk '{print $2}')" "${Information}"
 
     # Little Snitch
