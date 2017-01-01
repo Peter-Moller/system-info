@@ -664,7 +664,9 @@ elif [ -z "${OS/Darwin/}" ]; then
     # Little Snitch
   # If it's running, it should be a "/Library/Little Snitch/Little Snitch Daemon.bundle/Contents/MacOS/Little Snitch Daemon" running
   if [ -n "$(pgrep -fl "Little Snitch Daemon")" ]; then
-    LittleSnitch="Installed and running"
+    # LittleSnitchVer is an *awful* kludge, but something went bonkers the “normal” (sed) way...
+    LittleSnitchVer="$(defaults read "$(dirname "$(pgrep -fl "Little Snitch Daemon" | sed 's/^[0-9]* //')" | sed 's/MacOS/Info.plist/')" CFBundleShortVersionString)"
+    LittleSnitch="Installed and running (ver: $LittleSnitchVer)"
     [[ $Info -eq 1 ]] &&  Information="(Little Snitch is only manipulated through the GUI)" || Information=""
   else
     LittleSnitch="Not detected"
