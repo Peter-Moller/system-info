@@ -76,6 +76,7 @@ This script displays basic information about the OS you are running.
 OPTIONS:
   -h      Show this message
   -u      Upgrade the script
+  -i      Print additional information regarding tools to use
 EOF
 }
 
@@ -205,7 +206,7 @@ BGColor="$RES"
 Face="$RES"
 FontColor="$RES"
 
-Formatstring="%-18s%-30s"
+Formatstring="%-18s%-40s%-30s"
 
 ##### Done setting basic variables
 
@@ -215,12 +216,13 @@ function print_warning()
 }
 
 # Read the parameters
-while getopts "hu" OPTION
+while getopts "hui" OPTION
 do
     case $OPTION in
         h)  usage
             exit 1;;
         u)  fetch_new=t;;
+        i)  Info=1;;
         *)  usage
             exit;;
     esac
@@ -238,7 +240,11 @@ done
 
 printf "${ESC}${BlackBack};${WhiteFont}mSystem info for:${Reset} ${ESC}${WhiteBack};${BlackFont}m$ComputerName${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${Reset} ${ESC}${WhiteBack};${BlackFont}m$(date +%F", "%R)${Reset}\n"
 
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System:                                 ${Reset}"
+
 # OS version (either 'Darwin' or 'Linux')
+# See a comprehensive list of uname results: 
+# https://en.wikipedia.org/wiki/Uname
 OS="$(uname -s)"
 # OS Size ('32' / '64')
 OS_size="$(uname -m | sed -e "s/i.86/32/" -e "s/x86_64/64/" -e "s/armv7l/32/")"
@@ -349,7 +355,7 @@ printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
 ##############   CPU INFO   ###############
 ###########################################
 
-printf "\n${ESC}${WhiteBack};${BlackFont}mCPU info:                                         ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mCPU info:                                         ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # /proc/cpuinfo is used. It consists of a number of specifications like this, each specifying a computational
@@ -400,7 +406,8 @@ elif [ -z "${OS/Darwin/}" ]; then
   NrCoresEachCPU=$(echo " $CoresTotal / $NrCPUs" | bc)
 fi
 
-printf "$Formatstring\n" "CPU:" "${CPU//(R)/®}"
+#printf "$Formatstring\n" "CPU:" "${CPU//(R)/®}"
+printf "$Formatstring\n" "CPU:" "$(echo $CPU | sed -E -e 's/\(R\)/®/g' -e 's/\(TM\)/™/g')"
 printf "$Formatstring\n" "Number of CPUs:" "${NrCPUs}"
 printf "$Formatstring\n" "Cores/CPU:" "${NrCoresEachCPU}"
 
@@ -409,7 +416,7 @@ printf "$Formatstring\n" "Cores/CPU:" "${NrCoresEachCPU}"
 #############   MEMORY INFO   #############
 ###########################################
 
-printf "\n${ESC}${WhiteBack};${BlackFont}mMemory info:                                      ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mMemory info:                                      ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # This uses /proc/meminfo which is supposed to look like this:
@@ -553,7 +560,7 @@ printf "$Formatstring\n" "Nr of DIMMS:" "${NrDIMMs:-No information available} ($
 ##############   DISK INFO   ##############
 ###########################################
 
-printf "\n${ESC}${WhiteBack};${BlackFont}mDisk info:                                        ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mDisk info:                                        ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   echo ""
@@ -566,9 +573,9 @@ fi
 ############   NETWORK INFO   #############
 ###########################################
 
-printf "\n${ESC}${WhiteBack};${BlackFont}mNetwork info:                                     ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mNetwork info:                                     ${Reset}\n"
 
-printf "Interfaces:\n"
+printf "Active interfaces:\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # This doesn't work reliable
@@ -601,35 +608,70 @@ fi
 ############   SECURITY INFO   ############
 ###########################################
 
-printf "\n${ESC}${WhiteBack};${BlackFont}mSecurity info:                                    ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mSecurity info:                                    ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
-  # If we are root, see if firmware password has been set
+  
+  # Firmware password. This requires root level access
   # Note that this adds some 10 seconds to the execution time
+  [[ $Info -eq 1 ]] &&  Information="(use \"setregproptool\" for manipulating the firmware lock)" || Information=""
   if [ -z "${USER/root/}" ]; then
     # But only if there actually *is* a recovery HD
-    /usr/sbin/diskutil mount Recovery\ HD 1>/dev/null 
-    /usr/bin/hdiutil attach /Volumes/Recovery\ HD/com.apple.recovery.boot/BaseSystem.dmg -nobrowse -quiet
-    /Volumes/OS\ X\ Base\ System/Applications/Utilities/Firmware\ Password\ Utility.app/Contents/Resources/setregproptool -c
-    if [ $? -eq 0 ]; then
-      FirmwareLockMsg="Firware password is set"
-    else
-      FirmwareLockMsg="Firmware password is NOT set"
+    if [ -n "$(diskutil list | grep "Recovery HD")" ]; then
+      /usr/sbin/diskutil mount Recovery\ HD 1>/dev/null
+      printf "Looking for firmware password (this will take a few seconds)..."
+      /usr/bin/hdiutil attach /Volumes/Recovery\ HD/com.apple.recovery.boot/BaseSystem.dmg -nobrowse -quiet
+      /Volumes/OS\ X\ Base\ System/Applications/Utilities/Firmware\ Password\ Utility.app/Contents/Resources/setregproptool -c
+      if [ $? -eq 0 ]; then
+        FirmwareLockMsg="Firmware password is set"
+      else
+        FirmwareLockMsg="Firmware password is NOT set"
+      fi
+      /usr/sbin/diskutil unmount force /Volumes/Recovery\ HD 1>/dev/null
     fi
-    /usr/sbin/diskutil unmount force /Volumes/Recovery\ HD 1>/dev/null
   else
     FirmwareLockMsg="You are not running as \"root\" and thus firmware lock status cannot be determined!"
   fi
-  printf "$Formatstring\n" "Firmware-lock:" "$FirmwareLockMsg"
-fi
+  printf "${ESC}1K${Reset}"
+  printf "${ESC}100D${Reset}"
+  printf "$Formatstring\n" "Firmware-lock:" "${FirmwareLockMsg}" "${Information}"
 
-# Is SIP enabled?
-[[ -x /usr/bin/csrutil ]] && Security="SIP is $(csrutil status | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//')" || Security="SIP is not present"
-printf "$Formatstring\n" "Security:" "$Security"
-if [ -z "${Security}" ]; then
-  Security='No known system detected'
+  # ALF -- Application Level Firewall
+  [[ $Info -eq 1 ]] &&  Information="(use \"socketfilterfw\" to manipulate ALF)" || Information=""
+  printf "$Formatstring\n" "ALF:" "$(/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate | cut -d\. -f1)" "${Information}"
+
+  # PF firewall
+  # To see anything interesting, you need to be root!
+  [[ $Info -eq 1 ]] &&  Information="(use \"pfctl\" to manipulate the PF-firewall)" || Information=""
+  if [ -z "${USER/root/}" ]; then
+    PFMsg="$(pfctl -sa 2>/dev/null | grep ^Status: | awk '{print $2}')"
+  else
+    PFMsg="You must be \"root\" to see the status of the firewall!"
+  fi
+  printf "$Formatstring\n" "PF-firewall:" "${PFMsg}" "${Information}"
+
+  # SIP
+  [[ $Info -eq 1 ]] &&  Information="(use \"csrutil\" to manipulate SIP)" || Information=""
+  [[ -x /usr/bin/csrutil ]] && Security="System Integrity Protection is $(csrutil status | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//')" || Security="System Integrity Protection is not present"
+  printf "$Formatstring\n" "SIP:" "${Security}" "${Information}"
+  
+  # GateKeeper
+  [[ $Info -eq 1 ]] &&  Information="(use \"spctl\" to manipulate GateKeeper)" || Information=""
+  printf "$Formatstring\n" "GateKeeper:" "$(spctl --status | awk '{print $2}')" "${Information}"
+
+    # Little Snitch
+  # If it's running, it should be a "/Library/Little Snitch/Little Snitch Daemon.bundle/Contents/MacOS/Little Snitch Daemon" running
+  if [ -n "$(pgrep -fl "Little Snitch Daemon")" ]; then
+    LittleSnitch="Installed and running"
+    [[ $Info -eq 1 ]] &&  Information="(Little Snitch is only manipulated through the GUI)" || Information=""
+  else
+    LittleSnitch="Not detected"
+    [[ $Info -eq 1 ]] &&  Information="(Little Snitch is a third party firewall that you can find at https://www.obdev.at/products/littlesnitch/index.html)" || Information=""
+  fi
+  printf "$Formatstring\n" "Little Snitch:" "${LittleSnitch}" "${Information}"
+
 fi
 
 
