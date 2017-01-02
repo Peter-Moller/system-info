@@ -635,16 +635,27 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Iterate through the list of disks:
   for i in $(diskutil list | egrep "^\/dev" | sed 's;/dev/;;' | egrep -v "virtual|disk image" | awk '{print $1}')
   do
-    Bus="$(egrep "^[A-Z].*:$| $i" $DiskTempFile | grep -B1 $i | head -1 | cut -d: -f1)"
-    # Ex: Bus='SATA/SATA Express'
-    SMART="$(egrep -B3 -A3 "$i" $DiskTempFile | grep "S.M.A.R.T. status:" | cut -d: -f2 | sed 's/^ //')"
-    # Ex: SMART='Verified'
-    TRIM="$(egrep -B3 -A3 "$i" $DiskTempFile | grep "TRIM Support:" | cut -d: -f2 | sed 's/^ //')"
-    # Ex: TRIM='Yes'
-    MediumType="$(egrep -B3 -A3 "$i" $DiskTempFile | grep "Medium Type:" | cut -d: -f2 | sed 's/^ //')"
-    # Ex: MediumType='Solid State'
-    Size="$(diskutil list | grep "${i}$" | awk '{print $3" "$4}' | sed 's/*//')"
-    # Ex: Size='500.3 GB'
+    # First: it may be a Core Storage volume (FileVault2 or the like)
+    if [ -z "$(grep $i $DiskTempFile)" ]; then
+      # Look for 'Logical Volume'
+      if [ -n "$(diskutil cs list | grep -B2 $i | grep "Logical Volume")" ]; then
+        Bus=""
+        SMART=""
+        MediumType="Core Storage"
+        Size="diskutil list | grep -v "/dev/$i" | grep "${i}$" | cut -c58-68"
+      fi
+    else
+      Bus="$(egrep "^[A-Z].*:$| $i" $DiskTempFile | grep -B1 $i | head -1 | cut -d: -f1)"
+      # Ex: Bus='SATA/SATA Express'
+      SMART="$(egrep -B3 -A3 "$i" $DiskTempFile | grep "S.M.A.R.T. status:" | cut -d: -f2 | sed 's/^ //')"
+      # Ex: SMART='Verified'
+      TRIM="$(egrep -B3 -A3 "$i" $DiskTempFile | grep "TRIM Support:" | cut -d: -f2 | sed 's/^ //')"
+      # Ex: TRIM='Yes'
+      MediumType="$(egrep -B3 -A3 "$i" $DiskTempFile | grep "Medium Type:" | cut -d: -f2 | sed 's/^ //')"
+      # Ex: MediumType='Solid State'
+      Size="$(diskutil list | grep "${i}$" | awk '{print $3" "$4}' | sed 's/*//')"
+      # Ex: Size='500.3 GB'
+    fi
     printf "$Formatstring3\n" "$i" "$Size" "${MediumType:---}" "${SMART:---}" "${TRIM:---}" "$Bus"
   done
   [[ $Info -eq 1 ]] &&  echo "(Use \"diskutil\" and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType\" to see details about your disks)"
