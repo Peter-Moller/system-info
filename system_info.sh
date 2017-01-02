@@ -251,10 +251,6 @@ done
 ############   BASIC OS-INFO   ############
 ###########################################
 
-printf "${ESC}${BlackBack};${WhiteFont}mSystem info for:${Reset} ${ESC}${WhiteBack};${BlackFont}m$ComputerName${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${Reset} ${ESC}${WhiteBack};${BlackFont}m$(date +%F", "%R)${Reset}\n"
-
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System:                                 ${Reset}"
-
 # OS version (either 'Darwin' or 'Linux')
 # See a comprehensive list of uname results: 
 # https://en.wikipedia.org/wiki/Uname
@@ -359,6 +355,11 @@ elif [ -z "${OS/Darwin/}" ]; then
 fi
 
 ### PRINT THE RESULT
+printf "${ESC}${BlackBack};${WhiteFont}mSystem info for:${Reset} ${ESC}${WhiteBack};${BlackFont}m$ComputerName${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${Reset} ${ESC}${WhiteBack};${BlackFont}m$(date +%F", "%R)${Reset}\n"
+
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System:                                 ${Reset}\n"
+
+
 printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")"
 [[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer"
 printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
