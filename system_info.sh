@@ -27,7 +27,7 @@
 # Get information about the running OS
 # 2015-11-04 / Peter Möller
 # Version 0.2
-# Latest edit: 2016-12-31
+# Latest edit: 2017-01-02
 
 # Aim for the script:
 # To present basic information regarding the OS you are running
@@ -156,7 +156,7 @@ function UpdateScript() {
 
 ##### Set basic variables
 fetch_new=f
-VER="0.2"
+VER="0.3"
 
 # Find where the script resides (so updates update the correct version) -- without trailing slash
 DirName="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -214,6 +214,12 @@ Formatstring="%-18s%-40s%-30s"
 # "Head" "Value" "Extra information (-i flag)"
 Formatstring2="%-18s%-10s%-15s%-30s"
 # Formatstring2 is intended for the network listing
+Formatstring3="%-18s%-10s%-13s%-10s%-6s%-20s"
+# Formatstring3 is intended for the disk listing
+# 123456789012345678901234567890123456789012345678901234567890
+#          1         1         1         1         1         1
+# BSD Name         Size      Medium Type   SMART     TRIM  Bus                 
+# disk0            500.3 GB  Solid State   Verified  Yes   SATA/SATA Express   
 
 ##### Done setting basic variables
 
@@ -572,7 +578,75 @@ printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mDisk info:                
 if [ -z "${OS/Linux/}" ]; then
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
-  echo ""
+  system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType | egrep ":$|BSD Name:|Medium Type:|Physical Interconnect:|S.M.A.R.T. status:|TRIM Support:" > $DiskTempFile
+  # This will produce a list of disks, like this:
+  # USB:
+  #  USB 3.0 Bus:
+  #      USB3.0 Hub             :
+  #          My Book 1144:
+  #            Media:
+  #              My Book 1144:
+  #                BSD Name: disk1
+  #      BRCM20702 Hub:
+  #          Bluetooth USB Host Controller:
+  #      FaceTime HD Camera (Built-in):
+  #      Apple USB SuperDrive:
+  #      USB2.0 Hub             :
+  #          USB Mouse:
+  #          Keyboard Hub:
+  #              Apple Keyboard:
+  #      EPSON Epson Stylus SX440 Series:
+  # SATA/SATA Express:
+  #     Apple SSD Controller:
+  #       Physical Interconnect: PCI
+  #         APPLE SSD SM0512F:
+  #           BSD Name: disk0
+  #           Medium Type: Solid State
+  #           TRIM Support: Yes
+  #           S.M.A.R.T. status: Verified
+  #     Intel 8 Series Chipset:
+  # ----
+  # SAS:
+  #     SAS Domain 0:
+  #         SCSI Target Device @ 0:
+  #             SCSI Logical Unit @ 0:
+  #               BSD Name: disk3
+  #               S.M.A.R.T. status: Not Supported
+  #         SCSI Target Device @ 127:
+  #             SCSI Logical Unit @ 0:
+  # ----
+  # SATA/SATA Express:
+  #     Intel 6 Series Chipset:
+  #       Physical Interconnect: SATA
+  #         WDC WD5000BTKT-40MD3T0:
+  #           BSD Name: disk0
+  #           Medium Type: Rotational
+  #           S.M.A.R.T. status: Verified
+  #     Intel 6 Series Chipset:
+  #       Physical Interconnect: SATA
+  #         WDC WD5000BTKT-40MD3T0:
+  #           BSD Name: disk1
+  #           Medium Type: Rotational
+  #           S.M.A.R.T. status: Verified
+  
+  # Print head of disk list
+  printf "${ESC}${UnderlineFace}m${Formatstring3}${Reset}\n" "BSD Name"  "Size" "Medium Type" "SMART" "TRIM" "Bus"
+  # Iterate through the list of disks:
+  for i in $(diskutil list | egrep "^\/dev" | sed 's;/dev/;;' | egrep -v "virtual|disk image" | awk '{print $1}')
+  do
+    Bus="$(egrep "^[A-Z].*:$| $i" $DiskTempFile | grep -B1 $i | head -1 | cut -d: -f1)"
+    # Ex: Bus='SATA/SATA Express'
+    SMART="$(egrep -B3 -A3 "$i" $DiskTempFile | grep "S.M.A.R.T. status:" | cut -d: -f2 | sed 's/^ //')"
+    # Ex: SMART='Verified'
+    TRIM="$(egrep -B3 -A3 "$i" $DiskTempFile | grep "TRIM Support:" | cut -d: -f2 | sed 's/^ //')"
+    # Ex: TRIM='Yes'
+    MediumType="$(egrep -B3 -A3 "$i" $DiskTempFile | grep "Medium Type:" | cut -d: -f2 | sed 's/^ //')"
+    # Ex: MediumType='Solid State'
+    Size="$(diskutil list | grep "${i}$" | awk '{print $3" "$4}' | sed 's/*//')"
+    # Ex: Size='500.3 GB'
+    printf "$Formatstring3\n" "$i" "$Size" "${MediumType:---}" "${SMART:---}" "${TRIM:---}" "$Bus"
+  done
+  [[ $Info -eq 1 ]] &&  echo "(Use \"diskutil\" and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType\" to see details about your disks)"
 fi
 
 
