@@ -524,7 +524,7 @@ if [ -z "${OS/Linux/}" ]; then
     MemorySpeed="$(dmidecode --type 17 | egrep "^\sSpeed:" | cut -d: -f2 | sort -u | sed 's/^ //' | grep -v 'Unknown')"
     MemoryType="$(dmidecode --type 17 | egrep "^\sType:" | cut -d: -f2 | sort -u | sed 's/^ //' | grep -v 'Unknown')"
   else
-    echo "You are not running as \"root\": memory reporting will not work!"
+    print_warning "You are not running as \"root\": memory reporting will not work!"
   fi
 elif [ -z "${OS/Darwin/}" ]; then
   # This writes the following to $MemTempFile:
