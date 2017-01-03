@@ -503,7 +503,7 @@ if [ -z "${OS/Linux/}" ]; then
   # 	Part Number: M393B2G70BH0-CK0  
   # 	Rank: 2
 
-  if [ -z "${USER/root/}" ]; then
+  if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
     Memory="$(dmidecode --type 6,6 2>/dev/null | grep "Installed Size" | grep -v "Not Installed" | cut -d: -f2 | sed 's/ *//')"
     # Ex: Memory='8192 MB (Single-bank Connection)'
     if [ -z "$Memory" ]; then
