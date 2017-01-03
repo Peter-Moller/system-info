@@ -408,22 +408,22 @@ if [ -z "${OS/Linux/}" ]; then
   CPU="$(less /proc/cpuinfo | grep -i "model name" | cut -d: -f2 | sed 's/ //' | sort -u)"
   # Ex: CPU='Intel(R) Xeon(R) CPU E5-2640 v3 @ 2.60GHz'
   #CoresTotal="$(grep "cpu cores" /proc/cpuinfo | sort -u | cut -d: -f2)"
-  NrCPUs=$(echo "$(grep "^processor" /proc/cpuinfo | wc -l) / $(grep "^siblings" /proc/cpuinfo | sort -u | cut -d: -f2)" | bc)
-  NrCoresEachCPU=$(grep "cpu cores" /proc/cpuinfo | sort -u | cut -d: -f2 | sed 's/^ //')
+  NbrCPUs=$(echo "$(grep "^processor" /proc/cpuinfo | wc -l) / $(grep "^siblings" /proc/cpuinfo | sort -u | cut -d: -f2)" | bc)
+  NbrCoresEachCPU=$(grep "cpu cores" /proc/cpuinfo | sort -u | cut -d: -f2 | sed 's/^ //')
 elif [ -z "${OS/Darwin/}" ]; then
   CPU="$(sysctl -n machdep.cpu.brand_string)"
   # Ex: CPU='Intel(R) Xeon(R) CPU E5-1650 v2 @ 3.50GHz'
   # Ex: CPU='Intel(R) Core(TM)2 Duo CPU     P7350  @ 2.00GHz'
-  NrCPUs=$(grep "Number of Processors:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
-  # Alternate method: NrCPU="$(sysctl -n hw.packages)"
+  NbrCPUs=$(grep "Number of Processors:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
+  # Alternate method: NbrCPU="$(sysctl -n hw.packages)"
   CoresTotal=$(grep "Total Number of Cores:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
-  NrCoresEachCPU=$(echo " $CoresTotal / $NrCPUs" | bc)
+  NbrCoresEachCPU=$(echo " $CoresTotal / $NbrCPUs" | bc)
 fi
 
 #printf "$Formatstring\n" "CPU:" "${CPU//(R)/®}"
 printf "$Formatstring\n" "CPU:" "$(echo $CPU | sed -E -e 's/\(R\)/®/g' -e 's/\(TM\)/™/g')" ""
-printf "$Formatstring\n" "Number of CPUs:" "${NrCPUs}" ""
-printf "$Formatstring\n" "Cores/CPU:" "${NrCoresEachCPU}" ""
+printf "$Formatstring\n" "Number of CPUs:" "${NbrCPUs}" ""
+printf "$Formatstring\n" "Cores/CPU:" "${NbrCoresEachCPU}" ""
 
 
 ###########################################
@@ -503,7 +503,7 @@ if [ -z "${OS/Linux/}" ]; then
   # 	Part Number: M393B2G70BH0-CK0  
   # 	Rank: 2
 
-  if [ -z "${USER/root/}" ]; then
+  if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
     Memory="$(dmidecode --type 6,6 2>/dev/null | grep "Installed Size" | grep -v "Not Installed" | cut -d: -f2 | sed 's/ *//')"
     # Ex: Memory='8192 MB (Single-bank Connection)'
     if [ -z "$Memory" ]; then
@@ -519,12 +519,12 @@ if [ -z "${OS/Linux/}" ]; then
     fi
     # Ex: ECC='None'
     # Number of DIMMs
-    NrDIMMs=$(dmidecode --type 17 | egrep "^\sSize:" | cut -d: -f2 | wc -l | sed 's/^ //')
-    NrDIMMsInstalled=$(dmidecode --type 17 | egrep "^\sSize:" | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ //')
-    MemorySpeed="$(dmidecode --type 17 | egrep "^\sSpeed:" | cut -d: -f2 | sort -u | sed 's/^ //')"
-    MemoryType="$(dmidecode --type 17 | egrep "^\sType:" | cut -d: -f2 | sort -u | sed 's/^ //')"
+    NbrDIMMs=$(dmidecode --type 17 | egrep "^\sSize:" | cut -d: -f2 | wc -l | sed 's/^ //')
+    NbrDIMMsInstalled=$(dmidecode --type 17 | egrep "^\sSize:" | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ //')
+    MemorySpeed="$(dmidecode --type 17 | egrep "^\sSpeed:" | cut -d: -f2 | sort -u | sed 's/^ //' | grep -v 'Unknown')"
+    MemoryType="$(dmidecode --type 17 | egrep "^\sType:" | cut -d: -f2 | sort -u | sed 's/^ //' | grep -v 'Unknown')"
   else
-    echo "You are not running as \"root\": memory reporting will not work!"
+    print_warning "You are not running as \"root\": memory reporting will not work!"
   fi
 elif [ -z "${OS/Darwin/}" ]; then
   # This writes the following to $MemTempFile:
@@ -560,14 +560,14 @@ elif [ -z "${OS/Darwin/}" ]; then
   MemoryType="$(grep "^\ *Type:" $MemTempFile | sort -u | grep -v Empty | cut -d: -f2 | sed 's/ *//')"
   ECC="$(grep "^\ *ECC:" $MemTempFile | cut -d: -f2 | sed 's/ *//')"
   # Ex: ECC='Enabled'
-  NrDIMMs=$(egrep "DIMM.*:" $MemTempFile | wc -l | sed 's/^ *//')
-  NrDIMMsInstalled=$(egrep "Size:" $MemTempFile | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ *//')
+  NbrDIMMs=$(egrep "DIMM.*:" $MemTempFile | wc -l | sed 's/^ *//')
+  NbrDIMMsInstalled=$(egrep "Size:" $MemTempFile | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ *//')
 fi
 
 printf "$Formatstring\n" "Memory size:" "${Memory} (ECC: $ECC)" ""
 printf "$Formatstring\n" "Memory type:" "${MemoryType:-No information available}" ""
 printf "$Formatstring\n" "Memory Speed:" "${MemorySpeed:-No information available}" ""
-printf "$Formatstring\n" "Nr of DIMMS:" "${NrDIMMs:-No information available} (${NrDIMMsInstalled} filled)" ""
+printf "$Formatstring\n" "Number of DIMMs:" "${NbrDIMMs:-No information available} (${NbrDIMMsInstalled} filled)" ""
 
 
 ###########################################
