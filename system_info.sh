@@ -521,8 +521,8 @@ if [ -z "${OS/Linux/}" ]; then
     # Number of DIMMs
     NbrDIMMs=$(dmidecode --type 17 | egrep "^\sSize:" | cut -d: -f2 | wc -l | sed 's/^ //')
     NbrDIMMsInstalled=$(dmidecode --type 17 | egrep "^\sSize:" | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ //')
-    MemorySpeed="$(dmidecode --type 17 | egrep "^\sSpeed:" | cut -d: -f2 | sort -u | sed 's/^ //')"
-    MemoryType="$(dmidecode --type 17 | egrep "^\sType:" | cut -d: -f2 | sort -u | sed 's/^ //')"
+    MemorySpeed="$(dmidecode --type 17 | egrep "^\sSpeed:" | cut -d: -f2 | sort -u | sed 's/^ //' | grep -v 'Unknown')"
+    MemoryType="$(dmidecode --type 17 | egrep "^\sType:" | cut -d: -f2 | sort -u | sed 's/^ //' | grep -v 'Unknown')"
   else
     echo "You are not running as \"root\": memory reporting will not work!"
   fi
