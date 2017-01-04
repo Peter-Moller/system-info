@@ -19,9 +19,11 @@ What to cover in some more detail:
 * CPU 
 * Memory 
 * Disk info (not sure about this one; it may be a lot of information!) 
+* Network info
 * Security information: 
 	* SIP / SELinux 
 	* Firewall (if any of the more common ones are present) 
+* Graphics info
 * Extra information: 
 	* uptime 
 	* logged in users 
