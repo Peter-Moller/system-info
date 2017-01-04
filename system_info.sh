@@ -221,6 +221,7 @@ Formatstring3="%-18s%-10s%-13s%-10s%-6s%-20s"
 #          1         1         1         1         1         1
 # BSD Name         Size      Medium Type   SMART     TRIM  Bus                 
 # disk0            500.3 GB  Solid State   Verified  Yes   SATA/SATA Express   
+Formatstring4="%-28s%-20s"
 
 ##### Done setting basic variables
 
@@ -807,16 +808,18 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Ex: ${array[@]}='3072_MB AMD_FirePro_D500 3072_MB AMD_FirePro_D500'
 
   # Cycle through the array and print it
+  printf "${ESC}${UnderlineFace}m${Formatstring4}${Reset}\n" "Graphics Card"  "Graphics memory"
   i=0
   while [ $i -lt $(echo "${#array[@]} / 2 + 1" | bc) ]; do
     if [ -n "$(echo ${array[$i]} | grep -o "^[A-Z]")" ]; then
-      echo "${array[$i]}: Integrated graphics"
+      printf "$Formatstring4\n" "${array[$i]}:" "Integrated graphics"
       i=$((i+1))
     else
-      echo "${array[$i+1]//_/ }: ${array[$i]//_/ }"
+      printf "$Formatstring4\n" "${array[$i+1]//_/ }:" "${array[$i]//_/ }"
       i=$((i+2))
     fi
   done
+  [[ $Info -eq 1 ]] &&  echo "(use \"system_profiler SPDisplaysDataType\" to get info about graphics cards and displays)"
 fi
 
 
