@@ -806,6 +806,10 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Ex: ${array[@]}='4096_MB NVIDIA_GeForce_GTX_780M'
   # Ex: ${array[@]}='Intel_HD_Graphics_4000 1024_MB NVIDIA_GeForce_GT_650M'
   # Ex: ${array[@]}='3072_MB AMD_FirePro_D500 3072_MB AMD_FirePro_D500'
+  # The array consists of:
+  # - a single element:   an integrated graphics card name (and no memory info since it's shared)
+  # - a pair of elements: amount of VRAM and graphics card name (for “real” GPU:s)
+  # Thus we need to traverse the array accordingly
 
   # Cycle through the array and print it
   printf "${ESC}${UnderlineFace}m${Formatstring4}${Reset}\n" "Graphics Card"  "Graphics memory"
