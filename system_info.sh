@@ -177,6 +177,7 @@ MemTempFile="/tmp/.${ScriptName}_Memory.$$.txt"
 DiskTempFile="/tmp/.${ScriptName}_Disk.$$.txt"
 NetworkTempFile="/tmp/.${ScriptName}_Network.$$.txt"
 SecurityTempFile="/tmp/.${ScriptName}_Security.$$.txt"
+GraphicsTempFile="/tmp/.${ScriptName}_Graphics.$$.txt"
 
 
 # (Colors can be found at http://en.wikipedia.org/wiki/ANSI_escape_code, http://graphcomp.com/info/specs/ansi_col.html and other sites)
@@ -311,7 +312,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   DistroVer="$(sw_vers -productVersion)"
   ComputerName="$(networksetup -getcomputername)"
   # Get basic Mac info for later usage:
-  system_profiler SPHardwareDataType > $OSTempFile
+  system_profiler SPHardwareDataType > "$OSTempFile"
   # This produces a file like this:
   # Hardware:
   #
@@ -333,9 +334,16 @@ elif [ -z "${OS/Darwin/}" ]; then
   #      Serial Number (system): CK0XXXXXXXX
   #      Serial Number (processor tray): J5031XXXXXXXX     
   #      Hardware UUID: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+  # 
+  # Using 'Model Identifier', one can identify a Mac at these sites:
+  # MacBook Pro: https://support.apple.com/en-us/HT201300
+  # iMac:        https://support.apple.com/en-us/HT201634
+  # Mac Pro:     https://support.apple.com/en-us/HT202888
+  # Mac mini:    http://www.unionrepair.com/how-to-identify-mac-mini-models/
   
   # Find out if it's a server
   # First step: does the name fromsw_vers include "server"?
+  ModelIdentifier="$(egrep "^\s*Model Identifier:" $OSTempFile | cut -d: -f2 | sed 's/^ //')"
   if [ -z "$(echo "$SW_VERS" | grep -i server)" ]; then
     # If not, it may still be a server. Beginning with OS X 10.8 all versions include the command serverinfo:
     serverinfo --software 1>/dev/null
@@ -363,6 +371,7 @@ printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System:         
 printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")"
 [[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer"
 printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
+[[ -n "$ModelIdentifier" ]] && printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier"
 
 
 ###########################################
@@ -642,7 +651,8 @@ elif [ -z "${OS/Darwin/}" ]; then
         Bus=""
         SMART=""
         MediumType="Core Storage"
-        Size="diskutil list | grep -v "/dev/$i" | grep "${i}$" | cut -c58-68"
+        TRIM=""
+        Size="$(diskutil list | grep -v "/dev/$i" | grep "${i}$" | cut -c58-67)"
       fi
     else
       Bus="$(egrep "^[A-Z].*:$| $i" $DiskTempFile | grep -B1 $i | head -1 | cut -d: -f1)"
@@ -653,7 +663,7 @@ elif [ -z "${OS/Darwin/}" ]; then
       # Ex: TRIM='Yes'
       MediumType="$(egrep -B3 -A3 "$i" $DiskTempFile | grep "Medium Type:" | cut -d: -f2 | sed 's/^ //')"
       # Ex: MediumType='Solid State'
-      Size="$(diskutil list | grep "${i}$" | awk '{print $3" "$4}' | sed 's/*//')"
+      Size="$(diskutil list | grep -v "/dev/$i" | grep "${i}$" | awk '{print $3" "$4}' | sed 's/*//')"
       # Ex: Size='500.3 GB'
     fi
     printf "$Formatstring3\n" "$i" "$Size" "${MediumType:---}" "${SMART:---}" "${TRIM:---}" "$Bus"
@@ -768,6 +778,45 @@ elif [ -z "${OS/Darwin/}" ]; then
   fi
   printf "$Formatstring\n" "Little Snitch:" "${LittleSnitch}" "${Information}"
 
+fi
+
+
+
+
+###########################################
+############   GRAPHICS INFO   ############
+###########################################
+
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mGraphics info:                                    ${Reset}\n"
+
+if [ -z "${OS/Linux/}" ]; then
+  echo ""
+elif [ -z "${OS/Darwin/}" ]; then
+  system_profiler -xml SPDisplaysDataType > "$GraphicsTempFile"
+  # Get info about Graphics Card
+  GraphicsCardData="$(xmllint --xpath '//dict/key[text()="sppci_model" or text()="spdisplays_vram" or text()="sppci_model"]/following-sibling::string[1]' $GraphicsTempFile)"
+  # Ex, iMac:        GraphicsCardData='<string>4096 MB</string><string>NVIDIA GeForce GTX 780M</string>'
+  # Ex, Mac Pro:     GraphicsCardData='<string>3072 MB</string><string>AMD FirePro D500</string><string>3072 MB</string><string>AMD FirePro D500</string>'
+  # Ex, MacBook Pro: GraphicsCardData='<string>Intel HD Graphics 4000</string><string>1024 MB</string><string>NVIDIA GeForce GT 650M</string>'
+  # Ex, Mac mini:    GraphicsCardData='<string>Intel Iris</string>'
+
+  # Dig the graphics cards and their memory from $GraphicsTempFile. Replace ' ' with '_' to make the array work
+  array=($(xmllint --xpath '//dict/key[text()="sppci_model" or text()="spdisplays_vram" or text()="sppci_model"]/following-sibling::string[1]' $GraphicsTempFile | sed -e 's/ /_/g' -e 's/\<string\>//g' -e 's/\<\/string\>/ /g'))
+  # Ex: ${array[@]}='4096_MB NVIDIA_GeForce_GTX_780M'
+  # Ex: ${array[@]}='Intel_HD_Graphics_4000 1024_MB NVIDIA_GeForce_GT_650M'
+  # Ex: ${array[@]}='3072_MB AMD_FirePro_D500 3072_MB AMD_FirePro_D500'
+
+  # Cycle through the array and print it
+  i=0
+  while [ $i -lt $(echo "${#array[@]} / 2 + 1" | bc) ]; do
+    if [ -n "$(echo ${array[$i]} | grep -o "^[A-Z]")" ]; then
+      echo "${array[$i]}: Integrated graphics"
+      i=$((i+1))
+    else
+      echo "${array[$i+1]//_/ }: ${array[$i]//_/ }"
+      i=$((i+2))
+    fi
+  done
 fi
 
 
