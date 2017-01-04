@@ -372,7 +372,7 @@ printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System:         
 printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")"
 [[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer"
 printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
-[[ -n "$ModelIdentifier" ]] && printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier"
+[[ -n "$ModelIdentifier" ]] && printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier (\"$(grep "$ModelIdentifier" "$ScriptName" | cut -d: -f1 | sed 's/#//')\")"
 
 
 ###########################################
@@ -816,7 +816,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   i=0
   while [ $i -lt $(echo "${#array[@]} / 2 + 1" | bc) ]; do
     if [ -n "$(echo ${array[$i]} | grep -o "^[A-Z]")" ]; then
-      printf "$Formatstring4\n" "${array[$i]}:" "Integrated graphics"
+      printf "$Formatstring4\n" "${array[$i]//_/ }:" "no dedicated graphics memory"
       i=$((i+1))
     else
       printf "$Formatstring4\n" "${array[$i+1]//_/ }:" "${array[$i]//_/ }"
@@ -844,3 +844,79 @@ rm $MemTempFile 2>/dev/null
 rm $DiskTempFile 2>/dev/null
 rm $NetworkTempFile 2>/dev/null
 rm $SecurityTempFile 2>/dev/null
+
+
+
+######################################################################################
+### Listing of Mac models
+
+# Mac mini
+#Mac mini (Late 2014):Macmini7,1
+#Mac mini (Late 2012):Macmini6,2
+#Mac mini (Mid 2011):Macmini5,1
+#Mac mini (Mid 2011):Macmini5,2
+#Mac mini (Mid 2011):Macmini5,3
+#Mac mini (Mid 2010):Macmini4,1
+#Mac mini (Late 2009):Macmini3,1
+#Mac mini (Early 2009):Macmini3,1
+
+# MacBook Pro, 13"
+#MacBook Pro (13-inch, Late 2016, Four Thunderbolt 3 ports):MacBookPro13,2
+#MacBook Pro (13-inch, Late 2016, Two Thunderbolt 3 ports):MacBookPro13,1
+#MacBook Pro (Retina, 13-inch, Early 2015):MacbookPro12,1 
+#MacBook Pro (Retina, 13-inch, Mid 2014):MacBookPro11,1
+#MacBook Pro (Retina, 13-inch, Late 2013):MacBookPro11,1
+#MacBook Pro (Retina, 13-inch, Early 2013):MacBookPro10,2
+#MacBook Pro (Retina, 13-inch, Late 2012):MacBookPro10,2
+#MacBook Pro (13-inch, Mid 2012):MacBookPro9,2
+#MacBook Pro (13-inch, Late 2011):MacBookPro8,1
+#MacBook Pro (13-inch, Early 2011):MacBookPro8,1
+#MacBook Pro (13-inch, Mid 2010):MacBookPro7,1
+#MacBook Pro (13-inch, Mid 2009):MacBookPro5,5
+
+# MacBook Pro, 15"
+#MacBook Pro (15-inch, Late 2016):MacBookPro13,3
+#MacBook Pro (Retina, 15-inch, Mid 2015):MacbookPro 11,4
+#MacBook Pro (Retina, 15-inch, Mid 2015):MacbookPro 11,5
+#MacBook Pro (Retina, 15-inch, Mid 2014 or Late 2013):MacBook Pro11,2
+#MacBook Pro (Retina, 15-inch, Mid 2014 or Late 2013):MacBook Pro11,3
+#MacBook Pro (Retina, 15-inch, Early 2013 or Mid 2012):MacBookPro10,1
+#MacBook Pro (15-inch, Mid 2012):MacBookPro9,1
+#MacBook Pro (15-inch, Late 2011 or Early 2011):MacBookPro8,2
+#MacBook Pro (15-inch, Mid 2010):MacBookPro6,2
+#MacBook Pro (15-inch, Mid 2009):MacBookPro5,3
+#MacBook Pro (15-inch, Late 2008):MacBookPro5,1
+#MacBook Pro (15-inch, Early 2008):MacBookPro4,1
+
+# MacBook Pro, 17"
+#MacBook Pro (17-inch, Late 2011):MacBookPro8,3
+#MacBook Pro (17-inch, Early 2011):MacBookPro8,3
+#MacBook Pro (17-inch, Mid 2010):MacBookPro6,1
+#MacBook Pro (17-inch, Mid or Early 2009):MacBookPro5,2
+#MacBook Pro (17-inch, Late 2008):MacBookPro5,1
+
+# iMac
+#iMac (Retina 4K, 21.5-inch, Late 2015):iMac16,2
+#iMac (21.5-inch, Late 2015):iMac16,1
+#iMac (Retina 5K, 27-inch, Late 2015):iMac17,1
+#iMac (Retina 5K, 27-inch, Late 2014 or Mid 2015):iMac15,1
+#iMac (21.5-inch, Mid 2014):iMac14,4
+#iMac (21.5-inch, Late 2013):iMac14,1
+#iMac (27-inch, Late 2013):iMac14,2
+#iMac (21.5-inch, Late 2012):iMac13,1
+#iMac (27-inch, Late 2012):iMac13,2
+#iMac (21.5-inch, Mid 2011):iMac12,1
+#iMac (27-inch, Mid 2011):iMac12,2
+#iMac (21.5-inch, Mid 2010):iMac11,2
+#iMac (27-inch, Mid 2010):iMac11,3
+#iMac (21.5-inch, Late 2009 or 27-inch, Late 2009):iMac10,1
+#iMac (20-inch, Early 2009 or 24-inch, Early 2009):iMac9,1
+#iMac (20-inch, Early 2008 or 24-inch, Early 2008):iMac8,1
+
+# Mac Pro
+#Mac Pro (Late 2013):MacPro6,1
+#Mac Pro (Mid 2012) or Mac Pro (Mid 2010):MacPro5,1
+#Mac Pro (Early 2009):MacPro4,1
+#Mac Pro (Early 2008):MacPro3,1
+#Mac Pro (8-core):MacPro2,1
+#Mac Pro:MacPro1,1
