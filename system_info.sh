@@ -213,15 +213,16 @@ Formatstring="%-18s%-40s%-30s"
 # 3 "123456789012345678901234567890"
 # FormatString is intended for:
 # "Head" "Value" "Extra information (-i flag)"
-Formatstring2="%-18s%-10s%-15s%-30s"
-# Formatstring2 is intended for the network listing
-Formatstring3="%-18s%-10s%-13s%-10s%-6s%-20s"
-# Formatstring3 is intended for the disk listing
+# FormatstringNetwork is intended for the network listing
+FormatstringNetwork="%-18s%-10s%-15s%-30s"
+# FormatstringDisk is intended for the disk listing
+FormatstringDisk="%-18s%-10s%-13s%-15s%-6s%-20s"
 # 123456789012345678901234567890123456789012345678901234567890
 #          1         1         1         1         1         1
 # BSD Name         Size      Medium Type   SMART     TRIM  Bus                 
 # disk0            500.3 GB  Solid State   Verified  Yes   SATA/SATA Express   
-Formatstring4="%-28s%-20s"
+# FormatstringGraphics is intended for graphics info
+FormatstringGraphics="%-28s%-20s"
 
 ##### Done setting basic variables
 
@@ -641,7 +642,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   #           S.M.A.R.T. status: Verified
   
   # Print head of disk list
-  printf "${ESC}${UnderlineFace}m${Formatstring3}${Reset}\n" "BSD Name"  "Size" "Medium Type" "SMART" "TRIM" "Bus"
+  printf "${ESC}${UnderlineFace}m${FormatstringDisk}${Reset}\n" "BSD Name"  "Size" "Medium Type" "S.M.A.R.T." "TRIM" "Bus"
   # Iterate through the list of disks:
   for i in $(diskutil list | egrep "^\/dev" | sed 's;/dev/;;' | egrep -v "virtual|disk image" | awk '{print $1}')
   do
@@ -667,7 +668,7 @@ elif [ -z "${OS/Darwin/}" ]; then
       Size="$(diskutil list | grep -v "/dev/$i" | grep "${i}$" | awk '{print $3" "$4}' | sed 's/*//')"
       # Ex: Size='500.3 GB'
     fi
-    printf "$Formatstring3\n" "$i" "$Size" "${MediumType:---}" "${SMART:---}" "${TRIM:---}" "$Bus"
+    printf "$FormatstringDisk\n" "$i" "$Size" "${MediumType:---}" "${SMART:---}" "${TRIM:---}" "$Bus"
   done
   [[ $Info -eq 1 ]] &&  echo "(Use \"diskutil\" and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType\" to see details about your disks)"
 fi
@@ -679,7 +680,8 @@ fi
 
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mNetwork info:                                     ${Reset}\n"
 
-printf "Active interfaces:\n"
+#printf "Active interfaces:\n"
+printf "${ESC}${UnderlineFace}m$FormatstringNetwork${Reset}\n" "Interface name" "Interface" "IP-address" "Media Speed"
 
 if [ -z "${OS/Linux/}" ]; then
   # This doesn't work reliable
@@ -702,7 +704,7 @@ elif [ -z "${OS/Darwin/}" ]; then
     # Ex: " 130.235.16.211"
     if [ -n "$MediaSpeed" -a ! "$MediaSpeed" = " none" -a -n "$IPaddress" ]; then
       #echo "  Interface: \"$Interface\"  Name: \"$IFName\"  IP-address: \"${IPaddress# }\"  Media Speed: \"${MediaSpeed}\"" 
-      printf "$Formatstring2\n" "- $IFName" "$Interface" "$IPaddress" "$MediaSpeed"
+      printf "$FormatstringNetwork\n" "$IFName" "$Interface" "$IPaddress" "$MediaSpeed"
     fi
   done
   [[ $Info -eq 1 ]] &&  echo "(Use \"ifconfig\" and \"networksetup\" to see network details)"
@@ -812,14 +814,17 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Thus we need to traverse the array accordingly
 
   # Cycle through the array and print it
-  printf "${ESC}${UnderlineFace}m${Formatstring4}${Reset}\n" "Graphics Card"  "Graphics memory"
+  printf "${ESC}${UnderlineFace}m${FormatstringGraphics}${Reset}\n" "Graphics Card"  "Graphics memory"
   i=0
   while [ $i -lt $(echo "${#array[@]} / 2 + 1" | bc) ]; do
     if [ -n "$(echo ${array[$i]} | grep -o "^[A-Z]")" ]; then
-      printf "$Formatstring4\n" "${array[$i]//_/ }:" "no dedicated graphics memory"
+      # If the pair starts with text (instead of a number), it denotes an integrated graphics card
+      printf "$FormatstringGraphics\n" "${array[$i]//_/ }:" "no dedicated graphics memory"
       i=$((i+1))
     else
-      printf "$Formatstring4\n" "${array[$i+1]//_/ }:" "${array[$i]//_/ }"
+      # Else it's a “real” GPU with a memory specification
+      printf "$FormatstringGraphics\n" "${array[$i+1]//_/ }:" "${array[$i]//_/ }"
+      # Increment by teo to get right for the next pair
       i=$((i+2))
     fi
   done
