@@ -310,6 +310,22 @@ if [ -z "${OS/Linux/}" ]; then
   KernelVer="$(uname -r | cut -d\. -f1,2 2>/dev/null)"
   # KernelVer='3.10'
 
+  # Are we running in a VM environment?
+  if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
+    VMenv="$(dmidecode -s system-product-name 2>/dev/null)"
+    # Ex: VMenv='VMware Virtual Platform'
+    if [ -z "$VMenv" ]; then
+      VMenv="$(virt-what)"
+    # Ex: VMenv='vmware'
+    fi
+  else
+    print_warning "You are not running as \"root\": memory reporting will not work!"
+  fi
+  if [ -z "$VMenv" ]; then
+      VMenv="$(dmesg 2>/dev/null |grep -i hypervisor 2>/dev/null | grep " Hypervisor detected: " | cut -d: -f2 | sed 's/^ *//')"
+    # Ex: VMenv='VMware'
+  fi
+
 elif [ -z "${OS/Darwin/}" ]; then
   # OK, so it's Darwin
   Distro="$(sw_vers -productName)"
@@ -392,17 +408,18 @@ printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System:         
 
 
 printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")" ""
-[[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer"
+[[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer" ""
 printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
+printf "$Formatstring\n" "Virtual env.:" "${VMenv:-No VM environment detected}" ""
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profiler SPHardwareDataType\" to see hardware details)"; fi
 if [ -n "$ModelIdentifier" ]; then
   ModelIdentifierName="$(grep "$ModelIdentifier" "$ScriptName" | cut -d: -f1 | sed 's/#//')"
   printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier - ${ModelIdentifierName:-Unknown Mac-model}" "${Information}"
 fi
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"dsconfigad -show\" to see AD-connection details)"; fi
-printf "$Formatstring\n" "Active Directory:" "${ADDomain:--Not bound-}" "${Information}"
+printf "$Formatstring\n" "Active Directory:" "${ADDomain:-Not bound}" "${Information}"
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"profiles -P\" to see details about installed Profiles)"; fi
-printf "$Formatstring\n" "Managed profiles:" "${Profiles:--No information-}" "${Information}"
+printf "$Formatstring\n" "Managed profiles:" "${Profiles:-No information}" "${Information}"
 
 
 ###########################################
