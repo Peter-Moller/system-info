@@ -156,7 +156,9 @@ function UpdateScript() {
 
 ##### Set basic variables
 fetch_new=f
-VER="0.3"
+VER="0.4"
+
+Info=0
 
 # Find where the script resides (so updates update the correct version) -- without trailing slash
 DirName="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -346,6 +348,25 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Find out if it's a server
   # First step: does the name fromsw_vers include "server"?
   ModelIdentifier="$(egrep "^\s*Model Identifier:" $OSTempFile | cut -d: -f2 | sed 's/^ //')"
+
+  # Are we bound to AD?
+  # See: https://www.jamf.com/jamf-nation/discussions/7039/how-to-check-if-a-computer-is-actually-bound-to-the-ad for details
+  ADDomain="$(dsconfigad -show | grep "Active Directory Domain" | cut -d= -f2 | sed 's/^ *//')"
+  # Ex: ADDomain='uw.lu.se'
+  
+  # Find out about Profiles (MCX -- Apples managed profiles)
+  if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
+    # See: http://krypted.com/mac-security/manage-profiles-from-the-command-line-in-os-x-10-9/ for details
+    Profiles="$(/usr/bin/profiles -P)"
+    # Ex: MCX='There are no configuration profiles installed'
+    # In fact, I have no machines with MCX on to try...
+  fi
+
+  # I would also like to find out about various management services, such as Casper.
+  # However, this may quickly be a kludge since there are som many management services!
+  # Proceed with caution!
+
+  # Find out if it's a server and if it's configured or not
   if [ -z "$(echo "$SW_VERS" | grep -i server)" ]; then
     # If not, it may still be a server. Beginning with OS X 10.8 all versions include the command serverinfo:
     serverinfo --software 1>/dev/null
@@ -370,10 +391,18 @@ printf "${ESC}${BlackBack};${WhiteFont}mSystem info for:${Reset} ${ESC}${WhiteBa
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System:                                 ${Reset}\n"
 
 
-printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")"
+printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")" ""
 [[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer"
 printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
-[[ -n "$ModelIdentifier" ]] && printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier (\"$(grep "$ModelIdentifier" "$ScriptName" | cut -d: -f1 | sed 's/#//')\")"
+if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profiler SPHardwareDataType\" to see hardware details)"; fi
+if [ -n "$ModelIdentifier" ]; then
+  ModelIdentifierName="$(grep "$ModelIdentifier" "$ScriptName" | cut -d: -f1 | sed 's/#//')\")"
+  printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier - ${ModelIdentifierName:-Unknown Mac-model}" "${Information}"
+fi
+if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"dsconfigad -show\" to see AD-connection details)"; fi
+printf "$Formatstring\n" "Active Directory:" "${ADDomain:--Not bound-}" "${Information}"
+if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"profiles -P\" to see details about installed Profiles)"; fi
+printf "$Formatstring\n" "Managed profiles:" "${Profiles:--No information-}" "${Information}"
 
 
 ###########################################
