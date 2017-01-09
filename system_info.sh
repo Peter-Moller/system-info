@@ -318,12 +318,14 @@ if [ -z "${OS/Linux/}" ]; then
       VMenv="$(virt-what)"
     # Ex: VMenv='vmware'
     fi
-  else
-    print_warning "You are not running as \"root\": memory reporting will not work!"
   fi
   if [ -z "$VMenv" ]; then
       VMenv="$(dmesg 2>/dev/null |grep -i hypervisor 2>/dev/null | grep " Hypervisor detected: " | cut -d: -f2 | sed 's/^ *//')"
     # Ex: VMenv='VMware'
+  fi
+  if [ -z "$VMenv" ]; then
+      VMenv="$(if [ -n "$(grep "^flags.*\ hypervisor\ " /proc/cpuinfo)" ]; then echo "VM environment detected"; fi)"
+    # Ex: VMenv='VM environment detected'
   fi
 
 elif [ -z "${OS/Darwin/}" ]; then
