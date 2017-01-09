@@ -396,7 +396,7 @@ printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_s
 printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profiler SPHardwareDataType\" to see hardware details)"; fi
 if [ -n "$ModelIdentifier" ]; then
-  ModelIdentifierName="$(grep "$ModelIdentifier" "$ScriptName" | cut -d: -f1 | sed 's/#//')\")"
+  ModelIdentifierName="$(grep "$ModelIdentifier" "$ScriptName" | cut -d: -f1 | sed 's/#//')"
   printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier - ${ModelIdentifierName:-Unknown Mac-model}" "${Information}"
 fi
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"dsconfigad -show\" to see AD-connection details)"; fi
