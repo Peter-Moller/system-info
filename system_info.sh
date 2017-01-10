@@ -311,22 +311,26 @@ if [ -z "${OS/Linux/}" ]; then
   # KernelVer='3.10'
 
   # Are we running in a VM environment?
-  if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
-    VMenv="$(dmidecode -s system-product-name 2>/dev/null)"
-    # Ex: VMenv='VMware Virtual Platform'
+  # First, see if PID 1 is not 'init'
+  if [ ! "$(ps -p 1 -o comm | grep -v COMMAND)" = "init" ]; then
+    if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
+      VMenv="$(dmidecode -s system-product-name 2>/dev/null)"
+      # Ex: VMenv='VMware Virtual Platform'
+      if [ -z "$VMenv" ]; then
+        VMenv="$(virt-what)"
+        # Ex: VMenv='vmware'
+      fi
+    fi
     if [ -z "$VMenv" ]; then
-      VMenv="$(virt-what)"
-    # Ex: VMenv='vmware'
+      VMenv="$(dmesg 2>/dev/null | grep -i " Hypervisor detected: " 2>/dev/null | cut -d: -f2 | sed 's/^ *//')"
+      # Ex: VMenv='VMware'
+    fi
+    if [ -z "$VMenv" ]; then
+      VMenv="$(if [ -n "$(grep "^flags.*\ hypervisor\ " /proc/cpuinfo)" ]; then echo "VM environment detected"; fi)"
+      # Ex: VMenv='VM environment detected'
     fi
   fi
-  if [ -z "$VMenv" ]; then
-      VMenv="$(dmesg 2>/dev/null |grep -i hypervisor 2>/dev/null | grep " Hypervisor detected: " | cut -d: -f2 | sed 's/^ *//')"
-    # Ex: VMenv='VMware'
-  fi
-  if [ -z "$VMenv" ]; then
-      VMenv="$(if [ -n "$(grep "^flags.*\ hypervisor\ " /proc/cpuinfo)" ]; then echo "VM environment detected"; fi)"
-    # Ex: VMenv='VM environment detected'
-  fi
+
 
 elif [ -z "${OS/Darwin/}" ]; then
   # OK, so it's Darwin
