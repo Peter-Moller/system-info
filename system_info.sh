@@ -334,11 +334,11 @@ if [ -z "${OS/Linux/}" ]; then
 
 elif [ -z "${OS/Darwin/}" ]; then
   # OK, so it's Darwin
-  Distro="$(sw_vers -productName)"
-  DistroVer="$(sw_vers -productVersion)"
-  ComputerName="$(networksetup -getcomputername)"
+  Distro="$(sw_vers -productName 2>/dev/null)"
+  DistroVer="$(sw_vers -productVersion 2>/dev/null)"
+  ComputerName="$(networksetup -getcomputername 2>/dev/null)"
   # Get basic Mac info for later usage:
-  system_profiler SPHardwareDataType > "$OSTempFile"
+  system_profiler SPHardwareDataType 2>/dev/null > "$OSTempFile"
   # This produces a file like this:
   # Hardware:
   #
@@ -375,7 +375,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   if [ ! "$(echo $ModelIdentifier | cut -c1-3)" = "Mac" -a ! "$(echo $ModelIdentifier | cut -c1-3)" = "iMa" ]; then
     VMenv="$ModelIdentifier"
     ModelIdentifier="Virtual Mac"
-    ModelIdentifierName=""
+    ModelIdentifierName=" "
   fi
 
   # Are we bound to AD?
