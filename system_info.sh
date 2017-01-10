@@ -252,18 +252,18 @@ done
 
 
 
-###########################################
-############   BASIC OS-INFO   ############
-###########################################
+######################################################################################
+##########################    B A S I C   O S - I N F O     ##########################
+######################################################################################
 
 # OS version (either 'Darwin' or 'Linux')
 # See a comprehensive list of uname results: 
 # https://en.wikipedia.org/wiki/Uname
-OS="$(uname -s)"
+OS="$(uname -s 2>/dev/null)"
 # OS Size ('32' / '64')
-OS_size="$(uname -m | sed -e "s/i.86/32/" -e "s/x86_64/64/" -e "s/armv7l/32/")"
+OS_size="$(uname -m 2>/dev/null | sed -e "s/i.86/32/" -e "s/x86_64/64/" -e "s/armv7l/32/")"
 # OS Architecture ('x86_64')
-OS_arch="$(uname -m | sed -e "s/i386/i686/")"
+OS_arch="$(uname -m 2>/dev/null | sed -e "s/i386/i686/")"
 
 
 # Check for functions used
@@ -312,12 +312,12 @@ if [ -z "${OS/Linux/}" ]; then
 
   # Are we running in a VM environment?
   # First, see if PID 1 is not 'init'
-  if [ ! "$(ps -p 1 -o comm | grep -v COMMAND)" = "init" ]; then
+  if [ ! "$(ps -p 1 -o comm 2>/dev/null | grep -v COMMAND)" = "init" ]; then
     if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
       VMenv="$(dmidecode -s system-product-name 2>/dev/null)"
       # Ex: VMenv='VMware Virtual Platform'
       if [ -z "$VMenv" ]; then
-        VMenv="$(virt-what)"
+        VMenv="$(virt-what 2>/dev/null)"
         # Ex: VMenv='vmware'
       fi
     fi
@@ -380,13 +380,13 @@ elif [ -z "${OS/Darwin/}" ]; then
 
   # Are we bound to AD?
   # See: https://www.jamf.com/jamf-nation/discussions/7039/how-to-check-if-a-computer-is-actually-bound-to-the-ad for details
-  ADDomain="$(dsconfigad -show | grep "Active Directory Domain" | cut -d= -f2 | sed 's/^ *//')"
+  ADDomain="$(dsconfigad -show 2>/dev/null | grep "Active Directory Domain" | cut -d= -f2 | sed 's/^ *//')"
   # Ex: ADDomain='uw.lu.se'
   
   # Find out about Profiles (MCX -- Apples managed profiles)
   if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
     # See: http://krypted.com/mac-security/manage-profiles-from-the-command-line-in-os-x-10-9/ for details
-    Profiles="$(/usr/bin/profiles -P)"
+    Profiles="$(/usr/bin/profiles -P 2>/dev/null)"
     # Ex: MCX='There are no configuration profiles installed'
     # In fact, I have no machines with MCX on to try...
   fi
@@ -408,9 +408,9 @@ elif [ -z "${OS/Darwin/}" ]; then
       serverinfo --configured 1>/dev/null
       ServConfigured=$?
       if [ $ServConfigured -eq 0 ]; then
-        OSX_server="$(serverinfo --productname) $(serverinfo --shortversion)"
+        OSX_server="$(serverinfo --productname 2>/dev/null) $(serverinfo --shortversion)"
       else
-        OSX_server="$(serverinfo --productname) $(serverinfo --shortversion) - unconfigured"
+        OSX_server="$(serverinfo --productname 2>/dev/null) $(serverinfo --shortversion) - unconfigured"
       fi
     fi
   fi
@@ -436,9 +436,9 @@ if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"profiles -P\"
 printf "$Formatstring\n" "Managed profiles:" "${Profiles:-No information}" "${Information}"
 
 
-###########################################
-##############   CPU INFO   ###############
-###########################################
+######################################################################################
+###############################    C P U   I N F O    ################################
+######################################################################################
 
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mCPU info:                                         ${Reset}\n"
 
@@ -497,9 +497,9 @@ printf "$Formatstring\n" "Number of CPUs:" "${NbrCPUs}" ""
 printf "$Formatstring\n" "Cores/CPU:" "${NbrCoresEachCPU}" ""
 
 
-###########################################
-#############   MEMORY INFO   #############
-###########################################
+######################################################################################
+############################    M E M O R Y   I N F O    #############################
+######################################################################################
 
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mMemory info:                                      ${Reset}\n"
 
@@ -590,10 +590,10 @@ if [ -z "${OS/Linux/}" ]; then
     fi
     # Ex: ECC='None'
     # Number of DIMMs
-    NbrDIMMs=$(dmidecode --type 17 | egrep "^\sSize:" | cut -d: -f2 | wc -l | sed 's/^ //')
-    NbrDIMMsInstalled=$(dmidecode --type 17 | egrep "^\sSize:" | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ //')
-    MemorySpeed="$(dmidecode --type 17 | egrep "^\sSpeed:" | cut -d: -f2 | sort -u | sed 's/^ //' | grep -v 'Unknown')"
-    MemoryType="$(dmidecode --type 17 | egrep "^\sType:" | cut -d: -f2 | sort -u | sed 's/^ //' | grep -v 'Unknown')"
+    NbrDIMMs=$(dmidecode --type 17 2>/dev/null | egrep "^\sSize:" | cut -d: -f2 | wc -l | sed 's/^ //')
+    NbrDIMMsInstalled=$(dmidecode --type 17 2>/dev/null | egrep "^\sSize:" | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ //')
+    MemorySpeed="$(dmidecode --type 17 2>/dev/null | egrep "^\sSpeed:" | cut -d: -f2 | sort -u | sed 's/^ //' | grep -v 'Unknown')"
+    MemoryType="$(dmidecode --type 17 2>/dev/null | egrep "^\sType:" | cut -d: -f2 | sort -u | sed 's/^ //' | grep -v 'Unknown')"
   else
     print_warning "You are not running as \"root\": memory reporting will not work!"
   fi
@@ -641,16 +641,16 @@ printf "$Formatstring\n" "Memory Speed:" "${MemorySpeed:-No information availabl
 printf "$Formatstring\n" "Number of DIMMs:" "${NbrDIMMs:-No information available} (${NbrDIMMsInstalled} filled)" ""
 
 
-###########################################
-##############   DISK INFO   ##############
-###########################################
+######################################################################################
+#############################     D I S K   I N F O     ##############################
+######################################################################################
 
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mDisk info:                                        ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
-  system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType | egrep ":$|BSD Name:|Medium Type:|Physical Interconnect:|S.M.A.R.T. status:|TRIM Support:" > $DiskTempFile
+  system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType 2>/dev/null | egrep ":$|BSD Name:|Medium Type:|Physical Interconnect:|S.M.A.R.T. status:|TRIM Support:" > $DiskTempFile
   # This will produce a list of disks, like this:
   # USB:
   #  USB 3.0 Bus:
@@ -704,7 +704,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Print head of disk list
   printf "${ESC}${UnderlineFace}m${FormatstringDisk}${Reset}\n" "BSD Name"  "Size" "Medium Type" "S.M.A.R.T." "TRIM" "Bus"
   # Iterate through the list of disks:
-  for i in $(diskutil list | egrep "^\/dev" | sed 's;/dev/;;' | egrep -v "virtual|disk image" | awk '{print $1}')
+  for i in $(diskutil list 2>/dev/null | egrep "^\/dev" | sed 's;/dev/;;' | egrep -v "virtual|disk image" | awk '{print $1}')
   do
     # First: it may be a Core Storage volume (FileVault2 or the like)
     if [ -z "$(grep $i $DiskTempFile)" ]; then
@@ -734,9 +734,9 @@ elif [ -z "${OS/Darwin/}" ]; then
 fi
 
 
-###########################################
-############   NETWORK INFO   #############
-###########################################
+######################################################################################
+###########################    N E T W O R K   I N F O    ############################
+######################################################################################
 
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mNetwork info:                                     ${Reset}\n"
 
@@ -745,14 +745,14 @@ printf "${ESC}${UnderlineFace}m$FormatstringNetwork${Reset}\n" "Interface name" 
 
 if [ -z "${OS/Linux/}" ]; then
   # This doesn't work reliable
-  EnabledInterfaces="$(ip link | egrep "state UP|state UNKNOWN" | grep -v "lo:" | cut -d: -f2 | sed -e 's/^ *//')"
+  EnabledInterfaces="$(ip link 2>/dev/null | egrep "state UP|state UNKNOWN" | grep -v "lo:" | cut -d: -f2 | sed -e 's/^ *//')"
   for i in $EnabledInterfaces
   do
     printf "  Interface: \"${i}\" has addresses:\n$(ip address show $i | egrep -o "^\ *inet[6]? [^\ ]*\ ")\n"
   done
 elif [ -z "${OS/Darwin/}" ]; then
   # This is a very short version of the 'network_info'-script
-  networksetup -listnetworkserviceorder | egrep "^\([0-9\*]*\)\ " | sed -e 's/^(//g' -e 's/) /:/' > $NetworkTempFile
+  networksetup -listnetworkserviceorder 2>/dev/null | egrep "^\([0-9\*]*\)\ " | sed -e 's/^(//g' -e 's/) /:/' > $NetworkTempFile
   exec 4<"$NetworkTempFile"
   while IFS=: read -u 4 IFNum IFName
   do
@@ -771,9 +771,9 @@ elif [ -z "${OS/Darwin/}" ]; then
 fi
 
 
-###########################################
-############   SECURITY INFO   ############
-###########################################
+######################################################################################
+##########################    S E C U R I T Y   I N F O    ###########################
+######################################################################################
 
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mSecurity info:                                    ${Reset}\n"
 
@@ -786,8 +786,8 @@ elif [ -z "${OS/Darwin/}" ]; then
   [[ $Info -eq 1 ]] &&  Information="(use \"setregproptool\" for manipulating the firmware lock)" || Information=""
   if [ -z "${USER/root/}" ]; then
     # But only if there actually *is* a recovery HD
-    if [ -n "$(diskutil list | grep "Recovery HD")" ]; then
-      /usr/sbin/diskutil mount Recovery\ HD 1>/dev/null
+    if [ -n "$(diskutil list 2>/dev/null | grep "Recovery HD")" ]; then
+      /usr/sbin/diskutil mount Recovery\ HD 1>/dev/null  2>/dev/null
       printf "Looking for firmware password (this will take a few seconds)..."
       /usr/bin/hdiutil attach /Volumes/Recovery\ HD/com.apple.recovery.boot/BaseSystem.dmg -nobrowse -quiet
       /Volumes/OS\ X\ Base\ System/Applications/Utilities/Firmware\ Password\ Utility.app/Contents/Resources/setregproptool -c
@@ -796,7 +796,7 @@ elif [ -z "${OS/Darwin/}" ]; then
       else
         FirmwareLockMsg="Firmware password is NOT set"
       fi
-      /usr/sbin/diskutil unmount force /Volumes/Recovery\ HD 1>/dev/null
+      /usr/sbin/diskutil unmount force /Volumes/Recovery\ HD 1>/dev/null  2>/dev/null
     fi
   else
     FirmwareLockMsg="\"root\" needed for firmware lock status!"
@@ -821,12 +821,12 @@ elif [ -z "${OS/Darwin/}" ]; then
 
   # SIP
   [[ $Info -eq 1 ]] &&  Information="(use \"csrutil\" to manipulate System Integrity Protection)" || Information=""
-  [[ -x /usr/bin/csrutil ]] && Security="$(csrutil status | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//')" || Security="System Integrity Protection is not present"
+  [[ -x /usr/bin/csrutil ]] && Security="$(csrutil status 2>/dev/null | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//')" || Security="System Integrity Protection is not present"
   printf "$Formatstring\n" "SIP:" "${Security}" "${Information}"
   
   # GateKeeper
   [[ $Info -eq 1 ]] &&  Information="(use \"spctl\" to manipulate the GateKeeper application launch protection system)" || Information=""
-  printf "$Formatstring\n" "GateKeeper:" "$(spctl --status | awk '{print $2}')" "${Information}"
+  printf "$Formatstring\n" "GateKeeper:" "$(spctl --status 2>/dev/null | awk '{print $2}')" "${Information}"
 
     # Little Snitch
   # If it's running, it should be a "/Library/Little Snitch/Little Snitch Daemon.bundle/Contents/MacOS/Little Snitch Daemon" running
@@ -846,16 +846,16 @@ fi
 
 
 
-###########################################
-############   GRAPHICS INFO   ############
-###########################################
+######################################################################################
+##########################    G R A P H I C S   I N F O    ###########################
+######################################################################################
 
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mGraphics info:                                    ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
-  system_profiler -xml SPDisplaysDataType > "$GraphicsTempFile"
+  system_profiler -xml SPDisplaysDataType 2>/dev/null > "$GraphicsTempFile"
   # Get info about Graphics Card
   GraphicsCardData="$(xmllint --xpath '//dict/key[text()="sppci_model" or text()="spdisplays_vram" or text()="sppci_model"]/following-sibling::string[1]' $GraphicsTempFile)"
   # Ex, iMac:        GraphicsCardData='<string>4096 MB</string><string>NVIDIA GeForce GTX 780M</string>'
@@ -892,9 +892,9 @@ elif [ -z "${OS/Darwin/}" ]; then
 fi
 
 
-###########################################
-#############   EXTRA INFO   ##############
-###########################################
+######################################################################################
+#############################    E X T R A   I N F O    ##############################
+######################################################################################
 
 if [ -z "${OS/Linux/}" ]; then
   echo ""
