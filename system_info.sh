@@ -367,9 +367,16 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Mac Pro:     https://support.apple.com/en-us/HT202888
   # Mac mini:    http://www.unionrepair.com/how-to-identify-mac-mini-models/
   
-  # Find out if it's a server
-  # First step: does the name fromsw_vers include "server"?
+  # What Mac model is it?
   ModelIdentifier="$(egrep "^\s*Model Identifier:" $OSTempFile | cut -d: -f2 | sed 's/^ //')"
+  # Get the long name for it
+  ModelIdentifierName="$(grep "$ModelIdentifier" "$ScriptName" | cut -d: -f1 | sed 's/#//')"
+  # If the first three letters of $ModelIdentifier doesn't include 'Mac' och 'iMa', we are probably running inside a VM
+  if [ ! "$(echo $ModelIdentifier | cut -c1-3)" = "Mac" -o ! "$(echo $ModelIdentifier | cut -c1-3)" = "iMa" ]; then
+    VMenv="$ModelIdentifier"
+    ModelIdentifier="Virtual Mac"
+    ModelIdentifierName=""
+  fi
 
   # Are we bound to AD?
   # See: https://www.jamf.com/jamf-nation/discussions/7039/how-to-check-if-a-computer-is-actually-bound-to-the-ad for details
@@ -388,6 +395,8 @@ elif [ -z "${OS/Darwin/}" ]; then
   # However, this may quickly be a kludge since there are som many management services!
   # Proceed with caution!
 
+  # Find out if it's a server
+  # First step: does the name fromsw_vers include "server"?
   # Find out if it's a server and if it's configured or not
   if [ -z "$(echo "$SW_VERS" | grep -i server)" ]; then
     # If not, it may still be a server. Beginning with OS X 10.8 all versions include the command serverinfo:
@@ -419,7 +428,6 @@ printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
 printf "$Formatstring\n" "Virtual env.:" "${VMenv:-No VM environment detected}" ""
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profiler SPHardwareDataType\" to see hardware details)"; fi
 if [ -n "$ModelIdentifier" ]; then
-  ModelIdentifierName="$(grep "$ModelIdentifier" "$ScriptName" | cut -d: -f1 | sed 's/#//')"
   printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier - ${ModelIdentifierName:-Unknown Mac-model}" "${Information}"
 fi
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"dsconfigad -show\" to see AD-connection details)"; fi
