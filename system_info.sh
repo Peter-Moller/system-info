@@ -216,7 +216,7 @@ Formatstring="%-18s%-40s%-30s"
 # FormatString is intended for:
 # "Head" "Value" "Extra information (-i flag)"
 # FormatstringNetwork is intended for the network listing
-FormatstringNetwork="%-18s%-10s%-15s%-30s"
+FormatstringNetwork="%-22s%-10s%-15s%-30s"
 # FormatstringDisk is intended for the disk listing
 FormatstringDisk="%-18s%-10s%-13s%-15s%-6s%-20s"
 # 123456789012345678901234567890123456789012345678901234567890
@@ -370,9 +370,9 @@ elif [ -z "${OS/Darwin/}" ]; then
   # What Mac model is it?
   ModelIdentifier="$(egrep "^\s*Model Identifier:" $OSTempFile | cut -d: -f2 | sed 's/^ //')"
   # Get the long name for it
-  ModelIdentifierName="$(grep "$ModelIdentifier" "$ScriptName" | cut -d: -f1 | sed 's/#//')"
+  ModelIdentifierName="$(grep "$ModelIdentifier" "$ScriptName" | cut -d: -f1 | sed 's/#/- /')"
   # If the first three letters of $ModelIdentifier doesn't include 'Mac' och 'iMa', we are probably running inside a VM
-  if [ ! "$(echo $ModelIdentifier | cut -c1-3)" = "Mac" -a ! "$(echo $ModelIdentifier | cut -c1-3)" = "iMa" ]; then
+  if [ ! "$(echo $ModelIdentifier | cut -c1-5)" = "- Mac" -a ! "$(echo $ModelIdentifier | cut -c1-3)" = "- iMa" ]; then
     VMenv="$ModelIdentifier"
     ModelIdentifier="Virtual Mac"
     ModelIdentifierName=" "
@@ -428,7 +428,7 @@ printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
 printf "$Formatstring\n" "Virtual env.:" "${VMenv:-No VM environment detected}" ""
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profiler SPHardwareDataType\" to see hardware details)"; fi
 if [ -n "$ModelIdentifier" ]; then
-  printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier - ${ModelIdentifierName:-Unknown Mac-model}" "${Information}"
+  printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier ${ModelIdentifierName:-Unknown Mac-model}" "${Information}"
 fi
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"dsconfigad -show\" to see AD-connection details)"; fi
 printf "$Formatstring\n" "Active Directory:" "${ADDomain:-Not bound}" "${Information}"
