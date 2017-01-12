@@ -741,7 +741,7 @@ fi
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mNetwork info:                                     ${Reset}\n"
 
 #printf "Active interfaces:\n"
-printf "${ESC}${UnderlineFace}m$FormatstringNetwork${Reset}\n" "Interface name" "Interface" "IP-address" "Media Speed"
+printf "${ESC}${UnderlineFace}m$FormatstringNetwork${Reset}\n" "Interface" "Interface name" "IP-address" "Media Speed"
 
 if [ -z "${OS/Linux/}" ]; then
   # This doesn't work reliable
