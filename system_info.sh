@@ -369,10 +369,12 @@ elif [ -z "${OS/Darwin/}" ]; then
   
   # What Mac model is it?
   ModelIdentifier="$(egrep "^\s*Model Identifier:" $OSTempFile | cut -d: -f2 | sed 's/^ //')"
+  # ModelIdentifier='iMac14,2'
   # Get the long name for it
   ModelIdentifierName="$(grep "$ModelIdentifier" "$ScriptName" | cut -d: -f1 | sed 's/#/- /')"
+  # ModelIdentifierName='- iMac (27-inch, Late 2013)'
   # If the first three letters of $ModelIdentifier doesn't include 'Mac' och 'iMa', we are probably running inside a VM
-  if [ ! "$(echo $ModelIdentifier | cut -c1-5)" = "- Mac" -a ! "$(echo $ModelIdentifier | cut -c1-3)" = "- iMa" ]; then
+  if [ ! "$(echo $ModelIdentifier | cut -c1-3)" = "Mac" -a ! "$(echo $ModelIdentifier | cut -c1-3)" = "iMa" ]; then
     VMenv="$ModelIdentifier"
     ModelIdentifier="Virtual Mac"
     ModelIdentifierName=" "
