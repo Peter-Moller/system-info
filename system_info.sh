@@ -575,9 +575,12 @@ if [ -z "${OS/Linux/}" ]; then
   # 	Asset Tag: Unknown         
   # 	Part Number: M393B2G70BH0-CK0  
   # 	Rank: 2
-
+  Memory="$(free -h | grep "^Mem:" | awk '{print $2}')"
+  # Ex: Memory='3.9G'
   if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
-    Memory="$(dmidecode --type 6,6 2>/dev/null | grep "Installed Size" | grep -v "Not Installed" | cut -d: -f2 | sed 's/ *//')"
+    if [ -z "$Memory" ]; then
+      Memory="$(dmidecode --type 6,6 2>/dev/null | grep "Installed Size" | grep -v "Not Installed" | cut -d: -f2 | sed 's/ *//')"
+    fi
     # Ex: Memory='8192 MB (Single-bank Connection)'
     if [ -z "$Memory" ]; then
       Memory="$(less /proc/meminfo 2>/dev/null | grep -i MemTotal | cut -d: -f2 | sed 's/ *//')"
