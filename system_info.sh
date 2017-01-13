@@ -909,7 +909,7 @@ fi
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mExtra info:                                       ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
-  echo ""
+  echo "No extra information on Linux (yet)"
 elif [ -z "${OS/Darwin/}" ]; then
   # Getting info about package managers -- if there are any
   if [ -f /usr/local/bin/brew -o -f /opt/local/bin/port ]; then
@@ -925,7 +925,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   fi
 fi
 
-# Remove the temp file for Mac
+# Remove the temp files
 rm $OSTempFile 2>/dev/null
 rm $CPUTempFile 2>/dev/null
 rm $MemTempFile 2>/dev/null
