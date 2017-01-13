@@ -506,6 +506,9 @@ printf "$Formatstring\n" "Cores/CPU:" "${NbrCoresEachCPU}" ""
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mMemory info:                                      ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
+  # Good article on memory in Linux:
+  # https://www.cyberciti.biz/faq/ram-size-linux/
+
   # This uses /proc/meminfo which is supposed to look like this:
   # MemTotal:       264056956 kB
   # MemFree:        225391912 kB
@@ -575,6 +578,8 @@ if [ -z "${OS/Linux/}" ]; then
   # 	Asset Tag: Unknown         
   # 	Part Number: M393B2G70BH0-CK0  
   # 	Rank: 2
+
+  # Use 'free' for total memory since it reports for a normal user as well
   Memory="$(free -h | grep "^Mem:" | awk '{print $2}')"
   # Ex: Memory='3.9G'
   if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
@@ -901,10 +906,23 @@ fi
 #############################    E X T R A   I N F O    ##############################
 ######################################################################################
 
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mExtra info:                                       ${Reset}\n"
+
 if [ -z "${OS/Linux/}" ]; then
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
-  echo ""
+  # Getting info about package managers -- if there are any
+  if [ -f /usr/local/bin/brew -o -f /opt/local/bin/port ]; then
+    # Currently only Homebrew and MacPorts, but Fink and NIX would be nice to have as well!
+    printf "${ESC}${UnderlineFace}mPacket managers:${Reset}\n"
+    # First, Homebrew
+    [[ $Info -eq 1 ]] &&  Information="(A great package manager to be found at http://brew.sh)" || Information=""
+    [[ -f /usr/local/bin/brew ]] && printf "${Formatstring}\n" "Homebrew:" "$(/usr/local/bin/brew --version 2>/dev/null | head -1 | awk '{print $NF}')" "$Information"
+    [[ $Info -eq 1 ]] &&  Information="(A great package manager to be found at https://www.macports.org)" || Information=""
+    [[ -f /opt/local/bin/port ]] && printf "${Formatstring}\n" "MacPorts:" "$(/opt/local/bin/port version 2>/dev/null | awk '{print $2}')" "$Information"
+  else
+    echo "No packet managers detected"
+  fi
 fi
 
 # Remove the temp file for Mac
