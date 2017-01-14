@@ -849,6 +849,12 @@ elif [ -z "${OS/Darwin/}" ]; then
   [[ $Info -eq 1 ]] &&  Information="(use \"spctl\" to manipulate the GateKeeper application launch protection system)" || Information=""
   printf "$Formatstring\n" "GateKeeper:" "$(spctl --status 2>/dev/null | awk '{print $2}')" "${Information}"
 
+  # FileVault
+  # Ideally, one would want to see this on a per disk basis (and thus be in the disk list above), but that will have to wait!
+  FileVaultStatus="$(fdesetup status | awk '{print $NF}' | sed 's/\.$//')"
+  [[ $Info -eq 1 ]] &&  Information="(use \"fdesetup\" to configure FileVault)" || Information=""
+  printf "$Formatstring\n" "FileVault:" "$FileVaultStatus" "${Information}"
+
     # Little Snitch
   # If it's running, it should be a "/Library/Little Snitch/Little Snitch Daemon.bundle/Contents/MacOS/Little Snitch Daemon" running
   if [ -n "$(pgrep -fl "Little Snitch Daemon")" ]; then
@@ -858,7 +864,7 @@ elif [ -z "${OS/Darwin/}" ]; then
     [[ $Info -eq 1 ]] &&  Information="(Little Snitch is only manipulated through the GUI)" || Information=""
   else
     LittleSnitch="Not detected"
-    [[ $Info -eq 1 ]] &&  Information="(Little Snitch is a third party firewall that you can find at https://www.obdev.at/products/littlesnitch/index.html)" || Information=""
+    [[ $Info -eq 1 ]] &&  Information="(\"Little Snitch\" is a third party firewall that you can find at https://www.obdev.at/products/littlesnitch/index.html)" || Information=""
   fi
   printf "$Formatstring\n" "Little Snitch:" "${LittleSnitch}" "${Information}"
 
