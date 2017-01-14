@@ -939,7 +939,15 @@ elif [ -z "${OS/Darwin/}" ]; then
     printf "${ESC}${UnderlineFace}mPacket managers:${Reset}\n"
     # First, Homebrew
     [[ $Info -eq 1 ]] &&  Information="(A great package manager to be found at http://brew.sh)" || Information=""
-    [[ -f /usr/local/bin/brew ]] && printf "${Formatstring}\n" "Homebrew:" "$(/usr/local/bin/brew --version 2>/dev/null | head -1 | awk '{print $NF}')" "$Information"
+    if [ -f /usr/local/bin/brew ]; then
+      # Homebrew doesn't allow root to run it, so we must deal with it
+      if [ -z "${USER/root/}" ]; then
+        HBver="$(su "$(/bin/ls -1 /Users/ | grep "^[a-z]" | head -1)" /usr/local/bin/brew --version 2>/dev/null | head -1 | awk '{print $NF}')"
+      else
+        HBver="$(/usr/local/bin/brew --version 2>/dev/null | head -1 | awk '{print $NF}')"
+      fi
+      printf "${Formatstring}\n" "Homebrew:" "$HBver" "$Information"
+    fi
     [[ $Info -eq 1 ]] &&  Information="(A great package manager to be found at https://www.macports.org)" || Information=""
     [[ -f /opt/local/bin/port ]] && printf "${Formatstring}\n" "MacPorts:" "$(/opt/local/bin/port version 2>/dev/null | awk '{print $2}')" "$Information"
   else
