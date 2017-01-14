@@ -333,9 +333,20 @@ if [ -z "${OS/Linux/}" ]; then
 
 
 elif [ -z "${OS/Darwin/}" ]; then
-  # OK, so it's Darwin
-  Distro="$(sw_vers -productName 2>/dev/null)"
   DistroVer="$(sw_vers -productVersion 2>/dev/null)"
+  # Get a full name for the version:
+  case "$DistroVer" in
+    "10.4"*) Distro="Mac OS X \"Tiger\"" ;;
+    "10.5"*) Distro="Mac OS X \"Leopard\"" ;;
+    "10.6"*) Distro="Mac OS X \"Snow Leopard\"" ;;
+    "10.7"*) Distro="Mac OS X \"Lion\"" ;;
+    "10.8"*) Distro="OS X \"Mountain Lion\"" ;;
+    "10.9"*) Distro="OS X \"Mavericks\"" ;;
+    "10.10"*) Distro="OS X \"Yosemite\"" ;;
+    "10.11"*) Distro="OS X \"El Capitan\"" ;;
+    "10.12"*) Distro="macOS \"Sierra\"" ;;
+    *) Distro="macOS" ;;
+  esac
   ComputerName="$(networksetup -getcomputername 2>/dev/null)"
   # Get basic Mac info for later usage:
   system_profiler SPHardwareDataType 2>/dev/null > "$OSTempFile"
