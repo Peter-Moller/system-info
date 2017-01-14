@@ -842,7 +842,7 @@ elif [ -z "${OS/Darwin/}" ]; then
 
   # SIP
   [[ $Info -eq 1 ]] &&  Information="(use \"csrutil\" to manipulate System Integrity Protection)" || Information=""
-  [[ -x /usr/bin/csrutil ]] && Security="$(csrutil status 2>/dev/null | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//')" || Security="System Integrity Protection is not present"
+  [[ -x /usr/bin/csrutil ]] && Security="$(csrutil status 2>/dev/null | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//')" || Security="System Integrity Protection is not engaged"
   printf "$Formatstring\n" "SIP:" "${Security}" "${Information}"
   
   # GateKeeper
@@ -852,6 +852,11 @@ elif [ -z "${OS/Darwin/}" ]; then
   # FileVault
   # Ideally, one would want to see this on a per disk basis (and thus be in the disk list above), but that will have to wait!
   FileVaultStatus="$(fdesetup status | awk '{print $NF}' | sed 's/\.$//')"
+  if [ "$FileVaultStatus" = "On" ]; then
+    FVDiskList="$(diskutil cs list | egrep " Disk: | Encryption Type: " | egrep -B1 "AES-XTS" | awk -F '\n' 'ln ~ /^$/ { ln = "matched"; print $1 } $1 ~ /^--$/ { ln = "" }' | awk '{print $NF}' | sed 's/s[0-9]$//')"
+    # Ex: FVDiskList='disk0 disk1'
+    FileVaultStatus="On for $FVDiskList"
+  fi
   [[ $Info -eq 1 ]] &&  Information="(use \"fdesetup\" to configure FileVault)" || Information=""
   printf "$Formatstring\n" "FileVault:" "$FileVaultStatus" "${Information}"
 
