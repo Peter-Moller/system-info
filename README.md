@@ -41,13 +41,18 @@ as a manual sequrity/change detection, but that is definetley saved for later
 
 * Generally, the script is written using only standard bash tools available on bot macOS and Linux
 * However, on Linux, `dmidecode` (http://savannah.nongnu.org/projects/dmidecode/) is used for many things. If you don't have it your distro, memory reporting will be omitted [on Linux]
-* To get full printouts, you need to run the script as `root`
+* If you are not running the script as `root`, the following information will be detected:
+	* (Linux): some details about virtual environment (i.e. `dmidecode`)
+        * (Linux): memory type, speed and nr of DIMMs (i.e. `dmidecode`)
+	* (macOS): presence of firmware password
+	* (macOS): status of the packetfiler firewall
+	* (macOS): whether Profiles are enabled of not
 
 -----
 
 **Options:**
 
-* `-i` gives you information about commands that will allow you to dig deeper yourself
+* `-i` gives you information about commands that will allow you to dig deeper yourself :-)
 
 -----
 
