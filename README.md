@@ -43,7 +43,7 @@ as a manual sequrity/change detection, but that is definetley saved for later
 * However, on Linux, `dmidecode` (http://savannah.nongnu.org/projects/dmidecode/) is used for many things. If you don't have it your distro, memory reporting will be omitted [on Linux]
 * If you are not running the script as `root`, the following information will be detected:
 	* (Linux): some details about virtual environment (i.e. `dmidecode`)
-        * (Linux): memory type, speed and nr of DIMMs (i.e. `dmidecode`)
+	* (Linux): memory type, speed and nr of DIMMs (i.e. `dmidecode`)
 	* (macOS): presence of firmware password
 	* (macOS): status of the packetfiler firewall
 	* (macOS): whether Profiles are enabled of not
