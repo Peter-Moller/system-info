@@ -828,7 +828,7 @@ elif [ -z "${OS/Darwin/}" ]; then
 
   # ALF -- Application Level Firewall
   [[ $Info -eq 1 ]] &&  Information="(use \"socketfilterfw\" to manipulate Application Level Firewall)" || Information=""
-  printf "$Formatstring\n" "ALF:" "$(/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate | cut -d\. -f1 | awk '{print $NF}')" "${Information}"
+  printf "$Formatstring\n" "ALF:" "$(/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate | cut -d\. -f1 | awk '{print $NF}' | perl -pe 's/^(.)/uc($1)/e')" "${Information}"
 
   # PF firewall
   # To see anything interesting, you need to be root!
@@ -842,12 +842,12 @@ elif [ -z "${OS/Darwin/}" ]; then
 
   # SIP
   [[ $Info -eq 1 ]] &&  Information="(use \"csrutil\" to manipulate System Integrity Protection)" || Information=""
-  [[ -x /usr/bin/csrutil ]] && Security="$(csrutil status 2>/dev/null | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//')" || Security="System Integrity Protection is not engaged"
+  [[ -x /usr/bin/csrutil ]] && Security="$(csrutil status 2>/dev/null | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//' | perl -pe 's/^(.)/uc($1)/e')" || Security="System Integrity Protection is not engaged"
   printf "$Formatstring\n" "SIP:" "${Security}" "${Information}"
   
   # GateKeeper
   [[ $Info -eq 1 ]] &&  Information="(use \"spctl\" to manipulate the GateKeeper application launch protection system)" || Information=""
-  printf "$Formatstring\n" "GateKeeper:" "$(spctl --status 2>/dev/null | awk '{print $2}')" "${Information}"
+  printf "$Formatstring\n" "GateKeeper:" "$(spctl --status 2>/dev/null | awk '{print $2}' | perl -pe 's/^(.)/uc($1)/e')" "${Information}"
 
   # FileVault
   # Ideally, one would want to see this on a per disk basis (and thus be in the disk list above), but that will have to wait!
