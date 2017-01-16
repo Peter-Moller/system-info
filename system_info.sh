@@ -62,7 +62,7 @@
 # - a number of segment, each dealing with one part of the system (OS, CPU, memory and so on)
 # - each part prints it's own info (makes for a better, quicker, printout)
 #   The “head” is printed before the work is done, though
-# - each part deals with the various OS:es (currently OS X and Linux) separatley, but
+# - each part deals with the various OS:es (currently OS X and Linux) separately, but
 #   tries to gather the same info so that one may use a single print phase
 
 
@@ -225,6 +225,8 @@ FormatstringDisk="%-18s%-10s%-13s%-15s%-6s%-20s"
 # disk0            500.3 GB  Solid State   Verified  Yes   SATA/SATA Express   
 # FormatstringGraphics is intended for graphics info
 FormatstringGraphics="%-28s%-20s"
+# FormatstringLinuxFirewall is intended for the Linux firewalls entries
+FormatstringLinuxFirewall="%-18s%-9s%-18s%-9s%-3s"
 
 ##### Done setting basic variables
 
@@ -269,6 +271,7 @@ OS_arch="$(uname -m 2>/dev/null | sed -e "s/i386/i686/")"
 # Check for functions used
 if [ -z "${OS/Linux/}" ]; then
   exists dmidecode || print_warning "Command 'dmidecode' not found: some memory-related information will be unavailable!"
+  exists zcat || print_warning "Command 'zcat' not found: some security-related information will be unavailable!"
 fi
 echo ""
 
@@ -278,10 +281,6 @@ echo ""
 if [ -z "${OS/Linux/}" ]; then
   ComputerName="$(uname -n)"
   # ComputerName=vm67.cs.lth.se
-
-  # Find out about SELinux
-  [[ -f /etc/selinux/config ]] && Security="SELinux is $(grep "^SELINUX=" /etc/selinux/config | awk -F= '{print $2}')" || Security="SELinux is not present"
-  # Security='SELinux is disabled'
 
   # Find out which Distro
   # Fist: look at the /etc/*-release files
@@ -428,6 +427,19 @@ elif [ -z "${OS/Darwin/}" ]; then
     fi
   fi
 fi
+
+function is_kernel_config_set()
+{
+  if [ ! -z "${OS/Linux/}" ]; then
+    return 1
+  fi
+
+  [[ $(uname -m 2>/dev/null) == "x86_64" ]] && Arch='amd64'
+  [[ -f '/proc/config.gz' ]] && ConfigPath='/proc/config.gz' || ([[ -f '/proc/config' ]] && ConfigPath='/proc/config' || ([[ -f "/boot/config-${KernelVer}-${Arch}" ]] && ConfigPath="/boot/config-${KernelVer}-${Arch}" || return 1))
+  GzFile=$(echo "${ConfigPath}" | grep '.gz')
+  [[ ! -z "${GzFile}" ]] && Value="$(zcat ${ConfigPath} 2>/dev/null | grep "^CONFIG_${1}")" || Value="$(cat ${ConfigPath} 2>/dev/null | grep "^CONFIG_${1}")"
+  [[ -z "${Value}" ]] && return 1 || return 0
+}
 
 ### PRINT THE RESULT
 printf "${ESC}${BlackBack};${WhiteFont}mSystem info for:${Reset} ${ESC}${WhiteBack};${BlackFont}m$ComputerName${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${Reset} ${ESC}${WhiteBack};${BlackFont}m$(date +%F", "%R)${Reset}\n"
@@ -799,7 +811,47 @@ fi
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mSecurity info:                                    ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
-  echo ""
+  # SELinux
+  [[ $Info -eq 1 ]] && Information="(use \"sestatus\" to see SELinux details)" || Information=""
+  [[ -f /etc/selinux/config ]] && SELinux="SELinux is $(grep "^SELINUX=" /etc/selinux/config | awk -F= '{print $2}')" || SELinux="SELinux is not present"
+  printf "$Formatstring\n" "SELinux:" "${SELinux}" "${Information}"
+
+  # iptables
+  [[ -z $(lsmod 2>/dev/null | grep "^x_tables") ]] && MissingModules='x_tables '
+  [[ -z $(lsmod 2>/dev/null | grep "^ip_tables") ]] && MissingModules+='ip_tables '
+  [[ -z $(lsmod 2>/dev/null | grep "^iptable_filter") ]] && MissingModules+='iptable_filter '
+  [[ -z $MissingModules ]] && Iptable='Kernel modules found' || Iptable="Missing kernel modules: ${MissingModules}"
+  [[ $Info -eq 1 ]] && Information="(use \"iptables\" and \"ip6tables\" to manipulate the iptables' rules)" || Information=""
+  printf "$Formatstring\n" "iptables:" "${Iptable}" "${Information}"
+  if [[ -z $MissingModules && -z $(echo "${Iptable}" | grep 'missing') ]]; then
+    Chains=$(iptables -L 2>/dev/null | grep 'Chain')
+    while read -r i; do
+      Chain=$(echo "${i}" | awk '$1=="Chain" {print $2}' "$f")
+      Policy=$(echo "${i}" | awk '$3=="(policy" {print $4}' "$f" | cut -d ')' -f 1)
+      NbrRules=$(iptables -S "${Chain}" 2>/dev/null | grep -v "\-P" | wc -l)
+      printf "$FormatstringLinuxFirewall\n" "- ${Chain}:" "policy = " "${Policy}" "#rules = " "${NbrRules}"
+    done <<< "${Chains}"
+  fi
+
+  # nftables
+  # TODO print different chains + No.rules per chain
+  if is_kernel_config_set "NF_TABLES"; then
+    NfModules=$(lsmod 2>/dev/null | grep "^nf")
+    if is_kernel_config_set "NF_TABLES_IPV4"; then
+      [[ -z $(echo "${NfModules}" | grep "nf_tables_ipv4") ]] && Nftables='IPv4: Missing module' || Nftables='IPv4: Found module'
+    else
+      Nftables='IPv4: Unsupported'
+    fi
+    if is_kernel_config_set "NF_TABLES_IPV6"; then
+      [[ -z $(echo "${NfModules}" | grep "nf_tables_ipv6") ]] && Nftables+=', IPv6: Missing module' || Nftables+='IPv6: Found module'
+    else
+      Nftables+=', IPv6: Unsupported'
+    fi
+  else
+    Nftables='Unsupported'
+  fi
+  [[ $Info -eq 1 ]] && Information="(use \"nft\" to manipulate the nftables' rules)" || Information=""
+  printf "$Formatstring\n" "nftables:" "${Nftables}" "${Information}"
 elif [ -z "${OS/Darwin/}" ]; then
   
   # Firmware password. This requires root level access
