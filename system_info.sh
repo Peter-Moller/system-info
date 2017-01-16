@@ -62,7 +62,7 @@
 # - a number of segment, each dealing with one part of the system (OS, CPU, memory and so on)
 # - each part prints it's own info (makes for a better, quicker, printout)
 #   The “head” is printed before the work is done, though
-# - each part deals with the various OS:es (currently OS X and Linux) separatley, but
+# - each part deals with the various OS:es (currently OS X and Linux) separately, but
 #   tries to gather the same info so that one may use a single print phase
 
 
