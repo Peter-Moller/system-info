@@ -435,7 +435,16 @@ function is_kernel_config_set()
   fi
 
   [[ $(uname -m 2>/dev/null) == "x86_64" ]] && Arch='amd64'
-  [[ -f '/proc/config.gz' ]] && ConfigPath='/proc/config.gz' || ([[ -f '/proc/config' ]] && ConfigPath='/proc/config' || ([[ -f "/boot/config-${KernelVer}-${Arch}" ]] && ConfigPath="/boot/config-${KernelVer}-${Arch}" || return 1))
+  #[[ -f '/proc/config.gz' ]] && ConfigPath='/proc/config.gz' || ([[ -f '/proc/config' ]] && ConfigPath='/proc/config' || ([[ -f "/boot/config-${KernelVer}-${Arch}" ]] && ConfigPath="/boot/config-${KernelVer}-${Arch}" || return 1))
+  if [[ -f '/proc/config.gz' ]]; then
+    ConfigPath='/proc/config.gz'
+  elif [[ -f '/proc/config' ]]; then
+    ConfigPath='/proc/config'
+  elif [[ -f "/boot/config-${KernelVer}-${Arch}" ]]; then
+    ConfigPath="/boot/config-${KernelVer}-${Arch}"
+  else
+    return 1
+  fi
   GzFile=$(echo "${ConfigPath}" | grep '.gz')
   [[ ! -z "${GzFile}" ]] && Value="$(zcat ${ConfigPath} 2>/dev/null | grep "^CONFIG_${1}")" || Value="$(cat ${ConfigPath} 2>/dev/null | grep "^CONFIG_${1}")"
   [[ -z "${Value}" ]] && return 1 || return 0
@@ -852,6 +861,7 @@ if [ -z "${OS/Linux/}" ]; then
   fi
   [[ $Info -eq 1 ]] && Information="(use \"nft\" to manipulate the nftables' rules)" || Information=""
   printf "$Formatstring\n" "nftables:" "${Nftables}" "${Information}"
+
 elif [ -z "${OS/Darwin/}" ]; then
   
   # Firmware password. This requires root level access
