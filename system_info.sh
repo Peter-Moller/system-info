@@ -225,6 +225,8 @@ FormatstringDisk="%-18s%-10s%-13s%-15s%-6s%-20s"
 # disk0            500.3 GB  Solid State   Verified  Yes   SATA/SATA Express   
 # FormatstringGraphics is intended for graphics info
 FormatstringGraphics="%-28s%-20s"
+# FormatstringLinuxFirewall is intended for the Linux firewalls entries
+FormatstringLinuxFirewall="%-18s%-9s%-18s%-9s%-3s"
 
 ##### Done setting basic variables
 
@@ -813,6 +815,23 @@ if [ -z "${OS/Linux/}" ]; then
   [[ $Info -eq 1 ]] && Information="(use \"sestatus\" to see SELinux details)" || Information=""
   [[ -f /etc/selinux/config ]] && SELinux="SELinux is $(grep "^SELINUX=" /etc/selinux/config | awk -F= '{print $2}')" || SELinux="SELinux is not present"
   printf "$Formatstring\n" "SELinux:" "${SELinux}" "${Information}"
+
+  # iptables
+  [[ -z $(lsmod 2>/dev/null | grep "^x_tables") ]] && MissingModules='x_tables '
+  [[ -z $(lsmod 2>/dev/null | grep "^ip_tables") ]] && MissingModules+='ip_tables '
+  [[ -z $(lsmod 2>/dev/null | grep "^iptable_filter") ]] && MissingModules+='iptable_filter '
+  [[ -z $MissingModules ]] && Iptable='Kernel modules found' || Iptable="Missing kernel modules: ${MissingModules}"
+  [[ $Info -eq 1 ]] && Information="(use \"iptables\" and \"ip6tables\" to manipulate the iptables' rules)" || Information=""
+  printf "$Formatstring\n" "iptables:" "${Iptable}" "${Information}"
+  if [[ -z $MissingModules && -z $(echo "${Iptable}" | grep 'missing') ]]; then
+    Chains=$(iptables -L 2>/dev/null | grep 'Chain')
+    while read -r i; do
+      Chain=$(echo "${i}" | awk '$1=="Chain" {print $2}' "$f")
+      Policy=$(echo "${i}" | awk '$3=="(policy" {print $4}' "$f" | cut -d ')' -f 1)
+      NbrRules=$(iptables -S "${Chain}" 2>/dev/null | grep -v "\-P" | wc -l)
+      printf "$FormatstringLinuxFirewall\n" "- ${Chain}:" "policy = " "${Policy}" "#rules = " "${NbrRules}"
+    done <<< "${Chains}"
+  fi
 elif [ -z "${OS/Darwin/}" ]; then
   
   # Firmware password. This requires root level access
