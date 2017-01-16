@@ -832,6 +832,26 @@ if [ -z "${OS/Linux/}" ]; then
       printf "$FormatstringLinuxFirewall\n" "- ${Chain}:" "policy = " "${Policy}" "#rules = " "${NbrRules}"
     done <<< "${Chains}"
   fi
+
+  # nftables
+  # TODO print different chains + No.rules per chain
+  if is_kernel_config_set "NF_TABLES"; then
+    NfModules=$(lsmod 2>/dev/null | grep "^nf")
+    if is_kernel_config_set "NF_TABLES_IPV4"; then
+      [[ -z $(echo "${NfModules}" | grep "nf_tables_ipv4") ]] && Nftables='IPv4: Missing module' || Nftables='IPv4: Found module'
+    else
+      Nftables='IPv4: Unsupported'
+    fi
+    if is_kernel_config_set "NF_TABLES_IPV6"; then
+      [[ -z $(echo "${NfModules}" | grep "nf_tables_ipv6") ]] && Nftables+=', IPv6: Missing module' || Nftables+='IPv6: Found module'
+    else
+      Nftables+=', IPv6: Unsupported'
+    fi
+  else
+    Nftables='Unsupported'
+  fi
+  [[ $Info -eq 1 ]] && Information="(use \"nft\" to manipulate the nftables' rules)" || Information=""
+  printf "$Formatstring\n" "nftables:" "${Nftables}" "${Information}"
 elif [ -z "${OS/Darwin/}" ]; then
   
   # Firmware password. This requires root level access
