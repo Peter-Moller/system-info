@@ -280,10 +280,6 @@ if [ -z "${OS/Linux/}" ]; then
   ComputerName="$(uname -n)"
   # ComputerName=vm67.cs.lth.se
 
-  # Find out about SELinux
-  [[ -f /etc/selinux/config ]] && Security="SELinux is $(grep "^SELINUX=" /etc/selinux/config | awk -F= '{print $2}')" || Security="SELinux is not present"
-  # Security='SELinux is disabled'
-
   # Find out which Distro
   # Fist: look at the /etc/*-release files
   Distro="$(less $(ls -1 /etc/mageia-release /etc/centos-release /etc/redhat-release /etc/gentoo-release /etc/fedora-release 2>/dev/null | head -1) 2>/dev/null)"
@@ -813,7 +809,10 @@ fi
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mSecurity info:                                    ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
-  echo ""
+  # SELinux
+  [[ $Info -eq 1 ]] && Information="(use \"sestatus\" to see SELinux details)" || Information=""
+  [[ -f /etc/selinux/config ]] && SELinux="SELinux is $(grep "^SELINUX=" /etc/selinux/config | awk -F= '{print $2}')" || SELinux="SELinux is not present"
+  printf "$Formatstring\n" "SELinux:" "${SELinux}" "${Information}"
 elif [ -z "${OS/Darwin/}" ]; then
   
   # Firmware password. This requires root level access
