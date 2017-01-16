@@ -269,6 +269,7 @@ OS_arch="$(uname -m 2>/dev/null | sed -e "s/i386/i686/")"
 # Check for functions used
 if [ -z "${OS/Linux/}" ]; then
   exists dmidecode || print_warning "Command 'dmidecode' not found: some memory-related information will be unavailable!"
+  exists zcat || print_warning "Command 'zcat' not found: some security-related information will be unavailable!"
 fi
 echo ""
 
@@ -428,6 +429,19 @@ elif [ -z "${OS/Darwin/}" ]; then
     fi
   fi
 fi
+
+function is_kernel_config_set()
+{
+  if [ ! -z "${OS/Linux/}" ]; then
+    return 1
+  fi
+
+  [[ $(uname -m 2>/dev/null) == "x86_64" ]] && Arch='amd64'
+  [[ -f '/proc/config.gz' ]] && ConfigPath='/proc/config.gz' || ([[ -f '/proc/config' ]] && ConfigPath='/proc/config' || ([[ -f "/boot/config-${KernelVer}-${Arch}" ]] && ConfigPath="/boot/config-${KernelVer}-${Arch}" || return 1))
+  GzFile=$(echo "${ConfigPath}" | grep '.gz')
+  [[ ! -z "${GzFile}" ]] && Value="$(zcat ${ConfigPath} 2>/dev/null | grep "^CONFIG_${1}")" || Value="$(cat ${ConfigPath} 2>/dev/null | grep "^CONFIG_${1}")"
+  [[ -z "${Value}" ]] && return 1 || return 0
+}
 
 ### PRINT THE RESULT
 printf "${ESC}${BlackBack};${WhiteFont}mSystem info for:${Reset} ${ESC}${WhiteBack};${BlackFont}m$ComputerName${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${Reset} ${ESC}${WhiteBack};${BlackFont}m$(date +%F", "%R)${Reset}\n"
