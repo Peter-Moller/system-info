@@ -693,7 +693,7 @@ printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mDisk info:                
 if [ -z "${OS/Linux/}" ]; then
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
-  system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType 2>/dev/null | egrep ":$|BSD Name:|Medium Type:|Physical Interconnect:|S.M.A.R.T. status:|TRIM Support:" > $DiskTempFile
+  system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType 2>/dev/null | egrep ":$|BSD Name:|Medium Type:|Physical Interconnect:|S.M.A.R.T. status:|TRIM Support:" > $DiskTempFile
   # This will produce a list of disks, like this:
   # USB:
   #  USB 3.0 Bus:
@@ -773,7 +773,7 @@ elif [ -z "${OS/Darwin/}" ]; then
     fi
     printf "$FormatstringDisk\n" "$i" "$Size" "${MediumType:---}" "${SMART:---}" "${TRIM:---}" "$Bus"
   done
-  [[ $Info -eq 1 ]] &&  echo "(Use \"diskutil\" and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType\" to see details about your disks)"
+  [[ $Info -eq 1 ]] &&  echo "(Use \"diskutil\" and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType\" to see details about your disks)"
 fi
 
 
