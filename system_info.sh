@@ -373,6 +373,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   # 
   # Using 'Model Identifier', one can identify a Mac at these sites:
   # MacBook Pro: https://support.apple.com/en-us/HT201300
+  # MacBook Air: https://support.apple.com/en-us/HT201862
   # iMac:        https://support.apple.com/en-us/HT201634
   # Mac Pro:     https://support.apple.com/en-us/HT202888
   # Mac mini:    http://www.unionrepair.com/how-to-identify-mac-mini-models/
@@ -1039,6 +1040,23 @@ rm $SecurityTempFile 2>/dev/null
 #Mac mini (Mid 2010):Macmini4,1
 #Mac mini (Late 2009):Macmini3,1
 #Mac mini (Early 2009):Macmini3,1
+
+# MacBook Air
+#MacBook Air (13-inch, Early 2015):MacBookAir7,2
+#MacBook Air (11-inch, Early 2015):MacBookAir7,1
+#MacBook Air (13-inch, Early 2014):MacBookAir6,2
+#MacBook Air (11-inch, Early 2014):MacBookAir6,1
+#MacBook Air (13-inch, Mid 2013):MacBookAir6,2
+#MacBook Air (11-inch, Mid 2013):MacBookAir6,1
+#MacBook Air (13-inch, Mid 2012):MacBookAir5,2
+#MacBook Air (11-inch, Mid 2012):MacBookAir5,1
+#MacBook Air (13-inch, Mid 2011):MacBookAir4,2
+#MacBook Air (11-inch, Mid 2011):MacBookAir4,1
+#MacBook Air (13-inch, Late 2010):MacBookAir3,2
+#MacBook Air (11-inch, Late 2010):MacBookAir3,1
+#MacBook Air (Mid 2009):MacBookAir2,1
+#MacBook Air (Late 2008):MacBookAir2,1
+#MacBook Air:MacBookAir1,1
 
 # MacBook Pro, 13"
 #MacBook Pro (13-inch, Late 2016, Four Thunderbolt 3 ports):MacBookPro13,2
