@@ -371,12 +371,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   #      Serial Number (processor tray): J5031XXXXXXXX     
   #      Hardware UUID: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
   # 
-  # Using 'Model Identifier', one can identify a Mac at these sites:
-  # MacBook Pro: https://support.apple.com/en-us/HT201300
-  # MacBook Air: https://support.apple.com/en-us/HT201862
-  # iMac:        https://support.apple.com/en-us/HT201634
-  # Mac Pro:     https://support.apple.com/en-us/HT202888
-  # Mac mini:    http://www.unionrepair.com/how-to-identify-mac-mini-models/
+  # Using 'Model Identifier', one can identify a Mac at the sites at the end of the script
   
   # What Mac model is it?
   ModelIdentifier="$(egrep "^\s*Model Identifier:" $OSTempFile | cut -d: -f2 | sed 's/^ //')"
@@ -1032,8 +1027,12 @@ rm $SecurityTempFile 2>/dev/null
 ### Listing of Mac models
 
 # Mac mini
+# https://support.apple.com/en-us/HT201894
+# http://www.unionrepair.com/how-to-identify-mac-mini-models/
+# -----------------------------------------------------
 #Mac mini (Late 2014):Macmini7,1
 #Mac mini (Late 2012):Macmini6,2
+#Mac mini (Late 2012):Macmini6,1
 #Mac mini (Mid 2011):Macmini5,1
 #Mac mini (Mid 2011):Macmini5,2
 #Mac mini (Mid 2011):Macmini5,3
@@ -1042,6 +1041,8 @@ rm $SecurityTempFile 2>/dev/null
 #Mac mini (Early 2009):Macmini3,1
 
 # MacBook Air
+# https://support.apple.com/en-us/HT201862
+# -----------------------------------------------------
 #MacBook Air (13-inch, Early 2015):MacBookAir7,2
 #MacBook Air (11-inch, Early 2015):MacBookAir7,1
 #MacBook Air (13-inch, Early 2014):MacBookAir6,2
@@ -1058,7 +1059,26 @@ rm $SecurityTempFile 2>/dev/null
 #MacBook Air (Late 2008):MacBookAir2,1
 #MacBook Air:MacBookAir1,1
 
+# MacBook
+# https://support.apple.com/en-us/HT201608
+# -----------------------------------------------------
+#MacBook (Retina, 12-inch, Early 2016):MacBook9,1
+#MacBook (Retina, 12-inch, Early 2015):MacBook8,1
+#MacBook (13-inch, Mid 2010):MacBook7,1
+#MacBook (13-inch, Late 2009):MacBook 6,1
+#MacBook (13-inch, Mid 2009):MacBook5,2
+#MacBook (13-inch, Early 2009):MacBook5,2
+#MacBook (13-inch, Aluminum, Late 2008):MacBook5,1
+#MacBook (13-inch, Late 2008):MacBook4,1
+#MacBook (13-inch, Early 2008):MacBook4,1
+#MacBook (13-inch, Late 2007):MacBook3,1
+#MacBook (13-inch, Mid 2007):MacBook2,1
+#MacBook (Late 2006):MacBook2,1
+#MacBook:MacBook1,1
+
 # MacBook Pro, 13"
+# https://support.apple.com/en-us/HT201300
+# -----------------------------------------------------
 #MacBook Pro (13-inch, Late 2016, Four Thunderbolt 3 ports):MacBookPro13,2
 #MacBook Pro (13-inch, Late 2016, Two Thunderbolt 3 ports):MacBookPro13,1
 #MacBook Pro (Retina, 13-inch, Early 2015):MacbookPro12,1 
@@ -1073,6 +1093,8 @@ rm $SecurityTempFile 2>/dev/null
 #MacBook Pro (13-inch, Mid 2009):MacBookPro5,5
 
 # MacBook Pro, 15"
+# https://support.apple.com/en-us/HT201300
+# -----------------------------------------------------
 #MacBook Pro (15-inch, Late 2016):MacBookPro13,3
 #MacBook Pro (Retina, 15-inch, Mid 2015):MacbookPro 11,4
 #MacBook Pro (Retina, 15-inch, Mid 2015):MacbookPro 11,5
@@ -1087,6 +1109,8 @@ rm $SecurityTempFile 2>/dev/null
 #MacBook Pro (15-inch, Early 2008):MacBookPro4,1
 
 # MacBook Pro, 17"
+# https://support.apple.com/en-us/HT201300
+# -----------------------------------------------------
 #MacBook Pro (17-inch, Late 2011):MacBookPro8,3
 #MacBook Pro (17-inch, Early 2011):MacBookPro8,3
 #MacBook Pro (17-inch, Mid 2010):MacBookPro6,1
@@ -1094,6 +1118,8 @@ rm $SecurityTempFile 2>/dev/null
 #MacBook Pro (17-inch, Late 2008):MacBookPro5,1
 
 # iMac
+# https://support.apple.com/en-us/HT201634
+# -----------------------------------------------------
 #iMac (Retina 4K, 21.5-inch, Late 2015):iMac16,2
 #iMac (21.5-inch, Late 2015):iMac16,1
 #iMac (Retina 5K, 27-inch, Late 2015):iMac17,1
@@ -1112,6 +1138,8 @@ rm $SecurityTempFile 2>/dev/null
 #iMac (20-inch, Early 2008 or 24-inch, Early 2008):iMac8,1
 
 # Mac Pro
+# https://support.apple.com/en-us/HT202888
+# -----------------------------------------------------
 #Mac Pro (Late 2013):MacPro6,1
 #Mac Pro (Mid 2012) or Mac Pro (Mid 2010):MacPro5,1
 #Mac Pro (Early 2009):MacPro4,1
