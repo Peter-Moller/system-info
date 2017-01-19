@@ -1,0 +1,149 @@
+#!/bin/bash
+
+# Copyright 2016 Peter Möller, Pierre Moreau
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+# 
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+######################################################################################
+##########################    S E C U R I T Y   I N F O    ###########################
+######################################################################################
+
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mSecurity info:                                    ${Reset}\n"
+
+if [ -z "${OS/Linux/}" ]; then
+  # SELinux
+  [[ $Info -eq 1 ]] && Information="(use \"sestatus\" to see SELinux details)" || Information=""
+  [[ -f /etc/selinux/config ]] && SELinux="SELinux is $(grep "^SELINUX=" /etc/selinux/config | awk -F= '{print $2}')" || SELinux="SELinux is not present"
+  printf "$Formatstring\n" "SELinux:" "${SELinux}" "${Information}"
+
+  # iptables
+  [[ -z $(lsmod 2>/dev/null | grep "^x_tables") ]] && MissingModules='x_tables '
+  [[ -z $(lsmod 2>/dev/null | grep "^ip_tables") ]] && MissingModules+='ip_tables '
+  [[ -z $(lsmod 2>/dev/null | grep "^iptable_filter") ]] && MissingModules+='iptable_filter '
+  [[ -z $MissingModules ]] && Iptable='Kernel modules found' || Iptable="Missing kernel modules: ${MissingModules}"
+  [[ $Info -eq 1 ]] && Information="(use \"iptables\" and \"ip6tables\" to manipulate the iptables' rules)" || Information=""
+  printf "$Formatstring\n" "iptables:" "${Iptable}" "${Information}"
+  if [[ -z $MissingModules && -z $(echo "${Iptable}" | grep 'missing') ]]; then
+    Chains=$(iptables -L 2>/dev/null | grep 'Chain')
+    while read -r i; do
+      Chain=$(echo "${i}" | awk '$1=="Chain" {print $2}' "$f")
+      Policy=$(echo "${i}" | awk '$3=="(policy" {print $4}' "$f" | cut -d ')' -f 1)
+      NbrRules=$(iptables -S "${Chain}" 2>/dev/null | grep -v "\-P" | wc -l)
+      printf "$FormatstringLinuxFirewall\n" "- ${Chain}:" "policy = " "${Policy}" "#rules = " "${NbrRules}"
+    done <<< "${Chains}"
+  fi
+
+  # nftables
+  # TODO print different chains + No.rules per chain
+  if is_kernel_config_set "NF_TABLES"; then
+    NfModules=$(lsmod 2>/dev/null | grep "^nf")
+    if is_kernel_config_set "NF_TABLES_IPV4"; then
+      [[ -z $(echo "${NfModules}" | grep "nf_tables_ipv4") ]] && Nftables='IPv4: Missing module' || Nftables='IPv4: Found module'
+    else
+      Nftables='IPv4: Unsupported'
+    fi
+    if is_kernel_config_set "NF_TABLES_IPV6"; then
+      [[ -z $(echo "${NfModules}" | grep "nf_tables_ipv6") ]] && Nftables+=', IPv6: Missing module' || Nftables+='IPv6: Found module'
+    else
+      Nftables+=', IPv6: Unsupported'
+    fi
+  else
+    Nftables='Unsupported'
+  fi
+  [[ $Info -eq 1 ]] && Information="(use \"nft\" to manipulate the nftables' rules)" || Information=""
+  printf "$Formatstring\n" "nftables:" "${Nftables}" "${Information}"
+
+elif [ -z "${OS/Darwin/}" ]; then
+  
+  # Firmware password. This requires root level access
+  # Note that this adds some 10 seconds to the execution time
+  [[ $Info -eq 1 ]] &&  Information="(use \"setregproptool\" for manipulating the firmware lock)" || Information=""
+  if [ -z "${USER/root/}" ]; then
+    # But only if there actually *is* a recovery HD
+    if [ -n "$(diskutil list 2>/dev/null | grep "Recovery HD")" ]; then
+      /usr/sbin/diskutil mount Recovery\ HD 1>/dev/null  2>/dev/null
+      printf "Looking for firmware password (this will take a few seconds)..."
+      /usr/bin/hdiutil attach /Volumes/Recovery\ HD/com.apple.recovery.boot/BaseSystem.dmg -nobrowse -quiet
+      /Volumes/OS\ X\ Base\ System/Applications/Utilities/Firmware\ Password\ Utility.app/Contents/Resources/setregproptool -c
+      if [ $? -eq 0 ]; then
+        FirmwareLockMsg="Firmware password is set"
+      else
+        FirmwareLockMsg="Firmware password is NOT set"
+      fi
+      /usr/sbin/diskutil unmount force /Volumes/Recovery\ HD 1>/dev/null  2>/dev/null
+    fi
+  else
+    FirmwareLockMsg="\"root\" needed for firmware lock status!"
+  fi
+  printf "${ESC}1K${Reset}"
+  printf "${ESC}100D${Reset}"
+  printf "$Formatstring\n" "Firmware-lock:" "${FirmwareLockMsg}" "${Information}"
+
+  # ALF -- Application Level Firewall
+  [[ $Info -eq 1 ]] &&  Information="(use \"socketfilterfw\" to manipulate Application Level Firewall)" || Information=""
+  printf "$Formatstring\n" "ALF:" "$(/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate | cut -d\. -f1 | awk '{print $NF}' | perl -pe 's/^(.)/uc($1)/e')" "${Information}"
+
+  # PF firewall
+  # To see anything interesting, you need to be root!
+  [[ $Info -eq 1 ]] &&  Information="(use \"pfctl\" to manipulate the PF-firewall)" || Information=""
+  if [ -z "${USER/root/}" ]; then
+    PFMsg="$(pfctl -sa 2>/dev/null | grep ^Status: | awk '{print $2}')"
+  else
+    PFMsg="\"root\" needed for Firewall status!"
+  fi
+  printf "$Formatstring\n" "PF-firewall:" "${PFMsg}" "${Information}"
+
+  # SIP
+  [[ $Info -eq 1 ]] &&  Information="(use \"csrutil\" to manipulate System Integrity Protection)" || Information=""
+  [[ -x /usr/bin/csrutil ]] && Security="$(csrutil status 2>/dev/null | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//' | perl -pe 's/^(.)/uc($1)/e')" || Security="System Integrity Protection is not engaged"
+  printf "$Formatstring\n" "SIP:" "${Security}" "${Information}"
+  
+  # GateKeeper
+  [[ $Info -eq 1 ]] &&  Information="(use \"spctl\" to manipulate the GateKeeper application launch protection system)" || Information=""
+  printf "$Formatstring\n" "GateKeeper:" "$(spctl --status 2>/dev/null | awk '{print $2}' | perl -pe 's/^(.)/uc($1)/e')" "${Information}"
+
+  # FileVault
+  # Ideally, one would want to see this on a per disk basis (and thus be in the disk list above), but that will have to wait!
+  FileVaultStatus="$(fdesetup status | awk '{print $NF}' | sed 's/\.$//')"
+  if [ "$FileVaultStatus" = "On" ]; then
+    FVDiskList="$(diskutil cs list | egrep " Disk: | Encryption Type: " | egrep -B1 "AES-XTS" | awk -F '\n' 'ln ~ /^$/ { ln = "matched"; print $1 } $1 ~ /^--$/ { ln = "" }' | awk '{print $NF}' | sed 's/s[0-9]$//')"
+    # Ex: FVDiskList='disk0 disk1'
+    FileVaultStatus="On for $FVDiskList"
+  fi
+  [[ $Info -eq 1 ]] &&  Information="(use \"fdesetup\" to configure FileVault)" || Information=""
+  printf "$Formatstring\n" "FileVault:" "$FileVaultStatus" "${Information}"
+
+    # Little Snitch
+  # If it's running, it should be a "/Library/Little Snitch/Little Snitch Daemon.bundle/Contents/MacOS/Little Snitch Daemon" running
+  if [ -n "$(pgrep -fl "Little Snitch Daemon")" ]; then
+    # LittleSnitchVer is an *awful* kludge, but something went bonkers the “normal” (sed) way...
+    LittleSnitchVer="$(defaults read "$(dirname "$(pgrep -fl "Little Snitch Daemon" | sed 's/^[0-9]* //')" | sed 's/MacOS/Info.plist/')" CFBundleShortVersionString)"
+    LittleSnitch="Installed and running (ver: $LittleSnitchVer)"
+    [[ $Info -eq 1 ]] &&  Information="(Little Snitch is only manipulated through the GUI)" || Information=""
+  else
+    LittleSnitch="Not detected"
+    [[ $Info -eq 1 ]] &&  Information="(\"Little Snitch\" is a third party firewall that you can find at https://www.obdev.at/products/littlesnitch/index.html)" || Information=""
+  fi
+  printf "$Formatstring\n" "Little Snitch:" "${LittleSnitch}" "${Information}"
+
+fi

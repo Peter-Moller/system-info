@@ -1,0 +1,177 @@
+#!/bin/bash
+
+# Copyright 2016 Peter Möller, Pierre Moreau
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+# 
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+######################################################################################
+############################    M E M O R Y   I N F O    #############################
+######################################################################################
+
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mMemory info:                                      ${Reset}\n"
+
+if [ -z "${OS/Linux/}" ]; then
+  # Good article on memory in Linux:
+  # https://www.cyberciti.biz/faq/ram-size-linux/
+
+  # This uses /proc/meminfo which is supposed to look like this:
+  # MemTotal:       264056956 kB
+  # MemFree:        225391912 kB
+  # Buffers:          918352 kB
+  # Cached:         27491600 kB
+  # SwapCached:            0 kB
+  # Active:         10859348 kB
+  # Inactive:       24936760 kB
+  # Active(anon):    7387320 kB
+  # Inactive(anon):   513520 kB
+  # Active(file):    3472028 kB
+  # Inactive(file): 24423240 kB
+  # Unevictable:          48 kB
+  # Mlocked:              48 kB
+  # SwapTotal:       1971196 kB
+  # SwapFree:        1971196 kB
+  # Dirty:               132 kB
+  # Writeback:             0 kB
+  # AnonPages:       7386064 kB
+  # Mapped:           845992 kB
+  # Shmem:            514684 kB
+  # Slab:             984336 kB
+  # SReclaimable:     829524 kB
+  # SUnreclaim:       154812 kB
+  # KernelStack:       15192 kB
+  # PageTables:        74108 kB
+  # NFS_Unstable:          0 kB
+  # Bounce:                0 kB
+  # WritebackTmp:          0 kB
+  # CommitLimit:    133999672 kB
+  # Committed_AS:   18338764 kB
+  # VmallocTotal:   34359738367 kB
+  # VmallocUsed:      776292 kB
+  # VmallocChunk:   34224659660 kB
+  # HardwareCorrupted:     0 kB
+  # AnonHugePages:   5292032 kB
+  # HugePages_Total:       0
+  # HugePages_Free:        0
+  # HugePages_Rsvd:        0
+  # HugePages_Surp:        0
+  # Hugepagesize:       2048 kB
+  # DirectMap4k:      708724 kB
+  # DirectMap2M:    18087936 kB
+  # DirectMap1G:    251658240 kB
+  # 
+  
+  # Also, 'dmidecode --type 17' is used. This creates a list like this:
+  # # dmidecode 2.12
+  # SMBIOS 2.6 present.
+  # 
+  # Handle 0x0040, DMI type 17, 28 bytes
+  # Memory Device
+  # 	Array Handle: 0x003E
+  # 	Error Information Handle: Not Provided
+  # 	Total Width: 72 bits
+  # 	Data Width: 64 bits
+  # 	Size: 16384 MB
+  # 	Form Factor: DIMM
+  # 	Set: None
+  # 	Locator: DIMM_A1
+  # 	Bank Locator: NODE 0 CHANNEL 0 DIMM 0
+  # 	Type: DDR3
+  # 	Type Detail: Synchronous
+  # 	Speed: 1600 MHz
+  # 	Manufacturer: Samsung         
+  # 	Serial Number: 13A941EC  
+  # 	Asset Tag: Unknown         
+  # 	Part Number: M393B2G70BH0-CK0  
+  # 	Rank: 2
+
+  # Use 'free' for total memory since it reports for a normal user as well
+  Memory="$(free -h | grep "^Mem:" | awk '{print $2}')"
+  # Ex: Memory='3.9G'
+  if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
+    if [ -z "$Memory" ]; then
+      Memory="$(dmidecode --type 6,6 2>/dev/null | grep "Installed Size" | grep -v "Not Installed" | cut -d: -f2 | sed 's/ *//')"
+    fi
+    # Ex: Memory='8192 MB (Single-bank Connection)'
+    if [ -z "$Memory" ]; then
+      Memory="$(less /proc/meminfo 2>/dev/null | grep -i MemTotal | cut -d: -f2 | sed 's/ *//')"
+    # Ex: Memory='8011588 kB'
+    fi
+    ECC="$(dmidecode --type memory 2>/dev/null | grep -A1 "Enabled Error Correcting Capabilities" | cut -d: -f2)"
+    if [ -z "${ECC}" ]; then
+      ECC="$(dmidecode --type memory 2>/dev/null | grep "Error Correction Type" | cut -d: -f2 | sed 's/ *//' | sort -u)"
+    fi
+    if [ -z "${ECC}" ]; then
+      ECC='No information provided'
+    fi
+    # Ex: ECC='None'
+    # Number of DIMMs
+    NbrDIMMs=$(dmidecode --type 17 2>/dev/null | egrep "^\sSize:" | cut -d: -f2 | wc -l | sed 's/^ //')
+    NbrDIMMsInstalled=$(dmidecode --type 17 2>/dev/null | egrep "^\sSize:" | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ //')
+    MemorySpeed="$(dmidecode --type 17 2>/dev/null | egrep "^\sSpeed:" | cut -d: -f2 | sort -u | sed 's/^ //' | grep -v 'Unknown')"
+    MemoryType="$(dmidecode --type 17 2>/dev/null | egrep "^\sType:" | cut -d: -f2 | sort -u | sed 's/^ //' | grep -v 'Unknown')"
+  else
+    print_warning "You are not running as \"root\": memory reporting will not work!"
+  fi
+elif [ -z "${OS/Darwin/}" ]; then
+  # This writes the following to $MemTempFile:
+  # Memory:
+  # 
+  #     Memory Slots:
+  # 
+  #       ECC: Enabled
+  #       Upgradeable Memory: Yes
+  # 
+  #         DIMM 1:
+  # 
+  #           Size: 4 GB
+  #           Type: DDR3 ECC
+  #           Speed: 1333 MHz
+  #           Status: OK
+  #           Manufacturer: 0x0198
+  #           Part Number: 0x393936353532352D3033332E4130304C4620
+  #           Serial Number: 0xD614209B
+  # And so on with one part per DIMM
+  # The line with the DIMM spec may also look like this:
+  #         BANK 0/DIMM0:
+  # or
+  #         DIMM Riser B/DIMM 2:
+  # An empty slot is marked with:
+  #           Size: Empty
+
+  Memory="$(grep Memory $OSTempFile | cut -d: -f2 | sed 's/\ *//')"
+  # Ex: Memory='32 GB'
+  # Save memory information to file (for performance):
+  system_profiler SPMemoryDataType >> $MemTempFile
+  MemorySpeed="$(grep "^\ *Speed:" $MemTempFile | sort -u | grep -v Empty | cut -d: -f2 | sed 's/ *//')"
+  MemoryType="$(grep "^\ *Type:" $MemTempFile | sort -u | grep -v Empty | cut -d: -f2 | sed 's/ *//')"
+  ECC="$(grep "^\ *ECC:" $MemTempFile | cut -d: -f2 | sed 's/ *//')"
+  # Ex: ECC='Enabled'
+  NbrDIMMs=$(egrep "DIMM.*:" $MemTempFile | wc -l | sed 's/^ *//')
+  NbrDIMMsInstalled=$(egrep "Size:" $MemTempFile | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ *//')
+fi
+
+printf "$Formatstring\n" "Memory size:" "${Memory} (ECC: $ECC)" ""
+printf "$Formatstring\n" "Memory type:" "${MemoryType:-No information available}" ""
+printf "$Formatstring\n" "Memory Speed:" "${MemorySpeed:-No information available}" ""
+printf "$Formatstring\n" "Number of DIMMs:" "${NbrDIMMs:-No information available} (${NbrDIMMsInstalled} filled)" ""

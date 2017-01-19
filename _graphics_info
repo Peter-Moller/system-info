@@ -1,0 +1,69 @@
+# Copyright 2016 Peter Möller, Pierre Moreau
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+# 
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+######################################################################################
+##########################    G R A P H I C S   I N F O    ###########################
+######################################################################################
+
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mGraphics info:                                    ${Reset}\n"
+
+if [ -z "${OS/Linux/}" ]; then
+  echo ""
+elif [ -z "${OS/Darwin/}" ]; then
+  system_profiler -xml SPDisplaysDataType 2>/dev/null > "$GraphicsTempFile"
+  # Get info about Graphics Card
+  GraphicsCardData="$(xmllint --xpath '//dict/key[text()="sppci_model" or text()="spdisplays_vram" or text()="sppci_model"]/following-sibling::string[1]' $GraphicsTempFile)"
+  # Ex, iMac:        GraphicsCardData='<string>4096 MB</string><string>NVIDIA GeForce GTX 780M</string>'
+  # Ex, Mac Pro:     GraphicsCardData='<string>3072 MB</string><string>AMD FirePro D500</string><string>3072 MB</string><string>AMD FirePro D500</string>'
+  # Ex, MacBook Pro: GraphicsCardData='<string>Intel HD Graphics 4000</string><string>1024 MB</string><string>NVIDIA GeForce GT 650M</string>'
+  # Ex, Mac mini:    GraphicsCardData='<string>Intel Iris</string>'
+
+  # Dig the graphics cards and their memory from $GraphicsTempFile. Replace ' ' with '_' to make the array work
+  array=($(xmllint --xpath '//dict/key[text()="sppci_model" or text()="spdisplays_vram" or text()="sppci_model"]/following-sibling::string[1]' $GraphicsTempFile | sed -e 's/ /_/g' -e 's/\<string\>//g' -e 's/\<\/string\>/ /g'))
+  # Ex: ${array[@]}='4096_MB NVIDIA_GeForce_GTX_780M'
+  # Ex: ${array[@]}='Intel_HD_Graphics_4000 1024_MB NVIDIA_GeForce_GT_650M'
+  # Ex: ${array[@]}='3072_MB AMD_FirePro_D500 3072_MB AMD_FirePro_D500'
+  # The array consists of:
+  # - a single element:   an integrated graphics card name (and no memory info since it's shared)
+  # - a pair of elements: amount of VRAM and graphics card name (for “real” GPU:s)
+  # Thus we need to traverse the array accordingly
+
+  # Cycle through the array and print it
+  printf "${ESC}${UnderlineFace}m${FormatstringGraphics}${Reset}\n" "Graphics Card"  "Graphics memory"
+  i=0
+  while [ $i -lt $(echo "${#array[@]} / 2 + 1" | bc) ]; do
+    if [ -n "$(echo ${array[$i]} | grep -o "^[A-Z]")" ]; then
+      # If the pair starts with text (instead of a number), it denotes an integrated graphics card
+      printf "$FormatstringGraphics\n" "${array[$i]//_/ }:" "no dedicated graphics memory"
+      i=$((i+1))
+    else
+      # Else it's a “real” GPU with a memory specification
+      printf "$FormatstringGraphics\n" "${array[$i+1]//_/ }:" "${array[$i]//_/ }"
+      # Increment by teo to get right for the next pair
+      i=$((i+2))
+    fi
+  done
+  [[ $Info -eq 1 ]] &&  echo "(use \"system_profiler SPDisplaysDataType\" to get info about graphics cards and displays)"
+fi

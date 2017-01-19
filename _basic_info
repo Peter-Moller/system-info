@@ -1,0 +1,234 @@
+# Copyright 2016 Peter Möller, Pierre Moreau
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+# 
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+######################################################################################
+##########################    B A S I C   O S - I N F O     ##########################
+######################################################################################
+
+# OS version (either 'Darwin' or 'Linux')
+# See a comprehensive list of uname results: 
+# https://en.wikipedia.org/wiki/Uname
+OS="$(uname -s 2>/dev/null)"
+# OS Size ('32' / '64')
+OS_size="$(uname -m 2>/dev/null | sed -e "s/i.86/32/" -e "s/x86_64/64/" -e "s/armv7l/32/")"
+# OS Architecture ('x86_64')
+OS_arch="$(uname -m 2>/dev/null | sed -e "s/i386/i686/")"
+
+
+# Check for functions used
+if [ -z "${OS/Linux/}" ]; then
+  exists dmidecode || print_warning "Command 'dmidecode' not found: some memory-related information will be unavailable!"
+  exists zcat || print_warning "Command 'zcat' not found: some security-related information will be unavailable!"
+fi
+echo ""
+
+# Get things that differ
+
+# Linux
+if [ -z "${OS/Linux/}" ]; then
+  ComputerName="$(uname -n)"
+  # ComputerName=vm67.cs.lth.se
+
+  # Find out which Distro
+  # Fist: look at the /etc/*-release files
+  Distro="$(less $(ls -1 /etc/mageia-release /etc/centos-release /etc/redhat-release /etc/gentoo-release /etc/fedora-release 2>/dev/null | head -1) 2>/dev/null)"
+  # Distro='CentOS Linux release 7.2.1511 (Core) '
+  # If no such file, look for /etc/os-release
+  if [ -z "$Distro" ]; then
+    [[ -f /etc/os-release ]] && Distro="$(less /etc/os-release | grep PRETTY_NAME | cut -d\" -f2)"
+    # Distro='CentOS Linux 7 (Core)'
+  fi
+  # If no such file, look for /etc/lsb-release
+  if [ -z "$Distro" ]; then
+    [[ -f /etc/lsb-release ]] && Distro="$(less /etc/os-release | grep DISTRIB_DESCRIPTION | cut -d\" -f2)"
+  fi
+  # If no such file, look for /proc/version
+  if [ -z "$Distro" ]; then
+    [[ -f /proc/version ]] && Distro="$(less /proc/version | cut -d\( -f1)"
+    # Distro='Linux version 3.10.0-327.36.3.el7.x86_64 '
+  fi
+  # OK, so it an unknown system
+  if [ -z "$Distro" ]; then
+    Distro="Unknown Linux-distro"
+  fi
+
+  # Get kernel version
+  KernelVer="$(uname -r | cut -d\. -f1,2 2>/dev/null)"
+  # KernelVer='3.10'
+
+  # Are we running in a VM environment?
+  # First, see if PID 1 is not 'init'
+  if [ ! "$(ps -p 1 -o comm 2>/dev/null | grep -v COMMAND)" = "init" ]; then
+    if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
+      VMenv="$(dmidecode -s system-product-name 2>/dev/null)"
+      # Ex: VMenv='VMware Virtual Platform'
+      if [ -z "$VMenv" ]; then
+        VMenv="$(virt-what 2>/dev/null)"
+        # Ex: VMenv='vmware'
+      fi
+    fi
+    if [ -z "$VMenv" ]; then
+      VMenv="$(dmesg 2>/dev/null | grep -i " Hypervisor detected: " 2>/dev/null | cut -d: -f2 | sed 's/^ *//')"
+      # Ex: VMenv='VMware'
+    fi
+    if [ -z "$VMenv" ]; then
+      VMenv="$(if [ -n "$(grep "^flags.*\ hypervisor\ " /proc/cpuinfo)" ]; then echo "VM environment detected"; fi)"
+      # Ex: VMenv='VM environment detected'
+    fi
+  fi
+
+
+elif [ -z "${OS/Darwin/}" ]; then
+  DistroVer="$(sw_vers -productVersion 2>/dev/null)"
+  # Get a full name for the version:
+  case "$DistroVer" in
+    "10.4"*) Distro="Mac OS X \"Tiger\"" ;;
+    "10.5"*) Distro="Mac OS X \"Leopard\"" ;;
+    "10.6"*) Distro="Mac OS X \"Snow Leopard\"" ;;
+    "10.7"*) Distro="Mac OS X \"Lion\"" ;;
+    "10.8"*) Distro="OS X \"Mountain Lion\"" ;;
+    "10.9"*) Distro="OS X \"Mavericks\"" ;;
+    "10.10"*) Distro="OS X \"Yosemite\"" ;;
+    "10.11"*) Distro="OS X \"El Capitan\"" ;;
+    "10.12"*) Distro="macOS \"Sierra\"" ;;
+    *) Distro="macOS" ;;
+  esac
+  ComputerName="$(networksetup -getcomputername 2>/dev/null)"
+  # Get basic Mac info for later usage:
+  system_profiler SPHardwareDataType 2>/dev/null > "$OSTempFile"
+  # This produces a file like this:
+  # Hardware:
+  #
+  #    Hardware Overview:
+  #
+  #      Model Name: Mac Pro
+  #      Model Identifier: MacPro5,1
+  #      Processor Name: 6-Core Intel Xeon
+  #      Processor Speed: 2.93 GHz
+  #      Number of Processors: 2
+  #      Total Number of Cores: 12
+  #      L2 Cache (per Core): 256 KB
+  #      L3 Cache (per Processor): 12 MB
+  #      Memory: 24 GB
+  #      Processor Interconnect Speed: 6.4 GT/s
+  #      Boot ROM Version: MP51.007F.B03
+  #      SMC Version (system): 1.39f11
+  #      SMC Version (processor tray): 1.39f11
+  #      Serial Number (system): CK0XXXXXXXX
+  #      Serial Number (processor tray): J5031XXXXXXXX     
+  #      Hardware UUID: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+  # 
+  # Using 'Model Identifier', one can identify a Mac at the sites at the end of the script
+  
+  # What Mac model is it?
+  ModelIdentifier="$(egrep "^\s*Model Identifier:" $OSTempFile | cut -d: -f2 | sed 's/^ //')"
+  # ModelIdentifier='iMac14,2'
+  # Get the long name for it
+  ModelIdentifierName="$(grep "#.*:${ModelIdentifier}$" "$ScriptName" | cut -d: -f1 | sed 's/#/- /')"
+  # ModelIdentifierName='- iMac (27-inch, Late 2013)'
+  # If the first three letters of $ModelIdentifier doesn't include 'Mac' och 'iMa', we are probably running inside a VM
+  if [ ! "$(echo $ModelIdentifier | cut -c1-3)" = "Mac" -a ! "$(echo $ModelIdentifier | cut -c1-3)" = "iMa" ]; then
+    VMenv="$ModelIdentifier"
+    ModelIdentifier="Virtual Mac"
+    ModelIdentifierName=" "
+  fi
+
+  # Are we bound to AD?
+  # See: https://www.jamf.com/jamf-nation/discussions/7039/how-to-check-if-a-computer-is-actually-bound-to-the-ad for details
+  ADDomain="$(dsconfigad -show 2>/dev/null | grep "Active Directory Domain" | cut -d= -f2 | sed 's/^ *//')"
+  # Ex: ADDomain='uw.lu.se'
+  
+  # Find out about Profiles (MCX -- Apples managed profiles)
+  if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
+    # See: http://krypted.com/mac-security/manage-profiles-from-the-command-line-in-os-x-10-9/ for details
+    Profiles="$(/usr/bin/profiles -P 2>/dev/null)"
+    # Ex: MCX='There are no configuration profiles installed'
+    # In fact, I have no machines with MCX on to try...
+  fi
+
+  # I would also like to find out about various management services, such as Casper.
+  # However, this may quickly be a kludge since there are som many management services!
+  # Proceed with caution!
+
+  # Find out if it's a server
+  # First step: does the name fromsw_vers include "server"?
+  # Find out if it's a server and if it's configured or not
+  if [ -z "$(echo "$SW_VERS" | grep -i server)" ]; then
+    # If not, it may still be a server. Beginning with OS X 10.8 all versions include the command serverinfo:
+    serverinfo --software 1>/dev/null
+    # Exit code 0 = server; 1 = NOT server
+    ServSoft=$?
+    if [ $ServSoft -eq 0 ]; then
+      # Is it configured?
+      serverinfo --configured 1>/dev/null
+      ServConfigured=$?
+      if [ $ServConfigured -eq 0 ]; then
+        OSX_server="$(serverinfo --productname 2>/dev/null) $(serverinfo --shortversion)"
+      else
+        OSX_server="$(serverinfo --productname 2>/dev/null) $(serverinfo --shortversion) - unconfigured"
+      fi
+    fi
+  fi
+fi
+
+function is_kernel_config_set()
+{
+  if [ ! -z "${OS/Linux/}" ]; then
+    return 1
+  fi
+
+  [[ $(uname -m 2>/dev/null) == "x86_64" ]] && Arch='amd64'
+  #[[ -f '/proc/config.gz' ]] && ConfigPath='/proc/config.gz' || ([[ -f '/proc/config' ]] && ConfigPath='/proc/config' || ([[ -f "/boot/config-${KernelVer}-${Arch}" ]] && ConfigPath="/boot/config-${KernelVer}-${Arch}" || return 1))
+  if [[ -f '/proc/config.gz' ]]; then
+    ConfigPath='/proc/config.gz'
+  elif [[ -f '/proc/config' ]]; then
+    ConfigPath='/proc/config'
+  elif [[ -f "/boot/config-${KernelVer}-${Arch}" ]]; then
+    ConfigPath="/boot/config-${KernelVer}-${Arch}"
+  else
+    return 1
+  fi
+  GzFile=$(echo "${ConfigPath}" | grep '.gz')
+  [[ ! -z "${GzFile}" ]] && Value="$(zcat ${ConfigPath} 2>/dev/null | grep "^CONFIG_${1}")" || Value="$(cat ${ConfigPath} 2>/dev/null | grep "^CONFIG_${1}")"
+  [[ -z "${Value}" ]] && return 1 || return 0
+}
+
+### PRINT THE RESULT
+printf "${ESC}${BlackBack};${WhiteFont}mSystem info for:${Reset} ${ESC}${WhiteBack};${BlackFont}m$ComputerName${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${Reset} ${ESC}${WhiteBack};${BlackFont}m$(date +%F", "%R)${Reset}\n"
+
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System:                                 ${Reset}\n"
+
+
+printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")" ""
+[[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer" ""
+printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
+printf "$Formatstring\n" "Virtual env.:" "${VMenv:-No VM environment detected}" ""
+if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profiler SPHardwareDataType\" to see hardware details)"; fi
+if [ -n "$ModelIdentifier" ]; then
+  printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier ${ModelIdentifierName:-Unknown Mac-model}" "${Information}"
+fi
+if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"dsconfigad -show\" to see AD-connection details)"; fi
+printf "$Formatstring\n" "Active Directory:" "${ADDomain:-Not bound}" "${Information}"
+if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"profiles -P\" to see details about installed Profiles)"; fi
+printf "$Formatstring\n" "Managed profiles:" "${Profiles:-No information}" "${Information}"
