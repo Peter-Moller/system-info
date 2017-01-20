@@ -179,7 +179,7 @@ FormatstringDisk="%-18s%-10s%-13s%-15s%-6s%-20s"
 # disk0            500.3 GB  Solid State   Verified  Yes   SATA/SATA Express   
 # FormatstringGraphics is intended for graphics info
 # FormatstringFS is intended for the file system listing
-FormatstringFS="%-10s%-30s%-14s%-35s"
+FormatstringFS="%-14s%-30s%-14s%-35s"
 FormatstringGraphics="%-28s%-20s"
 # FormatstringLinuxFirewall is intended for the Linux firewalls entries
 FormatstringLinuxFirewall="%-18s%-9s%-18s%-9s%-3s"
