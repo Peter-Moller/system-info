@@ -98,6 +98,13 @@ if [ -z "${OS/Linux/}" ]; then
     fi
   fi
 
+  # Detect if the computer is connected to a LDAP-server
+  if [ -n "$(grep "^passwd" /etc/nsswitch.conf | grep ldap)" ]; then
+    LDAPserver="$(grep "^uri " /etc/ldap.conf | cut -d\/ -f3)"
+    LDAPbase="$(grep "^base " /etc/ldap.conf | awk '{print $NF}')"
+    DirectoryService="Connected to LDAP-server \"$LDAPserver\" with base \"LDAPbase\""
+  fi
+
 
 elif [ -z "${OS/Darwin/}" ]; then
   DistroVer="$(sw_vers -productVersion 2>/dev/null)"
@@ -158,6 +165,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   # See: https://www.jamf.com/jamf-nation/discussions/7039/how-to-check-if-a-computer-is-actually-bound-to-the-ad for details
   ADDomain="$(dsconfigad -show 2>/dev/null | grep "Active Directory Domain" | cut -d= -f2 | sed 's/^ *//')"
   # Ex: ADDomain='uw.lu.se'
+  [[ -n "$ADDomain" ]] && DirectoryService="Bound to \"$ADDomain\" (Active Directory)" || DirectoryService=""
   
   # Find out about Profiles (MCX -- Apples managed profiles)
   if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
@@ -224,11 +232,17 @@ printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_s
 [[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer" ""
 printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
 printf "$Formatstring\n" "Virtual env.:" "${VMenv:-No VM environment detected}" ""
-if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profiler SPHardwareDataType\" to see hardware details)"; fi
+if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profiler SPHardwareDataType\" to see hardware details)"; else Information=""; fi
 if [ -n "$ModelIdentifier" ]; then
   printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier ${ModelIdentifierName:-Unknown Mac-model}" "${Information}"
 fi
-if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"dsconfigad -show\" to see AD-connection details)"; fi
-printf "$Formatstring\n" "Active Directory:" "${ADDomain:-Not bound}" "${Information}"
-if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"profiles -P\" to see details about installed Profiles)"; fi
+if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then
+  Information="(Use \"dsconfigad -show\" to see AD-connection details)"
+elif [ $Info -eq 1 -a -z "${OS/Linux/}" ]; then
+  Information="(Look in  \"/etc/ldap.conf\" for LDAP-connection details)"
+else
+  Information=""
+fi
+printf "$Formatstring\n" "Directory Service:" "${DirectoryService:-Not bound}" "${Information}"
+if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"profiles -P\" to see details about installed Profiles)"; else Information=""; fi
 printf "$Formatstring\n" "Managed profiles:" "${Profiles:-No information}" "${Information}"

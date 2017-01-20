@@ -166,10 +166,7 @@ BGColor="$RES"
 Face="$RES"
 FontColor="$RES"
 
-Formatstring="%-18s%-40s%-30s"
-# 1 "123456789012345678"
-# 2 "1234567890123456789012345678901234567890"
-# 3 "123456789012345678901234567890"
+Formatstring="%-20s%-40s%-30s"
 # FormatString is intended for:
 # "Head" "Value" "Extra information (-i flag)"
 # FormatstringNetwork is intended for the network listing
