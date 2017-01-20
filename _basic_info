@@ -102,7 +102,7 @@ if [ -z "${OS/Linux/}" ]; then
   if [ -n "$(grep "^passwd" /etc/nsswitch.conf | grep ldap)" ]; then
     LDAPserver="$(grep "^uri " /etc/ldap.conf | cut -d\/ -f3)"
     LDAPbase="$(grep "^base " /etc/ldap.conf | awk '{print $NF}')"
-    DirectoryService="Connected to LDAP-server \"$LDAPserver\" with base \"LDAPbase\""
+    DirectoryService="Connected to LDAP-server \"$LDAPserver\" with base \"$LDAPbase\""
   fi
 
 
