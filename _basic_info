@@ -101,8 +101,10 @@ if [ -z "${OS/Linux/}" ]; then
   # Detect if the computer is connected to a LDAP-server
   if [ -n "$(grep "^passwd" /etc/nsswitch.conf | grep ldap)" ]; then
     LDAPserver="$(grep "^uri " /etc/ldap.conf | cut -d\/ -f3)"
+    # Ex: LDAPserver='ldap.ddg.lth.se'
     LDAPbase="$(grep "^base " /etc/ldap.conf | awk '{print $NF}')"
-    DirectoryService="Connected to LDAP-server \"$LDAPserver\" with base \"$LDAPbase\""
+    # Ex: LDAPbase='dc=student,dc=lth,dc=se'
+    DirectoryService="LDAP-server: \"$LDAPserver\"; base: \"$LDAPbase\""
   fi
 
 
