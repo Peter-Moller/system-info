@@ -125,15 +125,18 @@ elif [ -z "${OS/Darwin/}" ]; then
     for j in $PartList
     # Ex: j='disk1s2'
     do
-      MountPoint="$(df | grep $j | awk '{print $NF}')"
+      MountPoint="$(df 2>/dev/null | grep $j | awk '{print $NF}')"
       # Ex: MountPoint='/Volumes/RAID'
-      FS="$(diskutil info "$MountPoint" | grep "Name (User Visible):" | cut -d: -f2 | sed 's/^ *//')"
-      # Ex: FS='Mac OS Extended (Case-sensitive, Journaled)'
-      Avail="$(df -kh "$MountPoint" | grep $j | awk '{print $4}')"
-      # Ex: Avail='48%'
-      [[ -n "$FS" ]] && Filled="$(echo "100 - $(df -kh "$MountPoint" | grep $j | awk '{print $5}' | sed 's/\%$//')" | bc)"
-      # Ex: Filled='52'
-      [[ -n "$FS" ]] && printf "${FormatstringFS}\n" "$j" "$MountPoint" "${Avail} (${Filled}%)" "$FS"
+      # Proceed only if we have a MountPoint
+      if [ -n "$MountPoint" ]; then
+        FS="$(diskutil info "$MountPoint" | grep "Name (User Visible):" | cut -d: -f2 | sed 's/^ *//')"
+        # Ex: FS='Mac OS Extended (Case-sensitive, Journaled)'
+        Avail="$(df -kh "$MountPoint" | grep $j | awk '{print $4}')"
+        # Ex: Avail='48%'
+        Filled="$(echo "100 - $(df -kh "$MountPoint" | grep $j | awk '{print $5}' | sed 's/\%$//')" | bc)"
+        # Ex: Filled='52'
+        printf "${FormatstringFS}\n" "$j" "$MountPoint" "${Avail} (${Filled}%)" "$FS"
+      fi
     done
   done
 
