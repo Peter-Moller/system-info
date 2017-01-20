@@ -117,28 +117,20 @@ elif [ -z "${OS/Darwin/}" ]; then
 
   # Secondly, get a list of File Systems on the partitions
   printf "${ESC}${UnderlineFace}m${FormatstringFS}${Reset}\n" "Partition" "Mount Point" "Available" "File System"
-  for i in $(diskutil list 2>/dev/null | egrep "^\/dev" | sed 's;/dev/;;' | egrep -v "virtual|disk image" | awk '{print $1}')
+  #for i in $(diskutil list 2>/dev/null | egrep "^\/dev" | sed 's;/dev/;;' | egrep -v "virtual|disk image" | awk '{print $1}')
   # Ex: i='disk0'
+  for i in $(df 2>/dev/null | egrep "^\/dev\/disk" | awk '{print $1}')
+  # Ex: i='/dev/disk1'
   do
-    PartList="$(diskutil list $i | egrep -v "^\/|^ *[#0]:" | awk '{print $NF}')"
-    # Ex: PartList='disk3s1 disk3s2 disk3s3'
-    for j in $PartList
-    # Ex: j='disk1s2'
-    do
-      MountPoint="$(df 2>/dev/null | grep $j | cut -d% -f3 | sed 's/^ *//')"
-      # Ex: MountPoint='/Volumes/Local TimeMachine'
-      # Proceed only if we have a MountPoint
-      if [ -n "$MountPoint" ]; then
-        FS="$(diskutil info "$MountPoint" | grep "Name (User Visible):" | cut -d: -f2 | sed 's/^ *//')"
-        # Ex: FS='Mac OS Extended (Case-sensitive, Journaled)'
-        Avail="$(df -kh "$MountPoint" | grep $j | awk '{print $4}')"
-        # Ex: Avail='48%'
-        Filled="$(echo "100 - $(df -kh "$MountPoint" | grep $j | awk '{print $5}' | sed 's/\%$//')" | bc)"
-        # Ex: Filled='52'
-        printf "${FormatstringFS}\n" "$j" "$MountPoint" "${Avail} (${Filled}%)" "$FS"
-      fi
-    done
+    MountPoint="$(df 2>/dev/null | grep "^$i" | cut -d% -f3 | sed 's/^ *//')"
+    # Ex: MountPoint='/Volumes/Local TimeMachine'
+    FS="$(diskutil info "$MountPoint" | grep "Name (User Visible):" | cut -d: -f2 | sed 's/^ *//')"
+    # Ex: FS='Mac OS Extended (Case-sensitive, Journaled)'
+    Avail="$(df -kh "$MountPoint" | grep $j | awk '{print $4}')"
+    # Ex: Avail='48%'
+    Filled="$(echo "100 - $(df -kh "$MountPoint" | grep $j | awk '{print $5}' | sed 's/\%$//')" | bc)"
+    # Ex: Filled='52'
+    printf "${FormatstringFS}\n" "$j" "$MountPoint" "${Avail} (${Filled}%)" "$FS"
   done
-
   [[ $Info -eq 1 ]] &&  echo "(Use \"diskutil\" and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType\" to see details about your disks)"
 fi
