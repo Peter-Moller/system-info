@@ -173,7 +173,7 @@ Formatstring="%-18s%-40s%-30s"
 # FormatString is intended for:
 # "Head" "Value" "Extra information (-i flag)"
 # FormatstringNetwork is intended for the network listing
-FormatstringNetwork="%-10s%-22s%-15s%-30s"
+FormatstringNetwork="%-10s%-27s%-15s%-30s"
 # FormatstringDisk is intended for the disk listing
 FormatstringDisk="%-18s%-10s%-13s%-15s%-6s%-20s"
 # 123456789012345678901234567890123456789012345678901234567890
