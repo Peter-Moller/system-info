@@ -125,8 +125,8 @@ elif [ -z "${OS/Darwin/}" ]; then
     for j in $PartList
     # Ex: j='disk1s2'
     do
-      MountPoint="$(df 2>/dev/null | grep $j | awk '{print $NF}')"
-      # Ex: MountPoint='/Volumes/RAID'
+      MountPoint="$(df 2>/dev/null | grep $j | cut -d% -f3 | sed 's/^ *//')"
+      # Ex: MountPoint='/Volumes/Local TimeMachine'
       # Proceed only if we have a MountPoint
       if [ -n "$MountPoint" ]; then
         FS="$(diskutil info "$MountPoint" | grep "Name (User Visible):" | cut -d: -f2 | sed 's/^ *//')"
