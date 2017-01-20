@@ -111,7 +111,6 @@ elif [ -z "${OS/Darwin/}" ]; then
       # Ex: Size='500.3 GB'
     fi
     printf "$FormatstringDisk\n" "$i" "$Size" "${MediumType:---}" "${SMART:---}" "${TRIM:---}" "$Bus"
-    #diskutil info "$(df | grep "\/dev\/${DISK}s" | awk '{print $NF}')" | grep "Name (User Visible):" | cut -d: -f2 | sed 's/^ *//'
   done
 
   echo
@@ -124,14 +123,15 @@ elif [ -z "${OS/Darwin/}" ]; then
     PartList="$(diskutil list $i | egrep -v "^\/|^ *[#0]:" | awk '{print $NF}')"
     # Ex: PartList='disk3s1 disk3s2 disk3s3'
     for j in $PartList
+    # Ex: j='disk1s2'
     do
       MountPoint="$(df | grep $j | awk '{print $NF}')"
       # Ex: MountPoint='/Volumes/RAID'
       FS="$(diskutil info "$MountPoint" | grep "Name (User Visible):" | cut -d: -f2 | sed 's/^ *//')"
       # Ex: FS='Mac OS Extended (Case-sensitive, Journaled)'
-      Avail="$(df -kh $MountPoint | grep $j | awk '{print $4}')"
+      Avail="$(df -kh "$MountPoint" | grep $j | awk '{print $4}')"
       # Ex: Avail='48%'
-      [[ -n "$FS" ]] && Filled="$(echo "100 - $(df -kh $MountPoint | grep $j | awk '{print $5}' | sed 's/\%$//')" | bc)"
+      [[ -n "$FS" ]] && Filled="$(echo "100 - $(df -kh "$MountPoint" | grep $j | awk '{print $5}' | sed 's/\%$//')" | bc)"
       # Ex: Filled='52'
       [[ -n "$FS" ]] && printf "${FormatstringFS}\n" "$j" "$MountPoint" "${Avail} (${Filled}%)" "$FS"
     done
