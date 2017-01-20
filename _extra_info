@@ -38,12 +38,14 @@ elif [ -z "${OS/Darwin/}" ]; then
     # First, Homebrew
     [[ $Info -eq 1 ]] &&  Information="(A great package manager to be found at http://brew.sh)" || Information=""
     if [ -f /usr/local/bin/brew ]; then
-      # Homebrew doesn't allow root to run it, so we must deal with it
-      if [ -z "${USER/root/}" ]; then
-        HBver="$(su "$(/bin/ls -1 /Users/ | grep "^[a-z]" | head -1)" /usr/local/bin/brew --version 2>/dev/null | head -1 | awk '{print $NF}')"
-      else
-        HBver="$(/usr/local/bin/brew --version 2>/dev/null | head -1 | awk '{print $NF}')"
-      fi
+      ## Homebrew doesn't allow root to run it, so we must deal with it
+      #if [ -z "${USER/root/}" ]; then
+      #  HBver="$(su "$(/bin/ls -1 /Users/ | grep "^[a-z]" | head -1)" /usr/local/bin/brew --version 2>/dev/null | head -1 | awk '{print $NF}')"
+      #else
+      #  HBver="$(/usr/local/bin/brew --version 2>/dev/null | head -1 | awk '{print $NF}')"
+      #fi
+      # Better version (that assumes that Homebrew is in /usr/local/Homebrew)
+      [[ -d "/usr/local/Homebrew" ]] && HBver="$(git -C /usr/local/Homebrew describe --tags --dirty 2>/dev/null)" || HBver="Unknown Homebrew version"
       printf "${Formatstring}\n" "Homebrew:" "$HBver" "$Information"
     fi
     [[ $Info -eq 1 ]] &&  Information="(A great package manager to be found at https://www.macports.org)" || Information=""
