@@ -30,6 +30,13 @@
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mGraphics info:                                    ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
+  # Loook at:
+  # - lsmod | grep drm
+  # - nvidia-smi
+  # - glxinfo | egrep "vendor|version"
+  # - xpdyinfo
+  # for info about the graphics environment
+
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
   system_profiler -xml SPDisplaysDataType 2>/dev/null > "$GraphicsTempFile"
