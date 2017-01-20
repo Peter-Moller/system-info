@@ -119,18 +119,20 @@ elif [ -z "${OS/Darwin/}" ]; then
   printf "${ESC}${UnderlineFace}m${FormatstringFS}${Reset}\n" "Partition" "Mount Point" "Available" "File System"
   #for i in $(diskutil list 2>/dev/null | egrep "^\/dev" | sed 's;/dev/;;' | egrep -v "virtual|disk image" | awk '{print $1}')
   # Ex: i='disk0'
-  for i in $(df 2>/dev/null | egrep "^\/dev\/disk" | awk '{print $1}')
+  PartList="$(df 2>/dev/null | egrep "^\/dev\/disk" | awk '{print $1}')"
+  # Ex: PartList='/dev/disk1 /dev/disk2s3 /dev/disk3s3 /dev/disk3s2 /dev/disk2s2'
+  for i in $PartList
   # Ex: i='/dev/disk1'
   do
     MountPoint="$(df 2>/dev/null | grep "^$i" | cut -d% -f3 | sed 's/^ *//')"
     # Ex: MountPoint='/Volumes/Local TimeMachine'
     FS="$(diskutil info "$MountPoint" | grep "Name (User Visible):" | cut -d: -f2 | sed 's/^ *//')"
     # Ex: FS='Mac OS Extended (Case-sensitive, Journaled)'
-    Avail="$(df -kh "$MountPoint" | grep $j | awk '{print $4}')"
+    Avail="$(df -kh "$MountPoint" | grep $i | awk '{print $4}')"
     # Ex: Avail='48%'
-    Filled="$(echo "100 - $(df -kh "$MountPoint" | grep $j | awk '{print $5}' | sed 's/\%$//')" | bc)"
+    Filled="$(echo "100 - $(df -kh "$MountPoint" | grep $i | awk '{print $5}' | sed 's/\%$//')" | bc)"
     # Ex: Filled='52'
-    printf "${FormatstringFS}\n" "$j" "$MountPoint" "${Avail} (${Filled}%)" "$FS"
+    printf "${FormatstringFS}\n" "$i" "$MountPoint" "${Avail} (${Filled}%)" "$FS"
   done
   [[ $Info -eq 1 ]] &&  echo "(Use \"diskutil\" and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType\" to see details about your disks)"
 fi
