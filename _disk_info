@@ -119,7 +119,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   printf "${ESC}${UnderlineFace}m${FormatstringFS}${Reset}\n" "Partition" "Mount Point" "Available" "File System"
   #for i in $(diskutil list 2>/dev/null | egrep "^\/dev" | sed 's;/dev/;;' | egrep -v "virtual|disk image" | awk '{print $1}')
   # Ex: i='disk0'
-  PartList="$(df 2>/dev/null | egrep "^\/dev\/disk" | awk '{print $1}')"
+  PartList="$(df 2>/dev/null | egrep "^\/dev\/disk" | awk '{print $1}' | sort)"
   # Ex: PartList='/dev/disk1 /dev/disk2s3 /dev/disk3s3 /dev/disk3s2 /dev/disk2s2'
   for i in $PartList
   # Ex: i='/dev/disk1'
