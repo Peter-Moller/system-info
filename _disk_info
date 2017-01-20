@@ -86,6 +86,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   printf "${ESC}${UnderlineFace}m${FormatstringDisk}${Reset}\n" "BSD Name"  "Size" "Medium Type" "S.M.A.R.T." "TRIM" "Bus"
   # Iterate through the list of disks:
   for i in $(diskutil list 2>/dev/null | egrep "^\/dev" | sed 's;/dev/;;' | egrep -v "virtual|disk image" | awk '{print $1}')
+  # Ex: i='disk0'
   do
     # First: it may be a Core Storage volume (FileVault2 or the like)
     if [ -z "$(grep $i $DiskTempFile)" ]; then
@@ -110,6 +111,31 @@ elif [ -z "${OS/Darwin/}" ]; then
       # Ex: Size='500.3 GB'
     fi
     printf "$FormatstringDisk\n" "$i" "$Size" "${MediumType:---}" "${SMART:---}" "${TRIM:---}" "$Bus"
+    #diskutil info "$(df | grep "\/dev\/${DISK}s" | awk '{print $NF}')" | grep "Name (User Visible):" | cut -d: -f2 | sed 's/^ *//'
   done
+
+  echo
+
+  # Secondly, get a list of File Systems on the partitions
+  printf "${ESC}${UnderlineFace}m${FormatstringFS}${Reset}\n" "Partition" "Mount Point" "Available" "File System"
+  for i in $(diskutil list 2>/dev/null | egrep "^\/dev" | sed 's;/dev/;;' | egrep -v "virtual|disk image" | awk '{print $1}')
+  # Ex: i='disk0'
+  do
+    PartList="$(diskutil list $i | egrep -v "^\/|^ *[#0]:" | awk '{print $NF}')"
+    # Ex: PartList='disk3s1 disk3s2 disk3s3'
+    for j in $PartList
+    do
+      MountPoint="$(df | grep $j | awk '{print $NF}')"
+      # Ex: MountPoint='/Volumes/RAID'
+      FS="$(diskutil info "$MountPoint" | grep "Name (User Visible):" | cut -d: -f2 | sed 's/^ *//')"
+      # Ex: FS='Mac OS Extended (Case-sensitive, Journaled)'
+      Avail="$(df -kh $MountPoint | grep $j | awk '{print $4}')"
+      # Ex: Avail='48%'
+      [[ -n "$FS" ]] && Filled="$(echo "100 - $(df -kh $MountPoint | grep $j | awk '{print $5}' | sed 's/\%$//')" | bc)"
+      # Ex: Filled='52'
+      [[ -n "$FS" ]] && printf "${FormatstringFS}\n" "$j" "$MountPoint" "${Avail} (${Filled}%)" "$FS"
+    done
+  done
+
   [[ $Info -eq 1 ]] &&  echo "(Use \"diskutil\" and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType\" to see details about your disks)"
 fi
