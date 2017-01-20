@@ -124,7 +124,7 @@ elif [ -z "${OS/Darwin/}" ]; then
 
   # FileVault
   # Ideally, one would want to see this on a per disk basis (and thus be in the disk list above), but that will have to wait!
-  FileVaultStatus="$(fdesetup status | awk '{print $NF}' | sed 's/\.$//')"
+  FileVaultStatus="$(fdesetup status | grep "^FileVault is " | awk '{print $NF}' | sed 's/\.$//')"
   if [ "$FileVaultStatus" = "On" ]; then
     FVDiskList="$(diskutil cs list | egrep " Disk: | Encryption Type: " | egrep -B1 "AES-XTS" | awk -F '\n' 'ln ~ /^$/ { ln = "matched"; print $1 } $1 ~ /^--$/ { ln = "" }' | awk '{print $NF}' | sed 's/s[0-9]$//')"
     # Ex: FVDiskList='disk0 disk1'
