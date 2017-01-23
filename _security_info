@@ -28,6 +28,11 @@
 ##########################    S E C U R I T Y   I N F O    ###########################
 ######################################################################################
 
+SecurityTempFile="/tmp/.${ScriptName}_Security.$$.txt"
+# FormatstringLinuxFirewall is intended for the Linux firewalls entries
+FormatstringLinuxFirewall="%-18s%-9s%-18s%-9s%-3s"
+
+
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mSecurity info:                                    ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
@@ -147,3 +152,6 @@ elif [ -z "${OS/Darwin/}" ]; then
   printf "$Formatstring\n" "Little Snitch:" "${LittleSnitch}" "${Information}"
 
 fi
+
+
+rm $SecurityTempFile 2>/dev/null

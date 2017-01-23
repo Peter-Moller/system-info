@@ -27,6 +27,10 @@
 ##########################    G R A P H I C S   I N F O    ###########################
 ######################################################################################
 
+GraphicsTempFile="/tmp/.${ScriptName}_Graphics.$$.txt"
+FormatstringGraphics="%-28s%-20s"
+
+
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mGraphics info:                                    ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
@@ -34,7 +38,8 @@ if [ -z "${OS/Linux/}" ]; then
   # - lsmod | grep drm
   # - nvidia-smi
   # - glxinfo | egrep "vendor|version"
-  # - xpdyinfo
+  # - xdpyinfo
+  # - lspci -v | awk '/VGA|3D/,/^$/' | egrep "^[0-9]|^\s*Subsystem:|^\s*Kernel "
   # for info about the graphics environment
 
   echo ""
@@ -74,3 +79,6 @@ elif [ -z "${OS/Darwin/}" ]; then
   done
   [[ $Info -eq 1 ]] &&  echo "(use \"system_profiler SPDisplaysDataType\" to get info about graphics cards and displays)"
 fi
+
+
+rm -rf $GraphicsTempFile 2>/dev/null

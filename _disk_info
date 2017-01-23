@@ -26,6 +26,19 @@
 #############################     D I S K   I N F O     ##############################
 ######################################################################################
 
+
+DiskTempFile="/tmp/.${ScriptName}_Disk.$$.txt"
+# FormatstringDisk is intended for the disk listing
+FormatstringDisk="%-18s%-10s%-13s%-15s%-6s%-20s"
+# 123456789012345678901234567890123456789012345678901234567890
+#          1         1         1         1         1         1
+# BSD Name         Size      Medium Type   SMART     TRIM  Bus                 
+# disk0            500.3 GB  Solid State   Verified  Yes   SATA/SATA Express   
+# FormatstringGraphics is intended for graphics info
+# FormatstringFS is intended for the file system listing
+FormatstringFS="%-14s%-30s%-14s%-35s"
+
+
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mDisk info:                                        ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
@@ -136,3 +149,6 @@ elif [ -z "${OS/Darwin/}" ]; then
   done
   [[ $Info -eq 1 ]] &&  echo "(Use \"diskutil\" and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType\" to see details about your disks)"
 fi
+
+
+rm $DiskTempFile 2>/dev/null

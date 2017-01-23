@@ -131,12 +131,6 @@ fi
 ScriptOwner="$(ls -ls ${DirName}/${ScriptName} | awk '{print $4":"$5}')"
 
 OSTempFile="/tmp/.${ScriptName}_OS.$$.txt"
-CPUTempFile="/tmp/.${ScriptName}_CPU.$$.txt"
-MemTempFile="/tmp/.${ScriptName}_Memory.$$.txt"
-DiskTempFile="/tmp/.${ScriptName}_Disk.$$.txt"
-NetworkTempFile="/tmp/.${ScriptName}_Network.$$.txt"
-SecurityTempFile="/tmp/.${ScriptName}_Security.$$.txt"
-GraphicsTempFile="/tmp/.${ScriptName}_Graphics.$$.txt"
 
 
 # (Colors can be found at http://en.wikipedia.org/wiki/ANSI_escape_code, http://graphcomp.com/info/specs/ansi_col.html and other sites)
@@ -169,20 +163,6 @@ FontColor="$RES"
 Formatstring="%-20s%-40s%-30s"
 # FormatString is intended for:
 # "Head" "Value" "Extra information (-i flag)"
-# FormatstringNetwork is intended for the network listing
-FormatstringNetwork="%-10s%-27s%-15s%-30s"
-# FormatstringDisk is intended for the disk listing
-FormatstringDisk="%-18s%-10s%-13s%-15s%-6s%-20s"
-# 123456789012345678901234567890123456789012345678901234567890
-#          1         1         1         1         1         1
-# BSD Name         Size      Medium Type   SMART     TRIM  Bus                 
-# disk0            500.3 GB  Solid State   Verified  Yes   SATA/SATA Express   
-# FormatstringGraphics is intended for graphics info
-# FormatstringFS is intended for the file system listing
-FormatstringFS="%-14s%-30s%-14s%-35s"
-FormatstringGraphics="%-28s%-20s"
-# FormatstringLinuxFirewall is intended for the Linux firewalls entries
-FormatstringLinuxFirewall="%-18s%-9s%-18s%-9s%-3s"
 
 ##### Done setting basic variables
 
@@ -225,11 +205,6 @@ source _extra_info
 
 # Remove the temp files
 rm $OSTempFile 2>/dev/null
-rm $CPUTempFile 2>/dev/null
-rm $MemTempFile 2>/dev/null
-rm $DiskTempFile 2>/dev/null
-rm $NetworkTempFile 2>/dev/null
-rm $SecurityTempFile 2>/dev/null
 
 
 ######################################################################################

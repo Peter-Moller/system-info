@@ -27,6 +27,9 @@
 ###############################    C P U   I N F O    ################################
 ######################################################################################
 
+CPUTempFile="/tmp/.${ScriptName}_CPU.$$.txt"
+
+
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mCPU info:                                         ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
@@ -82,3 +85,6 @@ fi
 printf "$Formatstring\n" "CPU:" "$(echo $CPU | sed -E -e 's/\(R\)/®/g' -e 's/\(TM\)/™/g')" ""
 printf "$Formatstring\n" "Number of CPUs:" "${NbrCPUs}" ""
 printf "$Formatstring\n" "Cores/CPU:" "${NbrCoresEachCPU}" ""
+
+
+rm $CPUTempFile 2>/dev/null

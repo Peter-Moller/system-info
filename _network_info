@@ -24,10 +24,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-
 ######################################################################################
 ###########################    N E T W O R K   I N F O    ############################
 ######################################################################################
+
+NetworkTempFile="/tmp/.${ScriptName}_Network.$$.txt"
+
+# FormatstringNetwork is intended for the network listing
+FormatstringNetwork="%-10s%-27s%-15s%-30s"
+
 
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mNetwork info:                                     ${Reset}\n"
 
@@ -60,3 +65,6 @@ elif [ -z "${OS/Darwin/}" ]; then
   done
   [[ $Info -eq 1 ]] &&  echo "(Use \"ifconfig\" and \"networksetup\" to see network details)"
 fi
+
+
+rm $NetworkTempFile 2>/dev/null

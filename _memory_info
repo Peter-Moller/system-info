@@ -29,6 +29,10 @@
 ############################    M E M O R Y   I N F O    #############################
 ######################################################################################
 
+
+MemTempFile="/tmp/.${ScriptName}_Memory.$$.txt"
+
+
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mMemory info:                                      ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
@@ -175,3 +179,6 @@ printf "$Formatstring\n" "Memory size:" "${Memory} (ECC: $ECC)" ""
 printf "$Formatstring\n" "Memory type:" "${MemoryType:-No information available}" ""
 printf "$Formatstring\n" "Memory Speed:" "${MemorySpeed:-No information available}" ""
 printf "$Formatstring\n" "Number of DIMMs:" "${NbrDIMMs:-No information available} (${NbrDIMMsInstalled} filled)" ""
+
+
+rm $MemTempFile 2>/dev/null
