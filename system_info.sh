@@ -193,14 +193,14 @@ done
 ######################################################################################
 ####################    Source the various parts of the script   #####################
 ######################################################################################
-source _basic_info
-source _cpu_info
-source _memory_info
-source _disk_info
-source _network_info
-source _security_info
-source _graphics_info
-source _extra_info
+source ${DirName}/_basic_info
+source ${DirName}/_cpu_info
+source ${DirName}/_memory_info
+source ${DirName}/_disk_info
+source ${DirName}/_network_info
+source ${DirName}/_security_info
+source ${DirName}/_graphics_info
+source ${DirName}/_extra_info
 
 
 # Remove the temp files
