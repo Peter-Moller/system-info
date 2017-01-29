@@ -99,11 +99,11 @@ if [ -z "${OS/Linux/}" ]; then
   echo
 
   # File system listing
-  FormatstringFS="%-14s%-15s%-11s%-15s"
+  FormatstringFS="%-12s%-10s%-12s%-35s"
   # 123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
   #          1         1         1         1         1         1         1         1         1
-  # Partition     Mount Point    Available  File System    
-  # /dev/sda5     /boot          23M (7%)   ext4           
+  # Partition   Filesys   Available    Mount Point
+  # /dev/sda5   ext4      23M (7%)     /boot       
   
   df -khT | grep "^\/dev\/" | sort > $DiskTempFile
   # Ex: (header not included)
@@ -111,7 +111,7 @@ if [ -z "${OS/Linux/}" ]; then
   # '/dev/sda6      ext4       74G   53G   18G  75% /'
   # '/dev/sda5      ext4      315M  272M   23M  93% /boot'
   
-  printf "${ESC}${UnderlineFace}m$FormatstringFS${Reset}\n" "Partition" "Mount Point" "Available" "File system"
+  printf "${ESC}${UnderlineFace}m$FormatstringFS${Reset}\n" "Partition" "Filesys" "Available" "Mount Point"
   
   exec 5<$DiskTempFile
   while read -u 5 Partition Type Size Used Avail Use Mounted
@@ -119,7 +119,7 @@ if [ -z "${OS/Linux/}" ]; then
     #AvailPercent="$(df -kh $Partition | grep $Partition | awk '{print $5}')"
     # Ex: AvailPercent='93%'
     FreePercent="$(echo "100 - $(df -kh $Partition | grep $Partition | awk '{print $5}' | sed 's/\%$//')" | bc)"
-    printf "$FormatstringFS\n" "$Partition" "$Mounted" "${Avail} (${FreePercent}%)" "$Type"
+    printf "$FormatstringFS\n" "$Partition" "$Type" "${Avail} (${FreePercent}%)" "$Mounted"
   done
 
   
