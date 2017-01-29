@@ -28,22 +28,87 @@
 
 
 DiskTempFile="/tmp/.${ScriptName}_Disk.$$.txt"
-# FormatstringDisk is intended for the disk listing
-FormatstringDisk="%-18s%-10s%-13s%-15s%-6s%-20s"
-# 123456789012345678901234567890123456789012345678901234567890
-#          1         1         1         1         1         1
-# BSD Name         Size      Medium Type   SMART     TRIM  Bus                 
-# disk0            500.3 GB  Solid State   Verified  Yes   SATA/SATA Express   
-# FormatstringGraphics is intended for graphics info
-# FormatstringFS is intended for the file system listing
-FormatstringFS="%-14s%-30s%-14s%-35s"
-
 
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mDisk info:                                        ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
+  # Set up the Linux format strings
+  # FormatstringDisk is intended for the disk listing
+  FormatstringDisk="%-8s%-10s%-26s%-10s%-9s%-20s%-22s"
+  # 123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+  #          1         1         1         1         1         1         1         1         1
+  # Device  Size      Medium Type               SMART     TRIM     Bus                 Model                 
+  # sda     111,8G    Solid State Device        Verified  Yes      SATA/SATA Express   INTEL SSDSA2CW12
+  # sdb     1,8T      Rotating disk (7200 rpm)  Enabled   Unknown                      WDC WD2003FYYS-0      
+  # FormatstringFS is intended for the file system listing
+  FormatstringFS="%-14s%-30s%-14s%-35s"
+
+  # Goal:
+  # Present first the disks and then the different file systems
+  # Disks are presented as:
+  # Device Name     Size     Medium Type     S.M.A.R.T.     TRIM     Bus     Modell
+  # File systems are presented as:
+  # Partition     Mount Point     Available (GB & %)     Filsystem-type
+  # 
+  # 'smartctl' is heavily used
+  # Warn if not there:
+  # Check for functions used
+  exists smartctl || print_warning "Command 'smartctl' not found: some disk-related information will be unavailable!"
+  exists hdparm || print_warning "Command 'hdparm' not found: information about TRIM-support will be unavailable!"
+  
+  printf "${ESC}${UnderlineFace}m$FormatstringDisk${Reset}\n" "Device" "Size" "Medium Type" "SMART" "TRIM" "Bus" "Model"
+  # Get a list of the disks:
+  lsblk -o kname,size,rota,ro,type,model | egrep " disk " > $DiskTempFile
+  # Ex:
+  #  'KNAME   SIZE ROTA RO TYPE MODEL'
+  #  'sda   111,8G    0  0 disk INTEL SSDSA2CW12'
+  #  'sdb     1,8T    1  0 disk WDC WD2003FYYS-0'
+  
+  # Loop through the file and print the result
+  exec 4<$DiskTempFile
+  while read -u 4 KNAME SIZE ROTA RO TYPE MODEL0 MODEL1 MODEL2 MODEL3
+  do
+    # Get a better size (if smartctl present)
+    exists smartctl && Size="$(smartctl -a /dev/$KNAME | egrep "^User Capacity:" | cut -d\[ -f2 | sed 's/\]//')"
+    # Ex: SIZE='240 GB'
+    [[ -n "$Size" ]] && SIZE="$Size"
+    
+    # Get Medium Type
+    [[ $ROTA -eq 1 ]] && Medium_Type="Rotating disk ($(udevadm info --query=all --name=$KNAME | egrep "ROTATION_RATE" | cut -d= -f2) rpm)" || Medium_Type="Non-rotating disk"
+    # Get a better description (if smartctl present)
+    exists smartctl && Medium_T="$(smartctl -a /dev/$KNAME | egrep "^Rotation Rate:" | cut -d: -f2 | sed 's/^\ *//')"
+    [[ -n "$Medium_T" ]] && Medium_Type="$Medium_T"
+    
+    # Get SMART
+    [[ $(udevadm info --query=all --name=$KNAME | egrep "SMART_ENABLED" | cut -d= -f2) -eq 1 ]] && SMART="Enabled" || SMART="Not enabled"
+    
+    # Get TRIM
+    exists hdparm && Trim="$(hdparm -I /dev/$KNAME 2>/dev/null | grep "TRIM")"
+    [[ -n "$Trim" ]] && TRIM="Enabled" || TRIM="Unknown"
+    
+    # Get Bus
+    # if we are root AND smartctl exists; use it
+    if [ "$USER" = "root" -o -z "$USER" ]; then
+      exists smartctl && Bus="$(smartctl -a /dev/$KNAME | grep "^SATA Version is:" | cut -d: -f2 | cut -d\( -f1 | sed 's/^\ *//')"
+    fi
+    [[ -z "$Bus" ]] && Bus="$(udevadm info --query=all --name=$KNAME | egrep "ID_BUS" | cut -d= -f2)"
+    
+    # Print it
+    printf "$FormatstringDisk\n" "$KNAME" "$SIZE" "$Medium_Type" "$SMART" "${TRIM:----}" "$Bus" "$MODEL0 $MODEL1 $MODEL2 $MODEL3"
+  done
+  
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
+  # Set up the Darwin format strings
+  # FormatstringDisk is intended for the disk listing
+  FormatstringDisk="%-18s%-10s%-13s%-15s%-6s%-20s"
+  # 123456789012345678901234567890123456789012345678901234567890
+  #          1         1         1         1         1         1
+  # BSD Name         Size      Medium Type   SMART     TRIM  Bus                 
+  # disk0            500.3 GB  Solid State   Verified  Yes   SATA/SATA Express   
+  # FormatstringFS is intended for the file system listing
+  FormatstringFS="%-14s%-30s%-14s%-35s"
+
   system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType 2>/dev/null | egrep ":$|BSD Name:|Medium Type:|Physical Interconnect:|S.M.A.R.T. status:|TRIM Support:" > $DiskTempFile
   # This will produce a list of disks, like this:
   # USB:
