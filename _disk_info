@@ -74,6 +74,8 @@ if [ -z "${OS/Linux/}" ]; then
     # Partition table
     PartTable="$(udevadm info --query=all --name=$KNAME | grep ID_PART_TABLE_TYPE | cut -d= -f2 | tr "[:lower:]" "[:upper:]")"
     # Ex: PartTable='GPT'
+    # Exchange DOS and MSDOS for MBR
+    if [ "$PartTable" = "DOS" -o "$PartTable" = "MSDOS" ]; then PartTable="MBR"; fi
     
     # Get Medium Type
     [[ $ROTA -eq 1 ]] && Medium_Type="Rotating disk ($(udevadm info --query=all --name=$KNAME | egrep "ROTATION_RATE" | cut -d= -f2) rpm)" || Medium_Type="Non-rotating disk"
