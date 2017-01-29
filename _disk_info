@@ -32,6 +32,7 @@ DiskTempFile="/tmp/.${ScriptName}_Disk.$$.txt"
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mDisk info:                                        ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
+  echo "Visible disks:"
   # Set up the Linux format strings
   # FormatstringDisk is intended for the disk listing
   FormatstringDisk="%-8s%-10s%-26s%-10s%-13s%-9s%-20s%-22s"
@@ -97,9 +98,18 @@ if [ -z "${OS/Linux/}" ]; then
     # Print it
     printf "$FormatstringDisk\n" "$KNAME" "$SIZE" "$Medium_Type" "$PartTable" "$SMART" "${TRIM:----}" "$Bus" "$MODEL0 $MODEL1 $MODEL2 $MODEL3"
   done
+  if [ $Info -eq 1 ]; then
+    echo "(use \"lsblk\" to get a lot of information about disks)"
+    echo "(use \"smartctl\" to get information about size, disk kind and bus)"
+    echo "(use \"udevadm\" to get info about SMART status)"
+    echo "(use \"hdparm\" to get info about TRIM)"
+  fi
+
 
   echo
-
+  
+  echo "Mounted file systems:"
+  
   # File system listing
   FormatstringFS="%-12s%-10s%-12s%-35s"
   # 123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
@@ -123,6 +133,10 @@ if [ -z "${OS/Linux/}" ]; then
     FreePercent="$(echo "100 - $(df -kh $Partition | grep $Partition | awk '{print $5}' | sed 's/\%$//')" | bc)"
     printf "$FormatstringFS\n" "$Partition" "$Type" "${Avail} (${FreePercent}%)" "$Mounted"
   done
+  if [ $Info -eq 1 ]; then
+    echo "(use \"df\" to get a lot of information about the mounted file systems)"
+  fi
+
 
   
 elif [ -z "${OS/Darwin/}" ]; then
