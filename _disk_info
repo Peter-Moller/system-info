@@ -92,6 +92,8 @@ if [ -z "${OS/Linux/}" ]; then
     # Get TRIM
     exists hdparm && Trim="$(hdparm -I /dev/$KNAME 2>/dev/null | grep "TRIM")"
     [[ -n "$Trim" ]] && TRIM="Enabled" || TRIM="Unknown"
+    # ...but if it's a rotating drive, TRIM isn't a thing
+    [[ $ROTA -eq 1 ]] && TRIM="N/A"
     
     # Get Bus
     # if we are root AND smartctl exists; use it
