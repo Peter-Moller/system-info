@@ -95,10 +95,11 @@ if [ -z "${OS/Linux/}" ]; then
     
     # Get Bus
     # if we are root AND smartctl exists; use it
+    Bus=""
     if [ "$USER" = "root" -o -z "$USER" ]; then
       exists smartctl && Bus="$(smartctl -a /dev/$KNAME | grep "^SATA Version is:" | cut -d: -f2 | cut -d\( -f1 | sed 's/^\ *//')"
     fi
-    [[ -z "$Bus" ]] && Bus="$(udevadm info --query=all --name=$KNAME | egrep "ID_BUS" | cut -d= -f2)"
+    [[ -z "$Bus" ]] && Bus="$(udevadm info --query=all --name=$KNAME | egrep "ID_BUS" | cut -d= -f2 | tr "[:lower:]" "[:upper:]")"
     
     # Print it
     printf "$FormatstringDisk\n" "$KNAME" "$SIZE" "$Medium_Type" "$PartTable" "$SMART" "${TRIM:----}" "$Bus" "$MODEL0 $MODEL1 $MODEL2 $MODEL3"
