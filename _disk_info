@@ -56,7 +56,7 @@ if [ -z "${OS/Linux/}" ]; then
   
   printf "${ESC}${UnderlineFace}m$FormatstringDisk${Reset}\n" "Device" "Size" "Medium Type" "Part.tbl" "SMART" "TRIM" "Bus" "Model"
   # Get a list of the disks:
-  lsblk -o kname,size,rota,ro,type,model | egrep " disk " > $DiskTempFile
+  lsblk -o kname,size,rota,ro,type,model | egrep " disk " | egrep -v "^fd|^sr" > $DiskTempFile
   # Ex:
   #  'KNAME   SIZE ROTA RO TYPE MODEL'
   #  'sda   111,8G    0  0 disk INTEL SSDSA2CW12'
@@ -116,7 +116,7 @@ if [ -z "${OS/Linux/}" ]; then
   echo "Mounted file systems:"
   
   # File system listing
-  FormatstringFS="%-12s%-10s%-12s%-35s"
+  FormatstringFS="%-20s%-10s%-12s%-35s"
   # 123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
   #          1         1         1         1         1         1         1         1         1
   # Partition   Filesys   Available    Mount Point
@@ -141,7 +141,29 @@ if [ -z "${OS/Linux/}" ]; then
   if [ $Info -eq 1 ]; then
     echo "(use \"df\" to get a lot of information about the mounted file systems)"
   fi
-
+  
+  # Report NFS-mounted file systems as well
+  if [ -n "$(df -khT | egrep "\snfs[3-5]?\s" | sort)" ]; then
+    df -khT | egrep "\snfs[3-5]?\s" | sort > $DiskTempFile
+    # Ex: (header not included)
+    # 'Filesystem               Type      Size  Used Avail Use% Mounted on
+    # 'tiger.student.lth.se:/dk nfs4      734G  292G  435G  41% /h/dk'
+    # 
+    FormatstringNFS="%-12s%-9s%-30s%-12s"
+    # /h/dk        nfs4     tiger.student.lth.se:/dk      435G (59%)  
+    # Mount Point  NFS-ver  Server                        Available   
+    echo
+    printf "${ESC}${UnderlineFace}m$FormatstringNFS${Reset}\n" "Mount Point" "NFS-ver" "Server" "Available"
+    exec 6<$DiskTempFile
+    while read -u 6 Filesys Type Size Used Avail Use MountPoint
+    do
+      FreePercent="$(echo "100 - $(df -kh $Mounted | grep $Filesys | awk '{print $5}' | sed 's/\%$//')" | bc)"
+      printf "$FormatstringNFS\n" "$MountPoint" "$Type" "$Filesys" "${Avail} (${FreePercent}%)"
+    done
+  else
+    echo
+    echo "No NFS systems detected."
+  fi
 
   
 elif [ -z "${OS/Darwin/}" ]; then
