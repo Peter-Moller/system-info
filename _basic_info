@@ -96,7 +96,6 @@ if [ -z "${OS/Linux/}" ]; then
     VMenv="$(if [ -n "$(grep "^flags.*\ hypervisor\ " /proc/cpuinfo)" ]; then echo "VM environment detected"; fi)"
     # Ex: VMenv='VM environment detected'
   fi
-  fi
 
   # Detect if the computer is connected to a LDAP-server
   if [ -n "$(grep "^passwd" /etc/nsswitch.conf | grep ldap)" ]; then
