@@ -113,7 +113,7 @@ if [ -z "${OS/Linux/}" ]; then
   echo "Mounted file systems:"
   
   # File system listing
-  FormatstringFS="%-12s%-10s%-12s%-35s"
+  FormatstringFS="%-20s%-10s%-12s%-35s"
   # 123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
   #          1         1         1         1         1         1         1         1         1
   # Partition   Filesys   Available    Mount Point
