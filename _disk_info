@@ -78,9 +78,12 @@ if [ -z "${OS/Linux/}" ]; then
     if [ "$PartTable" = "DOS" -o "$PartTable" = "MSDOS" ]; then PartTable="MBR"; fi
     
     # Get Medium Type
+    RotationRate=""
     if [ $ROTA -eq 1 ]; then
       RotationRate="$(udevadm info --query=all --name=$KNAME | egrep "ROTATION_RATE" | cut -d= -f2)"
-      Medium_Type="Rotating disk (${RotationRate:-??} rpm)" || Medium_Type="Non-rotating disk"
+      Medium_Type="Rotating disk (${RotationRate:-??} rpm)"
+    else
+      Medium_Type="Solid State Device"
     fi
     # Get a better description (if smartctl present)
     exists smartctl && Medium_T="$(smartctl -a /dev/$KNAME | egrep "^Rotation Rate:" | cut -d: -f2 | sed 's/^\ *//')"
