@@ -80,17 +80,19 @@ if [ -z "${OS/Linux/}" ]; then
   # Are we running in a VM environment?
   # This one is a bit tricky since there are many ways to cover this.
   # Read this for more info: http://unix.stackexchange.com/questions/89714/easy-way-to-determine-virtualization-technology
+  VMenv="$(dmesg 2>/dev/null | grep -i " Hypervisor detected: " 2>/dev/null | cut -d: -f2 | sed 's/^ *//')"
+  # Ex: VMenv='VMware'
   if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
-    VMenv="$(dmidecode -s system-product-name 2>/dev/null)"
+    # Get a better VMenv if found
+    if [ -n "$VMenv" ]; then
+      VMenv="$(dmidecode -s system-product-name 2>/dev/null)"
+    fi
     # Ex: VMenv='VMware Virtual Platform'
+    # It may still be a VM environment
     if [ -z "$VMenv" ]; then
       VMenv="$(virt-what 2>/dev/null)"
       # Ex: VMenv='vmware'
     fi
-  fi
-  if [ -z "$VMenv" ]; then
-    VMenv="$(dmesg 2>/dev/null | grep -i " Hypervisor detected: " 2>/dev/null | cut -d: -f2 | sed 's/^ *//')"
-    # Ex: VMenv='VMware'
   fi
   if [ -z "$VMenv" ]; then
     VMenv="$(if [ -n "$(grep "^flags.*\ hypervisor\ " /proc/cpuinfo)" ]; then echo "VM environment detected"; fi)"
