@@ -166,7 +166,7 @@ if [ -z "${OS/Linux/}" ]; then
     done
   else
     echo
-    echo "No NFS systems detected."
+    echo "No NFS mounts detected."
   fi
 
   
