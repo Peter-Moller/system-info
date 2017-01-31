@@ -49,14 +49,16 @@ if [ -z "${OS/Linux/}" ]; then
   lshw -C video 2>/dev/null | egrep "\-display|product:|vendor:" > "$GraphicsTempFile"
   printf "${ESC}1K${Reset}"
   printf "${ESC}100D${Reset}"
-  for i in $(lspci -v | egrep "VGA|3D" | cut -d: -f3 | awk '{print $1"_"$2}')
+  for BusId in $(lspci | egrep "VGA|3D" | cut -d' ' -f1)
   do
+    i="$(lspci -v -s $BusId | cut -d: -f3 | awk '{print $1"_"$2}')"
     MemoryRAW=""
     Memory=""
     Card="$(grep -B1 "${i/_/ }" "$GraphicsTempFile" | head -1 | cut -d: -f2 | sed 's/\ *//')"
     Vendor="$(grep "${i/_/ }" "$GraphicsTempFile" | cut -d: -f2 | sed 's/\ *//')"
     MemoryRAW="$(grep "Memory:" /var/log/Xorg.0.log 2>/dev/null | grep $(echo ${i/_/ } | awk '{print $1}') | cut -d: -f3 | sed 's/\ *//')"
     [[ -n "$(echo $MemoryRAW | grep -o "kBytes")" ]] && Memory="$(echo "$(echo "$MemoryRAW" | awk '{print $1}') / 1024" | bc) MB"
+    [[ -z "$MemoryRAW" ]] && Memory="$(dmesg | grep "nouveau 0000:$BusId: DRM: VRAM:" | cut -d: -f6 | cut -d' ' -f2-3)"; MemoryRAW=$Memory
     [[ -z "$MemoryRAW" ]] && Memory="Shared memory"
     printf "$FormatstringGraphics\n" "${Vendor:-Unknown vendor}" "${Card:-Unknown graphics card}" "${Memory:-Unknown}"
   done
