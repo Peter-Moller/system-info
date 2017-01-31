@@ -125,11 +125,11 @@ if [ -z "${OS/Linux/}" ]; then
   echo "Mounted file systems:"
   
   # File system listing
-  FormatstringFS="%-20s%-10s%-12s%-35s"
-  # 123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
-  #          1         1         1         1         1         1         1         1         1
-  # Partition   Filesys   Available    Mount Point
-  # /dev/sda5   ext4      23M (7%)     /boot       
+  FormatstringFS="%-20s%-10s%-12s%-20s%-35s"
+  # 123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+  #          1         1         1         1         1         1         1         1         1         1         1         1
+  # Partition   Filesys   Available    Label                 Mount Point
+  # /dev/sda5   ext4      23M (7%)     Linux                 /boot
   
   df -khT | grep "^\/dev\/" | sort > $DiskTempFile
   # Ex: (header not included)
@@ -137,7 +137,7 @@ if [ -z "${OS/Linux/}" ]; then
   # '/dev/sda6      ext4       74G   53G   18G  75% /'
   # '/dev/sda5      ext4      315M  272M   23M  93% /boot'
   
-  printf "${ESC}${UnderlineFace}m$FormatstringFS${Reset}\n" "Partition" "Filesys" "Available" "Mount Point"
+  printf "${ESC}${UnderlineFace}m$FormatstringFS${Reset}\n" "Partition" "Filesys" "Available" "Label" "Mount Point"
   
   exec 5<$DiskTempFile
   while read -u 5 Partition Type Size Used Avail Use Mounted
@@ -145,7 +145,8 @@ if [ -z "${OS/Linux/}" ]; then
     #AvailPercent="$(df -kh $Partition | grep $Partition | awk '{print $5}')"
     # Ex: AvailPercent='93%'
     FreePercent="$(echo "100 - $(df -kh $Partition | grep $Partition | awk '{print $5}' | sed 's/\%$//')" | bc)"
-    printf "$FormatstringFS\n" "$Partition" "$Type" "${Avail} (${FreePercent}%)" "$Mounted"
+    Label="$(lsblk -o LABEL -d $Partition -n)"
+    printf "$FormatstringFS\n" "$Partition" "$Type" "${Avail} (${FreePercent}%)" "$Label" "$Mounted"
   done
   if [ $Info -eq 1 ]; then
     echo "(use \"df\" to get a lot of information about the mounted file systems)"
