@@ -104,7 +104,7 @@ rm /tmp/NetworkTemp
 # Add a line at the end so that we do not forget the last line during printout
 echo "" >> "$NetworkTempFile"
 echo ""
-if [ -n "${USER/root/}" ]; then
+if [ -n "${USER/root/}" -a -n "${UID/0/}" ]; then
   print_warning "You are not running as \"root\": you will only be able to see ports belongning to program *you* run!"
 fi
 LastIPv4=""
