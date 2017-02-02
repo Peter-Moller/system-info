@@ -45,23 +45,30 @@ if [ -z "${OS/Linux/}" ]; then
   # 'Matrox Electronics Systems Ltd. MGA G200e [Pilot] ServerEngines (SEP1)   Shared memory   Unknown'
   printf "${ESC}${UnderlineFace}m${FormatstringGraphics}${Reset}\n" "Vendor" "Graphics Card"  "Graphics Memory" "Driver"
   printf "Looking for graphics info (this will take a few seconds)..."
-  #GraphicsTempFile=/tmp/Grafik.txt
-  lshw -C video 2>/dev/null | egrep "\-display|product:|vendor:" > "$GraphicsTempFile"
+  #lshw -C video 2>/dev/null | egrep "\-display|product:|vendor:" > "$GraphicsTempFile"
   printf "${ESC}1K${Reset}"
   printf "${ESC}100D${Reset}"
   for BusId in $(lspci | egrep "VGA|3D" | cut -d' ' -f1)
   do
-    i="$(lspci -v -s $BusId | cut -d: -f3 | awk '{print $1"_"$2}')"
+    i="$(lspci -s $BusId | cut -d: -f3 | awk '{print $1"_"$2}')"
     MemoryRAW=""
     Memory=""
-    Card="$(grep -B1 "${i/_/ }" "$GraphicsTempFile" | head -1 | cut -d: -f2 | sed 's/\ *//')"
-    Vendor="$(grep "${i/_/ }" "$GraphicsTempFile" | cut -d: -f2 | sed 's/\ *//')"
+    # For a list of VendorID:s, see: https://pci-ids.ucw.cz/read/PC?restrict=
+    VendorCardNr="$(lspci -vnn | egrep "VGA|3D|2D" | grep "$BusId" | egrep -o "\[[0-9a-z]{4}:" | sed -e 's/://g' -e 's/\[//g')"
+    # Ex: VendorCardNr='102b'
+    VendorCardName="$(grep -i "^#$VendorCardNr" $ScriptName | cut -d: -f2)"
+    # Ex: VendorCardName='Matrox Electronic Systems Ltd.'
+    GraphicsCard="$(lspci -s $BusId | grep -oP "$VendorName\s+\K[^(]*")"
+    # Ex: GraphicsCard='MGA G200e [Pilot] ServerEngines'
+    #Card="$(grep -B1 "${i/_/ }" "$GraphicsTempFile" | head -1 | cut -d: -f2 | sed 's/\ *//')"
+    #Vendor="$(grep "${i/_/ }" "$GraphicsTempFile" | cut -d: -f2 | sed 's/\ *//')"
     MemoryRAW="$(grep "Memory:" /var/log/Xorg.0.log 2>/dev/null | grep $(echo ${i/_/ } | awk '{print $1}') | cut -d: -f3 | sed 's/\ *//')"
     [[ -n "$(echo $MemoryRAW | grep -o "kBytes")" ]] && Memory="$(echo "$(echo "$MemoryRAW" | awk '{print $1}') / 1024" | bc) MB"
     [[ -z "$MemoryRAW" ]] && Memory="$(dmesg | grep "nouveau 0000:$BusId: DRM: VRAM:" | cut -d: -f6 | cut -d' ' -f2-3)"; MemoryRAW=$Memory
     [[ -z "$MemoryRAW" ]] && Memory="Shared memory"
     Driver="$(lspci -v -s $BusId | grep "driver in use" | cut -d: -f2 | cut -d' ' -f2)"
-    printf "$FormatstringGraphics\n" "${Vendor:-Unknown vendor}" "${Card:-Unknown graphics card}" "${Memory:-Unknown}" "${Driver:-Unknown driver}"
+    #printf "$FormatstringGraphics\n" "${Vendor:-Unknown vendor}" "${Card:-Unknown graphics card}" "${Memory:-Unknown}" "${Driver:-Unknown driver}"
+    printf "$FormatstringGraphics\n" "${VendorCardName:-Unknown vendor}" "${GraphicsCard:-Unknown graphics card}" "${Memory:-Unknown}" "${Driver:-Unknown driver}"
   done
   
   echo ""
