@@ -227,7 +227,7 @@ rm $OSTempFile 2>/dev/null
 #102B:Matrox Electronic Systems Ltd.
 #1462:Micro-Star International Co Ltd
 #1414:Microsoft Corporation
-#10DE:NVIDIA
+#10DE:NVIDIA Corporation
 #1569:Palit Microsystems Inc
 #5333:S3 Graphics Co., Ltd
 #14CD:Universal Scientific Ind.
