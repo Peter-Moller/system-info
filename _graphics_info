@@ -60,6 +60,7 @@ if [ -z "${OS/Linux/}" ]; then
     # Ex: VendorCardName='Matrox Electronic Systems Ltd.'
     GraphicsCard="$(lspci -s $BusId | grep -oP "VGA compatible controller:$VendorName\s+\K[^\]]*")]"
     # Ex: GraphicsCard='MGA G200e [Pilot] ServerEngines'
+    # Below is no longer used, but retained for some reason (maybee we have to revert to this in the future...)
     #Card="$(grep -B1 "${i/_/ }" "$GraphicsTempFile" | head -1 | cut -d: -f2 | sed 's/\ *//')"
     #Vendor="$(grep "${i/_/ }" "$GraphicsTempFile" | cut -d: -f2 | sed 's/\ *//')"
     MemoryRAW="$(grep "Memory:" /var/log/Xorg.0.log 2>/dev/null | grep $(echo ${i/_/ } | awk '{print $1}') | cut -d: -f3 | sed 's/\ *//')"
@@ -70,6 +71,11 @@ if [ -z "${OS/Linux/}" ]; then
     #printf "$FormatstringGraphics\n" "${Vendor:-Unknown vendor}" "${Card:-Unknown graphics card}" "${Memory:-Unknown}" "${Driver:-Unknown driver}"
     printf "$FormatstringGraphics\n" "${VendorCardName:-Unknown vendor}" "${GraphicsCard:-Unknown graphics card}" "${Memory:-Unknown}" "${Driver:-Unknown driver}"
   done
+  if [ $Info -eq 1 ]; then
+    echo "(use \"lspci -vnn | egrep "VGA|3D|2D"\" to get info about graphics cards)"
+    echo "(use \"grep "Memory:" /var/log/Xorg.0.log\" to get amount of VRAM)"
+    echo "(use \"lspci -v -s NUMBER | grep "driver in use"\" to get info about graphics driver – where NUMBER is the first word on the row with the graphics card)"
+  fi
   
   echo ""
 elif [ -z "${OS/Darwin/}" ]; then
