@@ -34,10 +34,10 @@ if [ -z "${OS/Linux/}" ]; then
   for PkgMgr in apt aptitude dnf yum rpm urpmi pacman
   do
     if [ "$PkgMgr" = "rpm" ]; then
-      exist $PkgMgr && PackageManager="$(rpm --version)"
+      exists $PkgMgr && PackageManager="$(rpm --version)"
       # Ex: PackageManager='RPM version 4.12.0.2'
     else
-      exist $PkgMgr && PackageManager="$($PkgMgr --version 2>/dev/null | head -1 | grep -o "^[a-zA-Z]* [0-9][^\ ]*")"
+      exists $PkgMgr && PackageManager="$($PkgMgr --version 2>/dev/null | head -1 | grep -o "^[a-zA-Z]* [0-9][^\ ]*")"
       # Ex: PackageManager='apt 1.0.1ubuntu2'
       # Ex: PackageManager='3.4.3'
     fi
