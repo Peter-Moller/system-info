@@ -39,6 +39,7 @@ The following information is presented:
 	* (macOS): presence of firmware password
 	* (macOS): status of the packetfiler firewall
 	* (macOS): whether Profiles are enabled of not
+	* (both): open LISTEN-ports belonging to processer other than your own
 
 -----
 
