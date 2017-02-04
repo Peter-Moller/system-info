@@ -57,9 +57,9 @@ as a manual security/change detection, but that is definitely saved for later
 -----
 
 Screen shot for macOS:  
-![](system_info (macOS) 2017-01-20.png)
+![](system_info (macOS) 2017-02-04.png)
 
 -----
 
 Screen shot for Linux:  
-![](system_info (linux) 2017-01-29.png)
+![](system_info (linux) 2017-02-04.png)
