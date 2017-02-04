@@ -71,6 +71,10 @@ if [ -z "${OS/Linux/}" ]; then
   #CoresTotal="$(grep "cpu cores" /proc/cpuinfo | sort -u | cut -d: -f2)"
   NbrCPUs=$(echo "$(grep "^processor" /proc/cpuinfo | wc -l) / $(grep "^siblings" /proc/cpuinfo | sort -u | cut -d: -f2)" | bc)
   NbrCoresEachCPU=$(grep "cpu cores" /proc/cpuinfo | sort -u | cut -d: -f2 | sed 's/^ //')
+  [[ $Info -eq 1 ]] &&  CPUInfo="(Use \"/proc/cpuinfo\" for CPU info)" || CPUInfo=""
+  [[ $Info -eq 1 ]] &&  NumCPUInfo="(Use \"/proc/cpuinfo\" for info on number of CPU:s)" || NumCPUInfo=""
+  [[ $Info -eq 1 ]] &&  NumCoresInfo="(Use \"/proc/cpuinfo\" for info on muber of cores/CPU)" || NumCoresInfo=""
+
 elif [ -z "${OS/Darwin/}" ]; then
   CPU="$(sysctl -n machdep.cpu.brand_string)"
   # Ex: CPU='Intel(R) Xeon(R) CPU E5-1650 v2 @ 3.50GHz'
@@ -79,12 +83,16 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Alternate method: NbrCPU="$(sysctl -n hw.packages)"
   CoresTotal=$(grep "Total Number of Cores:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
   NbrCoresEachCPU=$(echo " $CoresTotal / $NbrCPUs" | bc)
+
+  [[ $Info -eq 1 ]] &&  CPUInfo="(Use \"sysctl -n machdep.cpu.brand_string\" for CPU info)" || CPUInfo=""
+  [[ $Info -eq 1 ]] &&  NumCPUInfo="(Use \"system_profiler SPHardwareDataType\" for info on number of CPU:s)" || NumCPUInfo=""
+  [[ $Info -eq 1 ]] &&  NumCoresInfo="(Use \"system_profiler SPHardwareDataType\" for info on muber of cores/CPU)" || NumCoresInfo=""
 fi
 
 #printf "$Formatstring\n" "CPU:" "${CPU//(R)/®}"
-printf "$Formatstring\n" "CPU:" "$(echo $CPU | sed -E -e 's/\(R\)/®/g' -e 's/\(TM\)/™/g')" ""
-printf "$Formatstring\n" "Number of CPUs:" "${NbrCPUs}" ""
-printf "$Formatstring\n" "Cores/CPU:" "${NbrCoresEachCPU}" ""
+printf "$Formatstring\n" "CPU:" "$CPU" "$CPUInfo"
+printf "$Formatstring\n" "Number of CPUs:" "${NbrCPUs}" "$NumCPUInfo"
+printf "$Formatstring\n" "Cores/CPU:" "${NbrCoresEachCPU}" "$NumCoresInfo"
 
 
 rm $CPUTempFile 2>/dev/null

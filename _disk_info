@@ -119,6 +119,7 @@ if [ -z "${OS/Linux/}" ]; then
     echo "(use \"hdparm\" to get info about TRIM)"
   fi
 
+  [[ $Info -eq 1 ]] &&  printf="(Use \"lsblk -o kname,size,rota,ro,type,model\" to list the disks and general disk info and\n\"udevadm info\" for rotation rate & bus; \"hdparm\" for SMART info.\nIf present, \"smartctl\" is used for more details\n)"
 
   echo
   
@@ -151,6 +152,9 @@ if [ -z "${OS/Linux/}" ]; then
   if [ $Info -eq 1 ]; then
     echo "(use \"df\" to get a lot of information about the mounted file systems)"
   fi
+
+  [[ $Info -eq 1 ]] &&  printf="(Use \"df -khT \" for details on the partitions. \"lsblk -o LABEL\" is used for disk labels\n)"
+  
   
   # Report NFS-mounted file systems as well
   if [ -n "$(df -khT | egrep "\snfs[3-5]?\s" | sort)" ]; then
@@ -174,7 +178,7 @@ if [ -z "${OS/Linux/}" ]; then
     echo
     echo "No NFS mounts detected."
   fi
-
+  [[ $Info -eq 1 ]] &&  printf="(Use \"df -khT \" for info on NFS\n)"
   
 elif [ -z "${OS/Darwin/}" ]; then
   # Set up the Darwin format strings
@@ -268,6 +272,7 @@ elif [ -z "${OS/Darwin/}" ]; then
     fi
     printf "$FormatstringDisk\n" "$i" "$Size" "${MediumType:---}" "${SMART:---}" "${TRIM:---}" "$Bus"
   done
+  [[ $Info -eq 1 ]] && printf "(Use \"diskutil list\" and \"diskutil cs list\" to list the disks and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType\" for info on the disks)\n"
 
   echo
 
@@ -290,7 +295,7 @@ elif [ -z "${OS/Darwin/}" ]; then
     # Ex: Filled='52'
     printf "${FormatstringFS}\n" "$i" "$MountPoint" "${Avail} (${Filled}%)" "$FS"
   done
-  [[ $Info -eq 1 ]] &&  echo "(Use \"diskutil\" and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType\" to see details about your disks)"
+  [[ $Info -eq 1 ]] &&  printf "(Use \"diskutil\" and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType\" to see details about your disks)\n"
 fi
 
 echo

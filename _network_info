@@ -165,6 +165,7 @@ if [ "$lsof_warning" = "" ]; then
   else
     echo "No ports open for listening"
   fi
+  [[ $Info -eq 1 ]] &&  echo "(Use \"lsof +c 0 -i 4 -n | egrep LISTEN\" to see active listening ports (IPv4; change 4 for 6 for IPv6))"
 fi
 
 rm $NetworkTempFile 2>/dev/null
