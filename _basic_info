@@ -72,16 +72,20 @@ if [ -z "${OS/Linux/}" ]; then
   if [ -z "$Distro" ]; then
     Distro="Unknown Linux-distro"
   fi
+  [[ $Info -eq 1 ]] &&  DistroVerInfo="(Look in various \"/etc/*-release\", \"/etc/os-release\", \"/proc/version\" or \"/etc/lsb-version\" for OS info)" || DistroVerInfo=""
 
   # Get kernel version
   KernelVer="$(uname -r | cut -d\. -f1,2 2>/dev/null)"
   # KernelVer='3.10'
+  Kernel_version_label="Kernel version"
 
   # Are we running in a VM environment?
   # This one is a bit tricky since there are many ways to cover this.
   # Read this for more info: http://unix.stackexchange.com/questions/89714/easy-way-to-determine-virtualization-technology
   VMenv="$(dmesg 2>/dev/null | grep -i " Hypervisor detected: " 2>/dev/null | cut -d: -f2 | sed 's/^ *//')"
   # Ex: VMenv='VMware'
+  [[ $Info -eq 1 ]] &&  VMenvInfo="(Look in \"dmesg\" for \"Hypervisor detected:\" to detect a virtual machine)" || VMenvInfo=""
+
   if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
     # Get a better VMenv if found
     if [ -n "$VMenv" ]; then
@@ -111,6 +115,8 @@ if [ -z "${OS/Linux/}" ]; then
 
 elif [ -z "${OS/Darwin/}" ]; then
   DistroVer="$(sw_vers -productVersion 2>/dev/null)"
+  [[ $Info -eq 1 ]] &&  DistroVerInfo="(Run \"sw_vers -productVersion\" for OS info)" || DistroVerInfo=""
+
   # Get a full name for the version:
   case "$DistroVer" in
     "10.4"*) Distro="Mac OS X \"Tiger\"" ;;
@@ -124,6 +130,9 @@ elif [ -z "${OS/Darwin/}" ]; then
     "10.12"*) Distro="macOS \"Sierra\"" ;;
     *) Distro="macOS" ;;
   esac
+  KernelVer="$(sw_vers -buildVersion)"
+  # Ex: KernelVer='16D32'
+  Kernel_version_label="Build"
   ComputerName="$(networksetup -getcomputername 2>/dev/null)"
   # Get basic Mac info for later usage:
   system_profiler SPHardwareDataType 2>/dev/null > "$OSTempFile"
@@ -153,7 +162,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   
   # What Mac model is it?
   ModelIdentifier="$(egrep "^\s*Model Identifier:" $OSTempFile | cut -d: -f2 | sed 's/^ //')"
-  # ModelIdentifier='iMac14,2'
+  # ModelIdentifier='iMac14,2' or 'VMware7,1'
   # Get the long name for it
   ModelIdentifierName="$(grep "#.*:${ModelIdentifier}$" "${DirName}/${ScriptName}" | cut -d: -f1 | sed 's/#/- /')"
   # ModelIdentifierName='- iMac (27-inch, Late 2013)'
@@ -163,6 +172,7 @@ elif [ -z "${OS/Darwin/}" ]; then
     ModelIdentifier="Virtual Mac"
     ModelIdentifierName=" "
   fi
+  [[ $Info -eq 1 ]] &&  VMenvInfo="(If \"Model Identifier\" from \"system_profiler SPHardwareDataType\" doesn't start with \"Mac\" or \"iMac\", then it's a virtual machine)" || VMenvInfo=""
 
   # Are we bound to AD?
   # See: https://www.jamf.com/jamf-nation/discussions/7039/how-to-check-if-a-computer-is-actually-bound-to-the-ad for details
@@ -231,11 +241,12 @@ printf "${ESC}${BlackBack};${WhiteFont}mSystem info for:${Reset} ${ESC}${WhiteBa
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System:                                                          ${Reset}\n"
 
 
-printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer, build: $(sw_vers -buildVersion) $([[ -n "$OSX_server" ]] && echo "($OSX_server)")" ""
-[[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer" ""
-printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)" ""
+printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")" "$DistroVerInfo"
+printf "$Formatstring\n" "${Kernel_version_label}:" "$KernelVer" ""
+[[ $Info -eq 1 ]] &&  Information="(Use \"uname -m\" to get architecture details)" || Information=""
+printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)" "$Information"
 printf "$Formatstring\n" "Shell:" "$(echo "$(${SHELL} --version 2>/dev/null | head -1 | grep -o "^[^\(]*")")" ""
-printf "$Formatstring\n" "Virtual env.:" "${VMenv:-No VM environment detected}" ""
+printf "$Formatstring\n" "Virtual env.:" "${VMenv:-No VM environment detected}" "$VMenvInfo"
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profiler SPHardwareDataType\" to see hardware details)"; else Information=""; fi
 if [ -n "$ModelIdentifier" ]; then
   printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier ${ModelIdentifierName:-Unknown Mac-model}" "${Information}"
