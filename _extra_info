@@ -26,9 +26,24 @@
 #############################    E X T R A   I N F O    ##############################
 ######################################################################################
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mExtra info:                                       ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mExtra info:                                                                ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
+  printf "${ESC}${UnderlineFace}mPacket managers:${Reset}\n"
+
+  for PkgMgr in apt aptitude dnf yum rpm urpmi pacman
+  do
+    if [ "$PkgMgr" = "rpm" ]; then
+      exist $PkgMgr && PackageManager="$(rpm --version)"
+      # Ex: PackageManager='RPM version 4.12.0.2'
+    else
+      exist $PkgMgr && PackageManager="$($PkgMgr --version 2>/dev/null | head -1 | grep -o "^[a-zA-Z]* [0-9][^\ ]*")"
+      # Ex: PackageManager='apt 1.0.1ubuntu2'
+      # Ex: PackageManager='3.4.3'
+    fi
+    echo "${PkgMgr}: $(echo $PackageManager | grep -ioP "(apt|yum|aptitude|dnf|urpmi|pacman|rpm) \K.*")"
+  done
+
   echo "No extra information on Linux (yet)"
 elif [ -z "${OS/Darwin/}" ]; then
   # Getting info about package managers -- if there are any

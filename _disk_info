@@ -29,7 +29,7 @@
 
 DiskTempFile="/tmp/.${ScriptName}_Disk.$$.txt"
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mDisk info:                                        ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mDisk info:                                                                 ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # 'smartctl' is heavily used. Warn if not there:

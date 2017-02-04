@@ -37,7 +37,7 @@ FormatstringLinuxFirewall="%-20s%-27s%-18s"
 
 
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mSecurity info:                                    ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mSecurity info:                                                             ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # SELinux

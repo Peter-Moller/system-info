@@ -113,7 +113,7 @@ function UpdateScript() {
 
 ##### Set basic variables
 fetch_new=f
-VER="0.5"
+VER="0.8"
 
 Info=0
 

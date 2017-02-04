@@ -30,7 +30,7 @@
 GraphicsTempFile="/tmp/.${ScriptName}_Graphics.$$.txt"
 
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mGraphics info:                                    ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mGraphics info:                                                             ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # Loook at:

@@ -168,7 +168,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   # See: https://www.jamf.com/jamf-nation/discussions/7039/how-to-check-if-a-computer-is-actually-bound-to-the-ad for details
   ADDomain="$(dsconfigad -show 2>/dev/null | grep "Active Directory Domain" | cut -d= -f2 | sed 's/^ *//')"
   # Ex: ADDomain='uw.lu.se'
-  [[ -n "$ADDomain" ]] && DirectoryService="Bound to \"$ADDomain\" (Active Directory)" || DirectoryService=""
+  [[ -n "$ADDomain" ]] && DirectoryService="Bound to \"$ADDomain\" (Active Directory)" || DirectoryService=""
   
   # Find out about Profiles (MCX -- Apples managed profiles)
   if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
@@ -228,12 +228,13 @@ function is_kernel_config_set()
 ### PRINT THE RESULT
 printf "${ESC}${BlackBack};${WhiteFont}mSystem info for:${Reset} ${ESC}${WhiteBack};${BlackFont}m$ComputerName${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${Reset} ${ESC}${WhiteBack};${BlackFont}m$(date +%F", "%R)${Reset}   ${ESC}${BlackBack};${WhiteFont}mUser:${Reset} ${ESC}${WhiteBack};${BlackFont}m$USER${Reset}\n"
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System:                                 ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System:                                                          ${Reset}\n"
 
 
-printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")" ""
+printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer, build: $(sw_vers -buildVersion) $([[ -n "$OSX_server" ]] && echo "($OSX_server)")" ""
 [[ -n "$KernelVer" ]] && printf "$Formatstring\n" "Kernel version:" "$KernelVer" ""
-printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)"
+printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)" ""
+printf "$Formatstring\n" "Shell:" "$(echo "$(${SHELL} --version 2>/dev/null | head -1 | grep -o "^[^\(]*")")" ""
 printf "$Formatstring\n" "Virtual env.:" "${VMenv:-No VM environment detected}" ""
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profiler SPHardwareDataType\" to see hardware details)"; else Information=""; fi
 if [ -n "$ModelIdentifier" ]; then

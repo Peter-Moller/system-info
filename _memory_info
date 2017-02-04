@@ -33,7 +33,7 @@
 MemTempFile="/tmp/.${ScriptName}_Memory.$$.txt"
 
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mMemory info:                                      ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mMemory info:                                                               ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # Good article on memory in Linux:
