@@ -33,6 +33,7 @@ if [ -z "${OS/Linux/}" ]; then
 
   for PkgMgr in apt aptitude dnf yum rpm urpmi pacman
   do
+    PackageManager=""
     if [ "$PkgMgr" = "rpm" ]; then
       exists $PkgMgr && PackageManager="$(rpm --version)"
       # Ex: PackageManager='RPM version 4.12.0.2'
@@ -41,7 +42,7 @@ if [ -z "${OS/Linux/}" ]; then
       # Ex: PackageManager='apt 1.0.1ubuntu2'
       # Ex: PackageManager='3.4.3'
     fi
-    echo "${PkgMgr}: $(echo $PackageManager | grep -ioP "(apt|yum|aptitude|dnf|urpmi|pacman|rpm) \K.*")"
+    [[ -n "$PackageManager" ]] && echo "${PkgMgr}: $(echo $PackageManager | grep -ioP "(apt|yum|aptitude|dnf|urpmi|pacman|rpm) \K.*")"
   done
 
   echo "No extra information on Linux (yet)"
