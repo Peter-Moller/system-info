@@ -44,8 +44,6 @@ if [ -z "${OS/Linux/}" ]; then
     fi
     [[ -n "$PackageManager" ]] && echo "${PkgMgr}: $(echo $PackageManager | grep -ioP "(apt|yum|aptitude|dnf|urpmi|pacman|rpm) \K.*")"
   done
-
-  echo "No extra information on Linux (yet)"
 elif [ -z "${OS/Darwin/}" ]; then
   # Getting info about package managers -- if there are any
   if [ -f /usr/local/bin/brew -o -f /opt/local/bin/port ]; then
