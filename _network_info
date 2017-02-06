@@ -39,7 +39,7 @@ Bold="${ESC}${BoldFace}m"
 
 NetworkTempFile="/tmp/.${ScriptName}_Network.$$.txt"
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mNetwork info:                                                              ${Reset}"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mNetwork info                                                               ${Reset}"
 
 #printf "Active interfaces:\n"
 printf "${ESC}${UnderlineFace}m$FormatstringNetwork${Reset}\n" "Interface" "Interface Name" "IP-address" "Media Speed"
@@ -69,7 +69,7 @@ if [ -z "${OS/Linux/}" ]; then
     # Ex: Duplex='Full'
     printf "$FormatstringNetwork\n" "$i" "$IPv4" "$MACaddress" "$State" "$MediaSpeed" "$Port" "$Duplex"
   done
-  [[ $Info -eq 1 ]] && printf "(Use \"ip link\" to see the interfaces; \"ip address\" for IP address and state; \"ifconfig\" for MAC-address; \"ethtool\" for media speed, port and duplex info)\n\n"
+  [[ $Info -eq 1 ]] && printf "${InfoColor}(Use \"ip link\" to see the interfaces; \"ip address\" for IP address and state; \"ifconfig\" for MAC-address; \"ethtool\" for media speed, port and duplex info)${Reset}\n\n"
 
   # Gather information about LISTEN processes (if lsof exists)
   if [ $(command -v lsof) ]; then
@@ -107,7 +107,7 @@ elif [ -z "${OS/Darwin/}" ]; then
     # Ex: "active"
     [[ -n "$Interface" ]] && printf "$FormatstringNetwork\n" "$Interface" "$IFName" "$IPv4" "$MACaddress" "$Status" "$MediaSpeed"
   done
-  [[ $Info -eq 1 ]] && echo "(Use \"ifconfig\" and \"networksetup\" to see network details)"
+  [[ $Info -eq 1 ]] && printf "${InfoColor}(Use \"ifconfig\" and \"networksetup\" to see network details)${Reset}\n"
 
   # Gather information about LISTEN processes:
   lsof +c 0 -i 4 -n | grep LISTEN | sort -f -k 1,1 | cut -d\( -f1 | awk '{ print "4 - "$1" "$3" "$9 }' | sed 's/:/\ /g' | sed 's/\ [[:digit:]]\{2,5\}$/\ anonymous_port/g' | uniq > /tmp/NetworkTemp
@@ -166,7 +166,7 @@ if [ "$lsof_warning" = "" ]; then
   else
     echo "No ports open for listening"
   fi
-  [[ $Info -eq 1 ]] &&  echo "(Use \"lsof +c 0 -i 4 -n | egrep LISTEN\" to see active listening ports (IPv4; change 4 for 6 for IPv6))"
+  [[ $Info -eq 1 ]] &&  printf "${InfoColor}(Use \"lsof +c 0 -i 4 -n | egrep LISTEN\" to see active listening ports (IPv4; change 4 for 6 for IPv6))${Reset}\n"
 fi
 
 rm $NetworkTempFile 2>/dev/null

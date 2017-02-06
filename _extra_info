@@ -26,7 +26,10 @@
 #############################    E X T R A   I N F O    ##############################
 ######################################################################################
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mExtra info:                                                                ${Reset}\n"
+ExtraTempFile="/tmp/.${ScriptName}_Extra.$$.txt"
+FormatstringExtra="%-10s%-20s"
+
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mExtra info                                                                 ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   printf "${ESC}${UnderlineFace}mPacket managers:${Reset}\n"
@@ -44,6 +47,10 @@ if [ -z "${OS/Linux/}" ]; then
     fi
     [[ -n "$PackageManager" ]] && echo "${PkgMgr}: $(echo $PackageManager | grep -ioP "(apt|yum|aptitude|dnf|urpmi|pacman|rpm) \K.*")"
   done
+
+  # Generate info on logged in users:
+  who | awk '{print $1" "$NF}' | grep ")$" | sed -e 's/[()]//g' -e 's/:0.*/console/g' | sort -u > $ExtraTempFile
+
 elif [ -z "${OS/Darwin/}" ]; then
   # Getting info about package managers -- if there are any
   if [ -f /usr/local/bin/brew -o -f /opt/local/bin/port ]; then
@@ -67,4 +74,17 @@ elif [ -z "${OS/Darwin/}" ]; then
   else
     echo "No packet managers detected"
   fi
+
+  # Generate info on logged in users:
+  who | grep -v "^_" | egrep "console|)$" | sed -e 's/[()]//g' -e 's/[0-9]*:[0-9]*/console/g' | awk '{print $1" "$NF}' > $ExtraTempFile
 fi
+
+# Print logged in users
+printf "\n${ESC}${UnderlineFace}m$FormatstringExtra${Reset}\n" "User" "Logged in from"
+exec 7<$ExtraTempFile
+while read -u 7 User Where
+do
+  printf "$FormatstringExtra\n" "$User" "$Where"
+done
+[[ $Info -eq 1 ]] && printf "${InfoColor}(Use \"who\" to get information about logged in users)${Reset}\n"
+rm $ExtraTempFile 2>/dev/null

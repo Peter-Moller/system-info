@@ -37,11 +37,11 @@ FormatstringLinuxFirewall="%-20s%-27s%-18s"
 
 
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mSecurity info:                                                             ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mSecurity info                                                              ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # SELinux
-  [[ $Info -eq 1 ]] && Information="(use \"sestatus\" to see SELinux details)" || Information=""
+  [[ $Info -eq 1 ]] && Information="(Use \"sestatus\" to see SELinux details)" || Information=""
   [[ -f /etc/selinux/config ]] && SELinux="SELinux is $(grep "^SELINUX=" /etc/selinux/config | awk -F= '{print $2}')" || SELinux="SELinux is not present"
   printf "$Formatstring\n\n" "SELinux:" "${SELinux}" "${Information}"
 
@@ -82,14 +82,14 @@ if [ -z "${OS/Linux/}" ]; then
   else
     Nftables='Unsupported'
   fi
-  [[ $Info -eq 1 ]] && Information="(use \"nft\" to manipulate the nftables' rules)" || Information=""
+  [[ $Info -eq 1 ]] && Information="(Use \"nft\" to manipulate the nftables' rules)" || Information=""
   printf "$Formatstring\n" "nftables:" "${Nftables}" "${Information}"
 
 elif [ -z "${OS/Darwin/}" ]; then
   
   # Firmware password. This requires root level access
   # Note that this adds some 10 seconds to the execution time
-  [[ $Info -eq 1 ]] &&  Information="(use \"setregproptool\" for manipulating the firmware lock)" || Information=""
+  [[ $Info -eq 1 ]] &&  Information="(Use \"setregproptool\" for manipulating the firmware lock)" || Information=""
   if [ -z "${USER/root/}" ]; then
     # But only if there actually *is* a recovery HD
     if [ -n "$(diskutil list 2>/dev/null | grep "Recovery HD")" ]; then
@@ -112,12 +112,12 @@ elif [ -z "${OS/Darwin/}" ]; then
   printf "$Formatstring\n" "Firmware-lock:" "${FirmwareLockMsg}" "${Information}"
 
   # ALF -- Application Level Firewall
-  [[ $Info -eq 1 ]] &&  Information="(use \"socketfilterfw\" to manipulate Application Level Firewall)" || Information=""
+  [[ $Info -eq 1 ]] &&  Information="(Use \"socketfilterfw\" to manipulate Application Level Firewall)" || Information=""
   printf "$Formatstring\n" "ALF:" "$(/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate | cut -d\. -f1 | awk '{print $NF}' | perl -pe 's/^(.)/uc($1)/e')" "${Information}"
 
   # PF firewall
   # To see anything interesting, you need to be root!
-  [[ $Info -eq 1 ]] &&  Information="(use \"pfctl\" to manipulate the PF-firewall)" || Information=""
+  [[ $Info -eq 1 ]] &&  Information="(Use \"pfctl\" to manipulate the PF-firewall)" || Information=""
   if [ -z "${USER/root/}" ]; then
     PFMsg="$(pfctl -sa 2>/dev/null | grep ^Status: | awk '{print $2}')"
   else
@@ -126,12 +126,12 @@ elif [ -z "${OS/Darwin/}" ]; then
   printf "$Formatstring\n" "PF-firewall:" "${PFMsg}" "${Information}"
 
   # SIP
-  [[ $Info -eq 1 ]] &&  Information="(use \"csrutil\" to manipulate System Integrity Protection)" || Information=""
+  [[ $Info -eq 1 ]] &&  Information="(Use \"csrutil\" to manipulate System Integrity Protection)" || Information=""
   [[ -x /usr/bin/csrutil ]] && Security="$(csrutil status 2>/dev/null | cut -d: -f2 | sed -e 's/^\ //g' -e 's/.$//' | perl -pe 's/^(.)/uc($1)/e')" || Security="System Integrity Protection is not engaged"
   printf "$Formatstring\n" "SIP:" "${Security}" "${Information}"
   
   # GateKeeper
-  [[ $Info -eq 1 ]] &&  Information="(use \"spctl\" to manipulate the GateKeeper application launch protection system)" || Information=""
+  [[ $Info -eq 1 ]] &&  Information="(Use \"spctl\" to manipulate the GateKeeper application launch protection system)" || Information=""
   printf "$Formatstring\n" "GateKeeper:" "$(spctl --status 2>/dev/null | awk '{print $2}' | perl -pe 's/^(.)/uc($1)/e')" "${Information}"
 
   # FileVault
@@ -142,7 +142,7 @@ elif [ -z "${OS/Darwin/}" ]; then
     # Ex: FVDiskList='disk0 disk1'
     FileVaultStatus="On for $FVDiskList"
   fi
-  [[ $Info -eq 1 ]] && Information="(use \"fdesetup\" to configure FileVault)" || Information=""
+  [[ $Info -eq 1 ]] && Information="(Use \"fdesetup\" to configure FileVault)" || Information=""
   printf "$Formatstring\n" "FileVault:" "$FileVaultStatus" "${Information}"
 
     # Little Snitch

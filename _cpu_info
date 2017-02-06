@@ -30,7 +30,7 @@
 CPUTempFile="/tmp/.${ScriptName}_CPU.$$.txt"
 
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mCPU info:                                                                  ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mCPU info                                                                   ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # /proc/cpuinfo is used. It consists of a number of specifications like this, each specifying a computational

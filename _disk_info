@@ -29,7 +29,7 @@
 
 DiskTempFile="/tmp/.${ScriptName}_Disk.$$.txt"
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mDisk info:                                                                 ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mDisk info                                                                  ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # 'smartctl' is heavily used. Warn if not there:
@@ -113,13 +113,13 @@ if [ -z "${OS/Linux/}" ]; then
     printf "$FormatstringDisk\n" "$KNAME" "$SIZE" "$Medium_Type" "$PartTable" "$SMART" "${TRIM:----}" "$Bus" "$MODEL0 $MODEL1 $MODEL2 $MODEL3"
   done
   if [ $Info -eq 1 ]; then
-    echo "(use \"lsblk\" to get a lot of information about disks)"
-    echo "(use \"smartctl\" to get information about size, disk kind and bus)"
-    echo "(use \"udevadm\" to get info about SMART status)"
-    echo "(use \"hdparm\" to get info about TRIM)"
+    printf "${InfoColor}(use \"lsblk\" to get a lot of information about disks)${Reset}"
+    printf "${InfoColor}(use \"smartctl\" to get information about size, disk kind and bus)${Reset}"
+    printf "${InfoColor}(use \"udevadm\" to get info about SMART status)${Reset}"
+    printf "${InfoColor}(use \"hdparm\" to get info about TRIM)${Reset}"
   fi
 
-  [[ $Info -eq 1 ]] &&  printf="(Use \"lsblk -o kname,size,rota,ro,type,model\" to list the disks and general disk info and\n\"udevadm info\" for rotation rate & bus; \"hdparm\" for SMART info.\nIf present, \"smartctl\" is used for more details\n)"
+  [[ $Info -eq 1 ]] &&  printf="${InfoColor}(Use \"lsblk -o kname,size,rota,ro,type,model\" to list the disks and general disk info and\n\"udevadm info\" for rotation rate & bus; \"hdparm\" for SMART info.\nIf present, \"smartctl\" is used for more details${Reset}\n)"
 
   echo
   
@@ -150,10 +150,10 @@ if [ -z "${OS/Linux/}" ]; then
     printf "$FormatstringFS\n" "$Partition" "$Type" "${Avail} (${FreePercent}%)" "$Label" "$Mounted"
   done
   if [ $Info -eq 1 ]; then
-    echo "(use \"df\" to get a lot of information about the mounted file systems)"
+    printf "${InfoColor}(use \"df\" to get a lot of information about the mounted file systems)${Reset}"
   fi
 
-  [[ $Info -eq 1 ]] &&  printf="(Use \"df -khT \" for details on the partitions. \"lsblk -o LABEL\" is used for disk labels\n)"
+  [[ $Info -eq 1 ]] &&  printf="${InfoColor}(Use \"df -khT \" for details on the partitions. \"lsblk -o LABEL\" is used for disk labels${Reset}\n)"
   
   
   # Report NFS-mounted file systems as well
@@ -178,7 +178,7 @@ if [ -z "${OS/Linux/}" ]; then
     echo
     echo "No NFS mounts detected."
   fi
-  [[ $Info -eq 1 ]] &&  printf="(Use \"df -khT \" for info on NFS\n)"
+  [[ $Info -eq 1 ]] &&  printf="${InfoColor}(Use \"df -khT \" for info on NFS)${Reset}\n"
   
 elif [ -z "${OS/Darwin/}" ]; then
   # Set up the Darwin format strings
@@ -272,7 +272,7 @@ elif [ -z "${OS/Darwin/}" ]; then
     fi
     printf "$FormatstringDisk\n" "$i" "$Size" "${MediumType:---}" "${SMART:---}" "${TRIM:---}" "$Bus"
   done
-  [[ $Info -eq 1 ]] && printf "(Use \"diskutil list\" and \"diskutil cs list\" to list the disks and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType\" for info on the disks)\n"
+  [[ $Info -eq 1 ]] && printf "${InfoColor}(Use \"diskutil list\" and \"diskutil cs list\" to list the disks and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType\" for info on the disks)${Reset}\n"
 
   echo
 
@@ -295,7 +295,7 @@ elif [ -z "${OS/Darwin/}" ]; then
     # Ex: Filled='52'
     printf "${FormatstringFS}\n" "$i" "$MountPoint" "${Avail} (${Filled}%)" "$FS"
   done
-  [[ $Info -eq 1 ]] &&  printf "(Use \"diskutil\" and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType\" to see details about your disks)\n"
+  [[ $Info -eq 1 ]] &&  printf "${InfoColor}(Use \"diskutil\" and \"system_profiler -detailLevel mini SPUSBDataType SPSerialATADataType SPSASDataType SPNVMeDataType\" to see details about your disks)${Reset}\n"
 fi
 
 echo

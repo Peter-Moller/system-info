@@ -30,7 +30,7 @@
 GraphicsTempFile="/tmp/.${ScriptName}_Graphics.$$.txt"
 
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mGraphics info:                                                             ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mGraphics info                                                              ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # Loook at:
@@ -44,10 +44,6 @@ if [ -z "${OS/Linux/}" ]; then
   # 'NVIDIA Corporation              GT218 [NVS 300]                          512 GB          NVIDIA'
   # 'Matrox Electronics Systems Ltd. MGA G200e [Pilot] ServerEngines (SEP1)   Shared memory   Unknown'
   printf "${ESC}${UnderlineFace}m${FormatstringGraphics}${Reset}\n" "Vendor" "Graphics Card"  "Graphics Memory" "Driver"
-  printf "Looking for graphics info (this will take a few seconds)..."
-  #lshw -C video 2>/dev/null | egrep "\-display|product:|vendor:" > "$GraphicsTempFile"
-  printf "${ESC}1K${Reset}"
-  printf "${ESC}100D${Reset}"
   for BusId in $(lspci | egrep "VGA|3D" | cut -d' ' -f1)
   do
     i="$(lspci -s $BusId | cut -d: -f3 | awk '{print $1"_"$2}')"
@@ -72,9 +68,9 @@ if [ -z "${OS/Linux/}" ]; then
     printf "$FormatstringGraphics\n" "${VendorCardName:-Unknown vendor}" "${GraphicsCard:-Unknown graphics card}" "${Memory:-Unknown}" "${Driver:-Unknown driver}"
   done
   if [ $Info -eq 1 ]; then
-    echo "(use \"lspci -vnn | egrep \"VGA|3D|2D\"\" to get info about graphics cards)"
-    echo "(use \"grep \"Memory:\" /var/log/Xorg.0.log\" to get amount of VRAM)"
-    echo "(use \"lspci -v -s NUMBER | grep \"driver in use\"\" to get info about graphics driver – where NUMBER is the first word on the row with the graphics card)"
+    printf "${InfoColor}(Use \"lspci -vnn | egrep \"VGA|3D|2D\"\" to get info about graphics cards)${Reset}\n"
+    printf "${InfoColor}(Use \"grep \"Memory:\" /var/log/Xorg.0.log\" to get amount of VRAM)${Reset}\n"
+    printf "${InfoColor}(Use \"lspci -v -s NUMBER | grep \"driver in use\"\" to get info about graphics driver – where NUMBER is the first word on the row with the graphics card)${Reset}\n"
   fi
   
   echo ""
@@ -114,7 +110,7 @@ elif [ -z "${OS/Darwin/}" ]; then
       i=$((i+2))
     fi
   done
-  [[ $Info -eq 1 ]] &&  echo "(use \"system_profiler SPDisplaysDataType\" to get info about graphics cards and displays)"
+  [[ $Info -eq 1 ]] &&  printf "${InfoColor}(Use \"system_profiler SPDisplaysDataType\" to get info about graphics cards and displays)${Reset}\n"
 fi
 
 

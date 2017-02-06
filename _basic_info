@@ -238,7 +238,7 @@ function is_kernel_config_set()
 ### PRINT THE RESULT
 printf "${ESC}${BlackBack};${WhiteFont}mSystem info for:${Reset} ${ESC}${WhiteBack};${BlackFont}m$ComputerName${Reset}   ${ESC}${BlackBack};${WhiteFont}mDate & time:${Reset} ${ESC}${WhiteBack};${BlackFont}m$(date +%F", "%R)${Reset}   ${ESC}${BlackBack};${WhiteFont}mUser:${Reset} ${ESC}${WhiteBack};${BlackFont}m$USER${Reset}\n"
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System:                                                          ${Reset}\n"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System                                                           ${Reset}\n"
 
 
 printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")" "$DistroVerInfo"
