@@ -113,13 +113,11 @@ if [ -z "${OS/Linux/}" ]; then
     printf "$FormatstringDisk\n" "$KNAME" "$SIZE" "$Medium_Type" "$PartTable" "$SMART" "${TRIM:----}" "$Bus" "$MODEL0 $MODEL1 $MODEL2 $MODEL3"
   done
   if [ $Info -eq 1 ]; then
-    printf "${InfoColor}(use \"lsblk\" to get a lot of information about disks)${Reset}"
-    printf "${InfoColor}(use \"smartctl\" to get information about size, disk kind and bus)${Reset}"
-    printf "${InfoColor}(use \"udevadm\" to get info about SMART status)${Reset}"
-    printf "${InfoColor}(use \"hdparm\" to get info about TRIM)${Reset}"
+    printf "${InfoColor}(use \"lsblk -o kname,size,rota,ro,type,model\" to list the disks and general disk info)${Reset}\n"
+    printf "${InfoColor}(use \"smartctl\" to get information about size, disk kind and bus)${Reset}\n"
+    printf "${InfoColor}(use \"udevadm\" for rotation rate & bus)${Reset}\n"
+    printf "${InfoColor}(use \"hdparm\" for SMART info)${Reset}\n"
   fi
-
-  [[ $Info -eq 1 ]] &&  printf="${InfoColor}(Use \"lsblk -o kname,size,rota,ro,type,model\" to list the disks and general disk info and\n\"udevadm info\" for rotation rate & bus; \"hdparm\" for SMART info.\nIf present, \"smartctl\" is used for more details${Reset}\n)"
 
   echo
   
