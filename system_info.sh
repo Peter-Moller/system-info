@@ -160,7 +160,10 @@ BGColor="$RES"
 Face="$RES"
 FontColor="$RES"
 
-Formatstring="%-20s%-40s%-30s"
+# Color for the information texts:
+InfoColor="${ESC}${GreenFont}m"
+
+Formatstring="%-20s%-40s${InfoColor}%-30s${Reset}"
 # FormatString is intended for:
 # "Head" "Value" "Extra information (-i flag)"
 
