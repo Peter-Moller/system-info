@@ -18,7 +18,7 @@ The following information is presented:
 * Network info
 * Security information
 * Graphics info
-* Extra information (currently not implemented):
+* Extra information (listing package managers)
 
 
 -----
