@@ -159,7 +159,9 @@ fi
 # sshd settings
 echo
 [[ $Info -eq 1 ]] && Information="(\"ssh -V\" tells you the version of ssh)" || Information=""
-printf "$Formatstring\n" "ssh version:" "$(ssh -V 2>&1)" "$Information"
+printf "$Formatstring\n" "ssh version:" "$(ssh -V 2>&1 | awk '{print $1}' | sed 's/,$//')" "$Information"
+[[ $Info -eq 1 ]] && Information="(\"openssl version\" tells you the version of openssl)" || Information=""
+printf "$Formatstring\n" "openssl version:" "$(openssl version)" "$Information"
 sshd=$(sshd -T 2>/dev/null | egrep "permitrootlogin|pubkeyauthentication")
 [[ -z "$ssh" ]] && sshd=$(egrep "permitrootlogin|pubkeyauthentication" /etc/ssh/sshd_config)
 RootLogin="$(echo "$sshd" | grep permitrootlogin | awk '{print $2}')"
