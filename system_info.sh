@@ -113,17 +113,14 @@ function UpdateScript() {
 
 ##### Set basic variables
 fetch_new=f
-VER="0.8"
+VER="0.9"
 
 Info=0
 
 # Find where the script resides (so updates update the correct version) -- without trailing slash
-set -x
 DirName="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # What is the name of the script? (without any PATH)
 ScriptName="$(basename $0)"
-echo "ScriptName: $ScriptName"
-set +x
 # Is the file writable?
 if [ -w "${DirName}"/"${ScriptName}" ]; then
   Writable="yes"

@@ -32,9 +32,6 @@ SecurityTempFile="/tmp/.${ScriptName}_Security.$$.txt"
 # FormatstringLinuxFirewall is intended for the Linux firewalls entries
 #FormatstringLinuxFirewall="%-18s%-9s%-18s%-9s%-3s"
 FormatstringLinuxFirewall="%-20s%-27s%-18s"
-# iptables:         Kernel modules found                  Nr. of rules   
-# - INPUT:          policy = DROP              #rules = 6  
-
 
 
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mSecurity info                                                              ${Reset}\n"
@@ -157,8 +154,19 @@ elif [ -z "${OS/Darwin/}" ]; then
     [[ $Info -eq 1 ]] &&  Information="(\"Little Snitch\" is a third party firewall that you can find at https://www.obdev.at/products/littlesnitch/index.html)" || Information=""
   fi
   printf "$Formatstring\n" "Little Snitch:" "${LittleSnitch}" "${Information}"
-
 fi
 
+# sshd settings
+echo
+[[ $Info -eq 1 ]] && Information="(\"ssh -V\" tells you the version of ssh)" || Information=""
+printf "$Formatstring\n" "ssh version:" "$(ssh -V 2>&1)" "$Information"
+sshd=$(sshd -T 2>/dev/null | egrep "permitrootlogin|pubkeyauthentication")
+[[ -z "$ssh" ]] && sshd=$(egrep "permitrootlogin|pubkeyauthentication" /etc/ssh/sshd_config)
+RootLogin="$(echo "$sshd" | grep permitrootlogin | awk '{print $2}')"
+PubKeyLogin="$(echo "$sshd" | grep pubkeyauthentication | awk '{print $2}')"
+[[ $Info -eq 1 ]] && Information="(Use \"sshd -T\" or look in \"/etc/ssh/sshd_config\" for info on sshd settings)" || Information=""
+printf "$Formatstring\n" "\"root\" may log in:" "${RootLogin:-without-password}" "$Information"
+[[ $Info -eq 1 ]] && Information="(Use \"sshd -T\" or look in \"/etc/ssh/sshd_config\" for info on sshd settings)" || Information=""
+printf "$Formatstring\n"  "Publik key login:" "${PubKeyLogin:-yes}" "$Information"
 
 rm $SecurityTempFile 2>/dev/null
