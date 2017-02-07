@@ -39,10 +39,7 @@ Bold="${ESC}${BoldFace}m"
 
 NetworkTempFile="/tmp/.${ScriptName}_Network.$$.txt"
 
-printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mNetwork info                                                               ${Reset}"
-
-#printf "Active interfaces:\n"
-printf "${ESC}${UnderlineFace}m$FormatstringNetwork${Reset}\n" "Interface" "Interface Name" "IP-address" "Media Speed"
+printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mNetwork info                                                               ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
   # This doesn't work reliable
