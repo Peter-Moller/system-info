@@ -181,16 +181,13 @@ elif [ -z "${OS/Darwin/}" ]; then
   [[ -n "$ADDomain" ]] && DirectoryService="Bound to \"$ADDomain\" (Active Directory)" || DirectoryService=""
   
   # Find out about Profiles (MCX -- Apples managed profiles)
-  if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
-    # See: http://krypted.com/mac-security/manage-profiles-from-the-command-line-in-os-x-10-9/ for details
+  # Running as root gives you more info, but you will get *something* when run as ordinary user
+  #if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
+    # See: http://krypted.com/mac-security/manage-profiles-from-the-command-line-in-os-x-10-9/ for some details
     Profiles="$(/usr/bin/profiles -L 2>/dev/null | grep "^There are")"
-    # Ex: MCX='There are no configuration profiles installed'
-    # In fact, I have no machines with MCX on to try...
-  fi
-
-  # I would also like to find out about various management services, such as Casper.
-  # However, this may quickly be a kludge since there are som many management services!
-  # Proceed with caution!
+    # Ex: Profiles="There are no configuration profiles installed for user 'cs-pmo'"
+    # In fact, I have no machines with Profiles on to try...
+  #fi
 
   # Find out if it's a server
   # First step: does the name fromsw_vers include "server"?
@@ -260,9 +257,10 @@ else
 fi
 printf "$Formatstring\n" "Directory Service:" "${DirectoryService:-Not bound}" "${Information}"
 if [ -z "${OS/Darwin/}" ]; then
+  # Find out if we are running JAMP (a.k.a. Casper)
   if [ -n "$(ps -ef | grep [j]amfAgent)" ]; then
     [[ $Info -eq 1 ]] && Information="(Use \"jamf -version\" to see JamF version)" || Information=""
-    printf "$Formatstring\n" "JamF version:" "$(jamf -version)" "${Information}"
+    printf "$Formatstring\n" "JamF version:" "Running, $(jamf -version)" "${Information}"
   fi
   [[ $Info -eq 1 ]] && Information="(Use \"profiles -P\" to see details about installed Profiles)" || Information=""
   printf "$Formatstring\n" "Managed profiles:" "${Profiles:-No information}" "${Information}"
