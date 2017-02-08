@@ -183,7 +183,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Find out about Profiles (MCX -- Apples managed profiles)
   if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
     # See: http://krypted.com/mac-security/manage-profiles-from-the-command-line-in-os-x-10-9/ for details
-    Profiles="$(/usr/bin/profiles -P 2>/dev/null)"
+    Profiles="$(/usr/bin/profiles -L 2>/dev/null | grep "^There are")"
     # Ex: MCX='There are no configuration profiles installed'
     # In fact, I have no machines with MCX on to try...
   fi
