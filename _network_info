@@ -87,7 +87,8 @@ elif [ -z "${OS/Darwin/}" ]; then
   exec 4<"$NetworkTempFile"
   while IFS=_ read -u 4 IFNum IFName
   do
-    Interface="$(networksetup -listallhardwareports 2>/dev/null | grep -A1 "Hardware Port: $IFName" | tail -1 | awk '{print $2}' | sed -e 's/^ *//')"
+    #Interface="$(networksetup -listallhardwareports 2>/dev/null | grep -A1 "Hardware Port: $IFName" | tail -1 | awk '{print $2}' | sed -e 's/^ *//')"
+    Interface="$(networksetup -listnetworkserviceorder| grep -A1 " ${IFName}$" | tail -1 | awk '{print $NF}' | sed 's/)//')"
     # Ex: en0
     # It may be empty if it's a VLAN port; if so, look in another way
     [[ -z "$Interface" ]] && Interface="$(networksetup -listallhardwareports 2>/dev/null | grep -A2 "VLAN User Defined Name: $IFName" | tail -1 | awk '{print $NF}')"
@@ -164,7 +165,7 @@ if [ "$lsof_warning" = "" ]; then
       LastRange="$RANGE"
     done
   else
-    echo "No ports open for listening"
+    printf "\nNo ports open for listening\n"
   fi
   [[ $Info -eq 1 ]] &&  printf "${InfoColor}(Use \"lsof +c 0 -i 4 -n | egrep LISTEN\" to see active listening ports (IPv4; change 4 for 6 for IPv6))${Reset}\n"
 fi
