@@ -83,12 +83,15 @@ elif [ -z "${OS/Darwin/}" ]; then
   printf "$ESC${UnderlineFace}m$FormatstringNetwork$Reset\n" "Interf." "Interface name" "Ipv4-addr." "MAC-address" "Status" "Media speed"
   
   # This is a very short version of the 'network_info'-script
-  networksetup -listnetworkserviceorder 2>/dev/null | egrep "^\([0-9\*]*\)\ " | sed -e 's/^(//g' -e 's/) /:/' > $NetworkTempFile
+  networksetup -listnetworkserviceorder 2>/dev/null | egrep "^\([0-9\*]*\)\ " | sed -e 's/^(//g' -e 's/) /_/' > $NetworkTempFile
   exec 4<"$NetworkTempFile"
-  while IFS=: read -u 4 IFNum IFName
+  while IFS=_ read -u 4 IFNum IFName
   do
     Interface="$(networksetup -listallhardwareports 2>/dev/null | grep -A1 "Hardware Port: $IFName" | tail -1 | awk '{print $2}' | sed -e 's/^ *//')"
     # Ex: en0
+    # It may be empty if it's a VLAN port; if so, look in another way
+    [[ -z "$Interface" ]] && Interface="$(networksetup -listallhardwareports 2>/dev/null | grep -A2 "VLAN User Defined Name: $IFName" | tail -1 | awk '{print $NF}')"
+    # Ex: Interface='vlan2'
     MediaSpeed="$(networksetup -getMedia "$IFName" 2>/dev/null | grep "^Active" | cut -d: -f2- | sed -e 's/^ *//')"
     # Ex: "1000baseT" or "autoselect"
     IPaddress="$(networksetup -getinfo "$IFName" 2>/dev/null | grep "^IP address" | cut -d: -f2 | sed -e 's/^ *//')"
