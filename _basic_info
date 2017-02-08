@@ -259,5 +259,11 @@ else
   Information=""
 fi
 printf "$Formatstring\n" "Directory Service:" "${DirectoryService:-Not bound}" "${Information}"
-if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"profiles -P\" to see details about installed Profiles)"; else Information=""; fi
-printf "$Formatstring\n" "Managed profiles:" "${Profiles:-No information}" "${Information}"
+if [ -z "${OS/Darwin/}" ]; then
+  if [ -n "$(ps -ef | grep [j]amfAgent)" ]; then
+    [[ $Info -eq 1 ]] && Information="(Use \"jamf -version\" to see JamF version)" || Information=""
+    printf "$Formatstring\n" "JamF version:" "$(jamf -version)" "${Information}"
+  fi
+  [[ $Info -eq 1 ]] && Information="(Use \"profiles -P\" to see details about installed Profiles)" || Information=""
+  printf "$Formatstring\n" "Managed profiles:" "${Profiles:-No information}" "${Information}"
+fi
