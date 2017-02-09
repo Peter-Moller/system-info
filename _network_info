@@ -93,7 +93,7 @@ elif [ -z "${OS/Darwin/}" ]; then
     # It may be empty if it's a VLAN port; if so, look in another way
     [[ -z "$Interface" ]] && Interface="$(networksetup -listallhardwareports 2>/dev/null | grep -A2 "VLAN User Defined Name: $IFName" | tail -1 | awk '{print $NF}')"
     # Ex: Interface='vlan2'
-    MediaSpeed="$(networksetup -getMedia "$IFName" 2>/dev/null | grep "^Active" | cut -d: -f2- | sed -e 's/^ *//')"
+    MediaSpeed="$(networksetup -getMedia "$Interface" 2>/dev/null | grep "^Active" | cut -d: -f2- | sed -e 's/^ *//')"
     # Ex: "1000baseT" or "autoselect"
     IPaddress="$(networksetup -getinfo "$IFName" 2>/dev/null | grep "^IP address" | cut -d: -f2 | sed -e 's/^ *//')"
     # Ex: " 130.235.16.211"

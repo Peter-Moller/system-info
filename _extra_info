@@ -55,7 +55,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Getting info about package managers -- if there are any
   if [ -f /usr/local/bin/brew -o -f /opt/local/bin/port ]; then
     # Currently only Homebrew and MacPorts, but Fink and NIX would be nice to have as well!
-    printf "${ESC}${UnderlineFace}mPacket managers:${Reset}\n"
+    printf "${ESC}${UnderlineFace}mSoftware Package Managers:${Reset}\n"
     # First, Homebrew
     [[ $Info -eq 1 ]] &&  Information="(A great package manager to be found at http://brew.sh)" || Information=""
     if [ -f /usr/local/bin/brew ]; then
@@ -72,7 +72,7 @@ elif [ -z "${OS/Darwin/}" ]; then
     [[ $Info -eq 1 ]] &&  Information="(A great package manager to be found at https://www.macports.org)" || Information=""
     [[ -f /opt/local/bin/port ]] && printf "${Formatstring}\n" "MacPorts:" "$(/opt/local/bin/port version 2>/dev/null | awk '{print $2}')" "$Information"
   else
-    echo "No packet managers detected"
+    echo "No software packge management software detected"
   fi
 
   # Generate info on logged in users:

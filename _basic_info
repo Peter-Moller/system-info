@@ -182,12 +182,12 @@ elif [ -z "${OS/Darwin/}" ]; then
   
   # Find out about Profiles (MCX -- Apples managed profiles)
   # Running as root gives you more info, but you will get *something* when run as ordinary user
-  #if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
+  if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
     # See: http://krypted.com/mac-security/manage-profiles-from-the-command-line-in-os-x-10-9/ for some details
     Profiles="$(/usr/bin/profiles -L 2>/dev/null | grep "^There are")"
     # Ex: Profiles="There are no configuration profiles installed for user 'cs-pmo'"
     # In fact, I have no machines with Profiles on to try...
-  #fi
+  fi
 
   # Find out if it's a server
   # First step: does the name fromsw_vers include "server"?
@@ -258,10 +258,12 @@ fi
 printf "$Formatstring\n" "Directory Service:" "${DirectoryService:-Not bound}" "${Information}"
 if [ -z "${OS/Darwin/}" ]; then
   # Find out if we are running JAMP (a.k.a. Casper)
-  if [ -n "$(ps -ef | grep [j]amfAgent)" ]; then
+  if [ -n "$(ps -ef | grep "[j]amf\/bin\/jamf")" ]; then
     [[ $Info -eq 1 ]] && Information="(Use \"jamf -version\" to see JamF version)" || Information=""
-    printf "$Formatstring\n" "JamF version:" "Running, $(jamf -version)" "${Information}"
+    EnterpriseMgmt="JAMF running, $(jamf -version)"
+    [[ -z "$Profiles" ]] && Profiles="This computer is managed by JAMF, but you are not running as \"root\" and thus we cannot determine the profiles"
   fi
+  printf "$Formatstring\n" "Enterprise Mgmt:" "${EnterpriseMgmt:--None detected-}" "${Information}"
   [[ $Info -eq 1 ]] && Information="(Use \"profiles -P\" to see details about installed Profiles)" || Information=""
-  printf "$Formatstring\n" "Managed profiles:" "${Profiles:-No information}" "${Information}"
+  printf "$Formatstring\n" "Managed profiles:" "${Profiles:--None detected-}" "${Information}"
 fi
