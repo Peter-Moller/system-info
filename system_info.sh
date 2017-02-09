@@ -359,3 +359,8 @@ rm $OSTempFile 2>/dev/null
 #Mac Pro (Early 2008):MacPro3,1
 #Mac Pro (8-core):MacPro2,1
 #Mac Pro:MacPro1,1
+
+# Xserve
+#Xserve Xeon 2.0/2.66/3.0 "Quad Core" (Late 2006):Xserve1,1
+#Xserve Xeon 2.8 "Quad Core" or 2.8/3.0 "Eight Core" (Early 2008):Xserve2,1
+#Xserve Xeon Nehalem 2.26 "Quad Core" or 2.26/2.66/2.93 "Eight Core":Xserve3,1
