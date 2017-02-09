@@ -163,12 +163,12 @@ printf "$Formatstring\n" "ssh version:" "$(ssh -V 2>&1 | awk '{print $1}' | sed 
 #[[ $Info -eq 1 ]] && Information="(\"openssl version\" tells you the version of openssl)" || Information=""
 #printf "$Formatstring\n" "openssl version:" "$(openssl version)" "$Information"
 sshd=$(sshd -T 2>/dev/null | egrep "permitrootlogin|pubkeyauthentication")
-[[ -z "$ssh" ]] && sshd=$(egrep "permitrootlogin|pubkeyauthentication" /etc/ssh/sshd_config 2>/dev/null)
+[[ -z "$sshd" ]] && sshd=$(egrep "permitrootlogin|pubkeyauthentication" /etc/ssh/sshd_config 2>/dev/null)
 RootLogin="$(echo "$sshd" | grep permitrootlogin | awk '{print $2}')"
 PubKeyLogin="$(echo "$sshd" | grep pubkeyauthentication | awk '{print $2}')"
 [[ $Info -eq 1 ]] && Information="(Use \"sshd -T\" or look in \"/etc/ssh/sshd_config\" for info on sshd settings)" || Information=""
 printf "$Formatstring\n" "\"root\" may log in:" "${RootLogin:-without-password (could not read settings, but this is the default)}" "$Information"
 [[ $Info -eq 1 ]] && Information="(Use \"sshd -T\" or look in \"/etc/ssh/sshd_config\" for info on sshd settings)" || Information=""
-printf "$Formatstring\n"  "Publik key login:" "${PubKeyLogin:-yes (could not read settings, but this is the default)}" "$Information"
+printf "$Formatstring\n"  "Public key login:" "${PubKeyLogin:-yes (could not read settings, but this is the default)}" "$Information"
 
 rm $SecurityTempFile 2>/dev/null
