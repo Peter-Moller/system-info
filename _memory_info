@@ -175,7 +175,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   MemoryType="$(grep "^\ *Type:" $MemTempFile | sort -u | grep -v Empty | cut -d: -f2 | sed 's/ *//')"
   ECC="$(grep "^\ *ECC:" $MemTempFile | cut -d: -f2 | sed 's/ *//')"
   # Ex: ECC='Enabled'
-  NbrDIMMs=$(egrep "DIMM.*:" $MemTempFile | wc -l | sed 's/^ *//')
+  NbrDIMMs=$(egrep "DIMM.*:|CPU[A-D]\/[A-D][0-9]:" $MemTempFile | wc -l | sed 's/^ *//')
   NbrDIMMsInstalled=$(egrep "Size:" $MemTempFile | cut -d: -f2 | sed 's/^ //' | grep -i "[0-9]" | wc -l | sed 's/^ *//')
   
   [[ $Info -eq 1 ]] &&  MemInfo="(Use \"system_profiler SPHardwareDataType\" for memory info)" || MemInfo=""

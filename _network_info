@@ -81,7 +81,7 @@ if [ -z "${OS/Linux/}" ]; then
 
 elif [ -z "${OS/Darwin/}" ]; then
   # FormatstringNetwork is intended for the network listing
-  FormatstringNetwork="%-8s%-22s%-20s%-20s%-10s%-30s"
+  FormatstringNetwork="%-8s%-28s%-20s%-20s%-10s%-30s"
   printf "$ESC${UnderlineFace}m$FormatstringNetwork$Reset\n" "Interf." "Interface name" "Ipv4-addr." "MAC-address" "Status" "Media speed"
   
   # This is a very short version of the 'network_info'-script

@@ -242,6 +242,9 @@ printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_s
 printf "$Formatstring\n" "${Kernel_version_label}:" "$KernelVer" ""
 [[ $Info -eq 1 ]] &&  Information="(Use \"uname -m\" to get architecture details)" || Information=""
 printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)" "$Information"
+if [ -z "${OS/Darwin/}" ]; then
+  [[ -n "$(system_profiler SPFibreChannelDataType)" ]] && printf "$Formatstring\n" "Fibre Channel:" "Present. Look into this yourself with \"system_profiler SPFibreChannelDataType\""
+fi
 printf "$Formatstring\n" "Shell:" "$(echo "$(${SHELL} --version 2>/dev/null | head -1 | grep -o "^[^\(]*")")" ""
 printf "$Formatstring\n" "Virtual env.:" "${VMenv:-No VM environment detected}" "$VMenvInfo"
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profiler SPHardwareDataType\" to see hardware details)"; else Information=""; fi
