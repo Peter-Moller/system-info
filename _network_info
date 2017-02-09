@@ -124,13 +124,14 @@ if [ "$lsof_warning" = "" ]; then
   # First, sort by application:
   less /tmp/NetworkTemp | sort -f -k 3 > "$NetworkTempFile"
   rm /tmp/NetworkTemp
+  echo ""
+  # Print warning if we are not root
+  if [ -n "${USER/root/}" -a -n "${UID/0/}" ]; then
+    print_warning "You are not running as \"root\": you will only be able to see ports belongning to program *you* run!"
+  fi
   # Add a line at the end so that we do not forget the last line during printout
   if [ -s "$NetworkTempFile" ]; then
     echo "" >> "$NetworkTempFile"
-    echo ""
-    if [ -n "${USER/root/}" -a -n "${UID/0/}" ]; then
-      print_warning "You are not running as \"root\": you will only be able to see ports belongning to program *you* run!"
-    fi
     LastIPv4=""
     LastIPv6=""
     LastProgram=""
