@@ -20,6 +20,10 @@ The following information is presented:
 * Graphics info
 * Extra information (listing package managers)
 
+Tested Distributions:
+
+* OS X: 10.10, 10.11, 10.12
+* Linux: CentOS 6,7; Ubuntu 14,16; Mageia 5; Debian 8; Arch Linux
 
 -----
 
