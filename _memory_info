@@ -185,7 +185,7 @@ elif [ -z "${OS/Darwin/}" ]; then
 
 fi
 
-printf "$Formatstring\n" "Memory size:" "${Memory} (ECC: ${ECC//[[:space:]]/})" "$MemInfo"
+printf "$Formatstring\n" "Memory size:" "${Memory} (ECC: ${ECC//[[:space:]]/:--No information-})" "$MemInfo"
 printf "$Formatstring\n" "Memory type:" "${MemoryType:-No information available}" "$MemTypeInfo"
 printf "$Formatstring\n" "Memory Speed:" "${MemorySpeed:-No information available}" "$MemSpeedInfo"
 printf "$Formatstring\n" "Number of DIMMs:" "${NbrDIMMs:-No information available} (${NbrDIMMsInstalled} filled)" ""
