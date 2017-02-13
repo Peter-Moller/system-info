@@ -23,92 +23,6 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-function usage()
-{
-cat << EOF
-Usage: $0 options
-
-This script displays basic information about the OS you are running.
-
-OPTIONS:
-  -h      Show this message
-  -u      Upgrade the script
-  -i      Print additional information regarding tools to use
-EOF
-}
-
-function exists()
-{
-  command -v "$1" >/dev/null 2>&1
-}
-
-# Check for update
-function CheckForUpdate() {
-  NewScriptAvailable=f
-  # First, download the script from the server
-  /usr/bin/curl -s -f -e "$ScriptName ver:$VER" -o /tmp/"$ScriptName" http://fileadmin.cs.lth.se/cs/Personal/Peter_Moller/scripts/"$ScriptName" 2>/dev/null
-  /usr/bin/curl -s -f -e "$ScriptName ver:$VER" -o /tmp/"$ScriptName".sha1 http://fileadmin.cs.lth.se/cs/Personal/Peter_Moller/scripts/"$ScriptName".sha1 2>/dev/null
-  ERR=$?
-  # Find, and print, errors from curl (we assume both curl's above generate the same errors, if any)
-  if [ "$ERR" -ne 0 ] ; then
-    # Get the appropriate error message from the curl man-page
-    # Start with '       43     Internal error. A function was called with a bad parameter.'
-    # end get it down to: ' 43: Internal error.'
-    ErrorMessage="$(MANWIDTH=500 man curl | egrep -o "^\ *${ERR}\ \ *[^.]*." | perl -pe 's/[0-9](?=\ )/$&:/;s/  */ /g')"
-    echo $ErrorMessage
-    echo "The file \"$ScriptName\" could not be fetched from \"http://fileadmin.cs.lth.se/cs/Personal/Peter_Moller/scripts/$ScriptName\""
-  fi
-  # See if the downloaded script checks out 
-  # Compare the checksum of the script with the fetched sha1-sum
-  # If they diff, something went wrong in the download
-  # Then, check if the downloaded script differs from the current
-  if [ "$(openssl sha1 /tmp/"$ScriptName" | awk '{ print $2 }')" = "$(less /tmp/"$ScriptName".sha1)" ]; then
-    if [ -n "$(diff /tmp/"$ScriptName" "$DirName"/"$ScriptName" 2> /dev/null)" ] ; then
-      NewScriptAvailable=t
-    fi
-  else
-    CheckSumError=t
-  fi
-  }
-
-
-# Update [and quit]
-function UpdateScript() {
-  CheckForUpdate
-  if [ "$CheckSumError" = "t" ]; then
-    echo "Checksum of the fetched \"$ScriptName\" does NOT check out. Look into this! No update performed!"
-    exit 1
-  fi
-  # If new script available, update
-  if [ "$NewScriptAvailable" = "t" ]; then
-    # But only if the script is writable!
-    if [ "$Writable" = "yes" ]; then
-      /bin/rm -f "$DirName"/"$ScriptName" 2> /dev/null
-      /bin/mv /tmp/"$ScriptName" "$DirName"/"$ScriptName"
-      chmod 755 "$DirName"/"$ScriptName"
-      /bin/rm /tmp/"$ScriptName".sha1 2>/dev/null
-      echo "A new version of \"$ScriptName\" was installed successfully!"
-      echo "Script updated. Exiting"
-
-      # Send a signal that someone has updated the script
-      # This is only to give me feedback that someone is actually using this. I will *not* use the data in any way nor give it away or sell it!
-      /usr/bin/curl -s -f -e "$ScriptName ver:$VER" -o /dev/null http://fileadmin.cs.lth.se/cs/Personal/Peter_Moller/scripts/updated 2>/dev/null
-      exit 0
-    else
-      echo "Script cannot be updated!"
-      echo "It is located in \"$DirName\" and is owned by \"$ScriptOwner\""
-      echo "You need to sort this out yourself!!"
-      echo "Exiting..."
-      exit 1
-    fi
-  else
-    echo "You already have the latest version of \"$ScriptName\"!"
-    exit 0
-  fi
-  }
-
-
-##### Done with functions
 
 
 ##### Set basic variables
@@ -163,24 +77,97 @@ FontColor="$RES"
 # Color for the information texts:
 InfoColor="${ESC}${GreenFont}m"
 
+# Set an error file for the error trap
+ErrorFile="system_info-ERROR_$(date +%F"_"%T).txt"
+
 Formatstring="%-20s%-40s${InfoColor}%-30s${Reset}"
 # FormatString is intended for:
 # "Head" "Value" "Extra information (-i flag)"
 
 ##### Done setting basic variables
 
+
+# Functions
+
+# How should the script be used?
+function usage()
+{
+cat << EOF
+Usage: $0 options
+
+This script displays basic information about the OS you are running.
+
+OPTIONS:
+  -h      Show this message
+  -u      Upgrade the script
+  -i      Print additional information regarding tools to use
+EOF
+}
+
+
+# Determine if a command exists
+function exists()
+{
+  command -v "$1" >/dev/null 2>&1
+}
+
+
+# Function to catch an error
+function error() {
+  local parent_lineno="$1"
+  local message="$2"
+  local code="${3:-1}"
+  if [[ -n "$message" ]] ; then
+    echo "Error on or near line ${parent_lineno}: ${message}; exiting with status ${code}" > "$ErrorFile"
+  else
+    echo "Error on or near line ${parent_lineno}; exiting with status ${code}" > "$ErrorFile"
+  fi
+  exit "${code}"
+}
+
+# When ERR, execute the 'error' function through trap
+trap 'error ${LINENO}' ERR
+
+
+# Genral print warnings
 function print_warning()
 {
   printf "${ESC}${YellowBack};${BlackFont}mWarning: ${1}${Reset}\n" >&2
 }
 
+# Function to get configs from a Linux machine
+function is_kernel_config_set()
+{
+  if [ ! -z "${OS/Linux/}" ]; then
+    return 1
+  fi
+
+  [[ $(uname -m 2>/dev/null) == "x86_64" ]] && Arch='amd64'
+  #[[ -f '/proc/config.gz' ]] && ConfigPath='/proc/config.gz' || ([[ -f '/proc/config' ]] && ConfigPath='/proc/config' || ([[ -f "/boot/config-${KernelVer}-${Arch}" ]] && ConfigPath="/boot/config-${KernelVer}-${Arch}" || return 1))
+  if [[ -f '/proc/config.gz' ]]; then
+    ConfigPath='/proc/config.gz'
+  elif [[ -f '/proc/config' ]]; then
+    ConfigPath='/proc/config'
+  elif [[ -f "/boot/config-${KernelVer}-${Arch}" ]]; then
+    ConfigPath="/boot/config-${KernelVer}-${Arch}"
+  else
+    return 1
+  fi
+  GzFile=$(echo "${ConfigPath}" | grep '.gz')
+  [[ ! -z "${GzFile}" ]] && Value="$(zcat ${ConfigPath} 2>/dev/null | grep "^CONFIG_${1}")" || Value="$(cat ${ConfigPath} 2>/dev/null | grep "^CONFIG_${1}")"
+  [[ -z "${Value}" ]] && return 1 || return 0
+}
+
+##### Done with functions
+
+
+
 # Read the parameters
-while getopts "hui" OPTION
+while getopts "hi" OPTION
 do
     case $OPTION in
         h)  usage
             exit 1;;
-        u)  fetch_new=t;;
         i)  Info=1;;
         *)  usage
             exit;;
@@ -188,8 +175,6 @@ do
 done
 # Done with reading parameters
 
-# First: see if we should update the script
-[[ "$fetch_new" = "t" ]] && UpdateScript
 
 
 
