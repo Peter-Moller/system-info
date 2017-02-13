@@ -60,6 +60,38 @@ if [ -z "${OS/Linux/}" ]; then
   # cache_alignment : 64
   # address sizes   : 46 bits physical, 48 bits virtual
   # power management:
+  
+  # OR, for a PPC, you'll find:
+  # processor : 0
+  # cpu   : PPC970MP, altivec supported
+  # clock   : 2500.000000MHz
+  # revision  : 1.1 (pvr 0044 0101)
+  # 
+  # processor : 1
+  # cpu   : PPC970MP, altivec supported
+  # clock   : 2500.000000MHz
+  # revision  : 1.1 (pvr 0044 0101)
+  # 
+  # processor : 2
+  # cpu   : PPC970MP, altivec supported
+  # clock   : 2500.000000MHz
+  # revision  : 1.1 (pvr 0044 0101)
+  # 
+  # processor : 3
+  # cpu   : PPC970MP, altivec supported
+  # clock   : 2500.000000MHz
+  # revision  : 1.1 (pvr 0044 0101)
+  # 
+  # timebase  : 33333333
+  # platform  : PowerMac
+  # model   : PowerMac11,2
+  # machine   : PowerMac11,2
+  # motherboard : PowerMac11,2 MacRISC4 Power Macintosh 
+  # detected as : 337 (PowerMac G5 Dual Core)
+  # pmac flags  : 00000000
+  # L2 cache  : 1024K unified
+  # pmac-generation : NewWorld
+
   # 
   # Out of this, the following is used:
   # * Model name: name of the CPU
