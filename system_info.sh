@@ -117,11 +117,22 @@ function error() {
   local parent_lineno="$1"
   local message="$2"
   local code="${3:-1}"
-  if [[ -n "$message" ]] ; then
-    echo "Error on or near line ${parent_lineno}: ${message}; exiting with status ${code}" > "$ErrorFile"
-  else
-    echo "Error on or near line ${parent_lineno}; exiting with status ${code}" > "$ErrorFile"
+  # If there is no error file, give it a basic info about what machine we're on
+  if [ ! -f "$ErrorFile" ]; then
+    echo "Operating System: $Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")" > "$ErrorFile"
+    echo "${Kernel_version_label}: $KernelVer" >> "$ErrorFile"
+    echo "Architecture: ${OS_arch} (${OS_size}-bit)" >> "$ErrorFile"
   fi
+  if [[ -n "$message" ]] ; then
+    echo "Error on or near line ${parent_lineno}: ${message}; exiting with status ${code}" >> "$ErrorFile"
+  else
+    echo "Error on or near line ${parent_lineno}; exiting with status ${code}" >> "$ErrorFile"
+  fi
+  # Also, echo environment to the log file (minus all UPPER CASE vars that are considered to be system only)
+  echo "Environment:"
+  env | egrep -v "^[A-Z\-_]*=" >> "$ErrorFile"
+  echo "" >> "$ErrorFile"
+  echo "" >> "$ErrorFile"
   exit "${code}"
 }
 
