@@ -123,17 +123,15 @@ function error()
     echo "Operating System: $(uname -s)" > "$ErrorFile"
     echo "Computer Name:  $(uname -n)" >> "$ErrorFile"
   fi
+  echo "$Section" >> "$ErrorFile"
   if [[ -n "$message" ]] ; then
     echo "Error on or near line ${parent_lineno}: ${message}; exiting with status ${code}" >> "$ErrorFile"
   else
     echo "Error on or near line ${parent_lineno}; exiting with status ${code}" >> "$ErrorFile"
   fi
   # Also, echo environment to the log file (minus all UPPER CASE vars that are considered to be system only)
-  echo "Environment:" >> "$ErrorFile"
-  env | egrep -v "^[A-Z\-_]*=" >> "$ErrorFile"
   echo "" >> "$ErrorFile"
-  echo "" >> "$ErrorFile"
-  exit "${code}"
+  #exit "${code}"
 }
 
 # When ERR, execute the 'error' function through trap
@@ -208,7 +206,7 @@ rm $OSTempFile 2>/dev/null
 
 # Last: chech if "$ErrorFile" exists: if so, some error occured and we need to tell the user
 if [ -f "$ErrorFile" ]; then
-  printf "$ESC${RedFont};${BoldFace}mSome error occurred during the run of the script${Reset}\n"
+  printf "\n$ESC${RedFont};${BoldFace}mSome error occurred during the run of the script${Reset}\n"
   printf "$ESC${RedFont};${BoldFace}mAn error file, \"$ErrorFile\", har been created${Reset}\n"
   printf "$ESC${RedFont};${BoldFace}mYou may want to communicate it to the authors of the script${Reset}\n"
 fi

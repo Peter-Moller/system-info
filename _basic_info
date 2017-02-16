@@ -25,6 +25,7 @@
 ######################################################################################
 ##########################    B A S I C   O S - I N F O     ##########################
 ######################################################################################
+Section="Basic info"
 
 # OS version (either 'Darwin' or 'Linux')
 # See a comprehensive list of uname results: 
@@ -190,11 +191,12 @@ elif [ -z "${OS/Darwin/}" ]; then
   fi
 
   # Find out if it's a server
-  # First step: does the name fromsw_vers include "server"?
+  # First step: does the name from sw_vers include "server"?
   # Find out if it's a server and if it's configured or not
+  SW_VERS="$(sw_vers | grep ProductName | cut -d: -f2 | tr -d "\t") $(sw_vers | grep ProductVersion | awk '{print $2}')"
   if [ -z "$(echo "$SW_VERS" | grep -i server)" ]; then
     # If not, it may still be a server. Beginning with OS X 10.8 all versions include the command serverinfo:
-    serverinfo --software 1>/dev/null
+    serverinfo --software 1>/dev/null 2>/dev/null
     # Exit code 0 = server; 1 = NOT server
     ServSoft=$?
     if [ $ServSoft -eq 0 ]; then

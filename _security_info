@@ -28,6 +28,8 @@
 ##########################    S E C U R I T Y   I N F O    ###########################
 ######################################################################################
 
+Section="Security"
+
 SecurityTempFile="/tmp/.${ScriptName}_Security.$$.txt"
 # FormatstringLinuxFirewall is intended for the Linux firewalls entries
 #FormatstringLinuxFirewall="%-18s%-9s%-18s%-9s%-3s"

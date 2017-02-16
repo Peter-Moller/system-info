@@ -27,6 +27,7 @@
 ######################################################################################
 ###########################    N E T W O R K   I N F O    ############################
 ######################################################################################
+Section="Network"
 
 # (Colors can be found at http://en.wikipedia.org/wiki/ANSI_escape_code, http://graphcomp.com/info/specs/ansi_col.html and other sites)
 Reset="\e[0m"
