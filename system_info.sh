@@ -130,6 +130,8 @@ function error()
     echo "Error on or near line ${parent_lineno}; exiting with status ${code}" >> "$ErrorFile"
   fi
   # Also, echo environment to the log file (minus all UPPER CASE vars that are considered to be system only)
+  echo "Environment:" >> "$ErrorFile"
+  ( set -o posix ; set ) | egrep "[a-z]=" | egrep -v "Back=|Font=|Face=|Soft=|Blink=|Reset=|^Formatstring|^Font" >> "$ErrorFile"
   echo "" >> "$ErrorFile"
   #exit "${code}"
 }
