@@ -161,7 +161,7 @@ if [ -z "${OS/Linux/}" ]; then
     # 'Filesystem               Type      Size  Used Avail Use% Mounted on
     # 'tiger.student.lth.se:/dk nfs4      734G  292G  435G  41% /h/dk'
     # 
-    FormatstringNFS="%-12s%-9s%-12s%-40s"
+    FormatstringNFS="%-16s%-9s%-12s%-40s"
     # /h/dk        nfs4     tiger.student.lth.se:/dk      435G (59%)  
     # Mount Point  NFS-ver  Server                        Available   
     echo
