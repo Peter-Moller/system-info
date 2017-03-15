@@ -1,0 +1,226 @@
+#!/bin/bash
+
+#drive="/dev/sda"
+drive=$1
+Folder=$(mktemp -t -d BootInfo-XXXXXXXX);
+Unknown_MBR=${Folder}/Unknown_MBR		# File to record all unknown MBR and Boot sectors.
+
+Trash=${Folder}/Trash				# File to catch all usual Standard Errors these
+
+# Set awk binary to gawk.
+AWK='gawk';
+
+if [ -z "${drive}" ] ; then
+  echo "Give a drive as first argument"
+  exit 0
+fi
+
+
+if [ $(type gawk > /dev/null 2>&1 ; echo $?) -ne 0 ] ; then
+   # Do we have a busybox version?
+   for BUSYBOX in 'busybox' '/usr/lib/initramfs-tools/bin/busybox' ; do
+     # And if we have one, does is support "awk"?
+     if [ $(type ${BUSYBOX} > /dev/null 2>&1 ; echo $?) -eq 0 ] && [ $(echo 'test' | ${BUSYBOX} awk '{ print $0 }' > /dev/null 2>&1; echo $?) -eq 0 ] ; then
+	##printf '\n"gawk" could not be found, using "%s awk" instead.\nThis may lead to unreliable results.\n\n' "${BUSYBOX}" >&2;
+
+	# Set awk binary to busybox's awk.
+	AWK="${BUSYBOX} awk";
+	break;
+     fi
+   done
+
+   # If no busybox (or one without awk support) is found, "${AWK}" is still set to "gawk".
+   if [ "${AWK}" == 'gawk' ] ; then
+      echo '"gawk" could not be found.' >&2;
+      Check_Prog=0;
+   fi
+fi
+
+partition_table=$(fdisk -l ${drive} | grep "Disklabel type" | sed -e 's/Disklabel type: //')
+
+if [ "${partition_table}" = "gpt" ] ; then
+  IsBootctl=$(bootctl --version 2>/dev/null)
+  if [ ! -z "${IsBootctl}" ] ; then
+    Bootctl=$(bootctl 2>/dev/null)
+    # Ex: Bootctl=
+    # Using EFI System Parition at /boot.
+    # System:
+    #      Firmware: UEFI 1.10 (Apple 1.10)
+    #   Secure Boot: disabled
+    #    Setup Mode: user
+    #
+    # Loader:
+    #       Product: systemd-boot 230
+    #     Partition: /dev/disk/by-partuuid/4c54a9c4-9786-486f-9577-662b507b2b43
+    #          File: └─/EFI/systemd/systemd-bootx64.efi
+    #
+    # Boot Loader Binaries:
+    #           ESP: /dev/disk/by-partuuid/4c54a9c4-9786-486f-9577-662b507b2b43
+    #          File: └─/EFI/systemd/systemd-bootx64.efi (systemd-boot 230)
+    #          File: └─/EFI/BOOT/BOOTX64.EFI (systemd-boot 230)
+    #
+    # Boot Loader Entries in EFI Variables:
+    #         Title: Linux Boot Manager
+    #            ID: 0x0000
+    #        Status: active, boot-order
+    #     Partition: /dev/disk/by-partuuid/4c54a9c4-9786-486f-9577-662b507b2b43
+    #          File: └─/EFI/systemd/systemd-bootx64.efi
+    #
+    #         Title: 
+    #            ID: 0xFFFF
+    #        Status: active
+    #     Partition: /dev/disk/by-partuuid/637e5fb5-47c3-4367-8bf3-5e9c4fd1b1a3
+    #          File: └─/System/Library/CoreServices/boot.efi
+    Loader=$(echo "${Bootctl}" | awk -e '/^Loader:/ {do_print=1} do_print==1 {print} NF==0 {do_print=0}')
+    BL=$(echo "${Loader}" | grep "Product" | sed -e 's/\s*Product: //')
+    echo "Boot Loader: ${BL}"
+  fi
+  exit 0
+fi
+
+
+MBR_512=$(hexdump -v -n 512 -e '/1 "%02x"' ${drive})
+# Ex: MBR_512='eb639000000047525542d8be007cbf0006b90002fcf3a450681c06cbfbb90400bdbe07807e00007c0b0f850e0183c510e2f1cd1888560055c6461105c6460302ff000020010000000002fa9090f6c2807502b280ea597c00003100800100000000000000fffa9090f6c2807405f6c2707402b280ea797c000031c08ed88ed0bc0020fba0647c3cff740288c252bb1704f607037406be887de81701be057cb441bbaa55cd135a52723d81fb55aa753783e101743231c0894404408844ff894402c7041000668b1e5c7c66895c08668b1e607c66895c0cc744060070b442cd137205bb0070eb76b408cd13730d5a84d20f83d000be937de98200660fb6c68864ff40668944040fb6d1c1e20288e888f4408944080fb6c2c0e80266890466a1607c6609c0754e66a15c7c6631d266f73488d131d266f774043b44087d37fec188c530c0c1e80208c188d05a88c6bb00708ec331dbb80102cd13721e8cc3601eb900018edb31f6bf00808ec6fcf3a51f61ff265a7cbe8e7deb03be9d7de83400bea27de82e00cd18ebfe47525542200047656f6d0048617264204469736b005265616400204572726f720d0a00bb0100b40ecd10ac3c0075f4c3f84b129400008020210007be122c0008000000f00a0000be132c07feffff00f80a000090441200feffff05fefffffe8f4f1202b0a2090000000000000000000000000000000055aa'
+MBR_sig2="${MBR_512:0:4}";
+# Ex: MBR_sig2='eb63'
+MBR_sig3="${MBR_512:0:6}";
+# Ex: MBR_sig3='eb6390'
+MBR_sig4="${MBR_512:0:8}";
+# Ex: MBR_sig4='eb639000'
+MBR_sig8="${MBR_512:0:16}";
+# Ex: MBR_sig8='eb63900000004752'
+MBR_bytes80to81="${MBR_512:256:4}";
+# Ex: MBR_bytes80to81='0020'
+
+case ${MBR_sig2} in
+
+  eb48) ## Grub Legacy is in the MBR. ##
+	  BL="Grub Legacy";
+
+	  # 0x44 contains the offset to the next stage.
+	  offset=$(hexdump -v -s 68 -n 4 -e '"%u"' ${drive});
+
+	  if [ "${offset}" -ne 1 ] ; then
+	     # Grub Legacy is installed without stage1.5 files.
+	     stage2_loc ${drive};
+	     Message="${Message} and ${Stage2_Msg}";
+	  else
+	     # Grub is installed with stage1.5 files.
+	     Grub_String=$(hexdump -v -s 1042 -n 94 -e '"%_u"' ${drive});
+	     Grub_Version="${Grub_String%%nul*}";
+
+	     BL="Grub Legacy (v${Grub_Version})";
+
+	     tmp="/${Grub_String#*/}";
+	     tmp="${tmp%%nul*}";
+
+	     eval $(echo ${tmp} | ${AWK} '{ print "stage=" $1 "; menu=" $2 }');
+
+	     [[ x"$menu" = x'' ]] || stage="${stage} and ${menu}";
+
+	     part_info=$((1045 + ${#Grub_Version}));
+	     eval $(hexdump -v -s ${part_info} -n 2 -e '1/1 "pa=%u; " 1/1 "dr=%u"' ${drive});
+	     
+	     dr=$(( ${dr} - 127 ));
+	     pa=$(( ${pa} + 1 ));
+
+	     if [ "${dr}" -eq 128 ] ; then
+		Message="${Message} and looks on the same drive in partition #${pa} for ${stage}";
+	     else
+		Message="${Message} and looks on boot drive #${dr} in partition #${pa} for ${stage}";
+	     fi
+	  fi;;
+
+  eb4c) ## Grub2 (v1.96) is in the MBR. ##
+	  BL='Grub2 (v1.96)';
+
+	  #grub2_info ${drive} ${drive} '1.96';
+
+	  Message="${Message} and ${Grub2_Msg}";;
+
+  eb63) ## Grub2 is in the MBR. ##
+	  case ${MBR_bytes80to81} in
+		7c3c) grub2_version='1.97'; BL='Grub2 (v1.97-1.98)';;
+		0020) grub2_version='1.99'; BL='Grub2 (v1.99)';;
+	  esac
+
+	  ##grub2_info ${drive} ${drive} ${grub2_version};
+
+	  Message="${Message} and ${Grub2_Msg}";;
+
+  0ebe) BL='ThinkPad';;
+  31c0) # Look at the first 8 bytes of the hard drive to identify the boot code installed in the MBR.
+	  case ${MBR_sig8} in
+	    31c08ed0bc007c8e) BL='SUSE generic MBR';;
+	    31c08ed0bc007cfb) BL='Acer PQService MBR';;
+	  esac;;
+  33c0) # Look at the first 3 bytes of the hard drive to identify the boot code installed in the MBR.
+	  case ${MBR_sig3} in
+	    33c08e) BL='Windows';;
+	    33c090) BL='DiskCryptor';;
+	    33c0fa) BL='Syslinux MBR (4.04 and higher)';;			
+	  esac;;
+  33ed) # Look at bytes 0x80-0x81 to be more specific about the Syslinux variant/version.
+	  case ${MBR_bytes80to81} in
+	    407c) BL='ISOhybrid (Syslinux 4.04 and higher)';;
+	    83e1) BL='ISOhybrid with partition support (Syslinux 4.04 and higher)';;
+	  esac;;
+  33ff) BL='HP/Gateway';;
+  b800) BL='Plop';;
+  ea05) BL='XOSL';;
+  ea1e) BL='Truecrypt Boot Loader';;
+  eb04) BL='Solaris';;
+  eb31) BL='Paragon';;
+  eb5e) # Look at the first 3 bytes of the hard drive to identify the boot code installed in the MBR.
+	  case ${MBR_sig3} in
+	    eb5e00) BL='fbinst';;
+	    eb5e80) BL='Grub4Dos';;
+	    eb5e90) BL='WEE';
+		    # Get the embedded menu of WEE.
+		    get_embedded_menu "${drive}" "WEE's (${drive})";;
+	  esac;;
+  fa31) # Look at the first 3 bytes of the hard drive to identify the boot code installed in the MBR.
+	  case ${MBR_sig3} in
+	    fa31c0) # Look at bytes 0x80-0x81 to be more specific about the Syslinux variant/version.
+		    case ${MBR_bytes80to81} in
+		      0069) BL='ISOhybrid (Syslinux 3.72-3.73)';;
+		      7c66) BL='Syslinux MBR (3.61-4.03)';;
+		      7cb8) BL='Syslinux MBR (3.36-3.51)';;
+		      b442) BL='Syslinux MBR (3.00-3.35)';;
+		      bb00) BL='Syslinux MBR (3.52-3.60)';;
+		      e879) BL='ISOhybrid (Syslinux 3.74-3.80)';;
+		    esac;;
+	    fa31c9) BL='Master Boot LoaDeR';;   
+	    fa31ed) # Look at bytes 0x80-0x81 to be more specific about the Syslinux variant/version.
+		    case ${MBR_bytes80to81} in
+		      0069) BL='ISOhybrid (Syslinux 3.72-3.73)';;
+		      0fb6) BL='ISOhybrid with partition support (Syslinux 3.82-3.86)';;
+		      407c) BL='ISOhybrid (Syslinux 3.82-4.03)';;
+		      83e1) BL='ISOhybrid with partition support (Syslinux 4.00-4.03)';;
+		      b6c6) BL='ISOhybrid with partition support (Syslinux 3.81)';;
+		      fbc0) BL='ISOhybrid (Syslinux 3.81)';;
+		    esac;;
+	  esac;;
+  fa33) BL='MS-DOS 3.30 through Windows 95 (A)';;
+  fab8) # Look at the first 4 bytes of the hard drive to identify the boot code installed in the MBR.
+	  case ${MBR_sig4} in
+	    fab80000) BL='FreeDOS (eXtended FDisk)';;
+	    fab8*   ) BL="No boot loader";;  
+	  esac;;   
+  fabe) BL='No boot loader?';;
+  faeb) BL='Lilo';; 
+  fafc) BL='ReactOS';;
+  fc31) BL='Testdisk';;
+  fc33) BL='GAG';;
+  fceb) BL='BootIt NG';;
+  0000) BL='No boot loader';;
+     *) BL='No known boot loader';
+	  printf "Unknown MBR on ${drive}\n\n" >> ${Unknown_MBR};
+	  hexdump -v -n 512 -C ${drive} >> ${Unknown_MBR};
+	  echo >> ${Unknown_MBR};;
+esac
+
+
+echo "Boot Loader: $BL"
+
+#( set -o posix ; set ) | egrep "[a-z]=" | egrep -v "LS_COLORS"
