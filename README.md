@@ -48,9 +48,9 @@ Tested Distributions:
 -----
 
 Screen shot for macOS:  
-![](system_info (macOS) 2017-02-04.png)
+![](system_info_macOS_2017-02-04.png)
 
 -----
 
 Screen shot for Linux:  
-![](system_info (linux) 2017-02-04.png)
+![](system_info_linux_2017-02-04.png)
