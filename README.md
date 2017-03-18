@@ -37,7 +37,7 @@ Tested Distributions:
 
 * Generally, the script is written using only standard bash tools available on both macOS and Linux
 * However, on Linux, `dmidecode` (http://savannah.nongnu.org/projects/dmidecode/) is used for many things. If you don't have it your distro, memory reporting will be omitted [on Linux]. Also, `smartctl`is used to detect SMART-information and `hdparm` for TRIM status
-* If you are not running the script as `root`, the following information will be detected:  
+* If you are not running the script as `root`, the following information will be detected:  
 	* (Linux): some details about virtual environment (i.e. `dmidecode`)
 	* (Linux): memory type, speed and number of DIMMs (i.e. `dmidecode`)
 	* (macOS): presence of firmware password

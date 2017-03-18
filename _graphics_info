@@ -39,7 +39,7 @@ if [ -z "${OS/Linux/}" ]; then
   # - nvidia-smi
   # - glxinfo | egrep "vendor|version"
   # - xdpyinfo
-  # - lspci -v | awk '/VGA|3D/,/^$/' | egrep "^[0-9]|^\s*Subsystem:|^\s*Kernel "
+  # - lspci -v | awk '/VGA|3D/,/^$/' | egrep "^[0-9]|^\s*Subsystem:|^\s*Kernel "
   # for info about the graphics environment
   FormatstringGraphics="%-34s%-52s%-18s%-10s"
   # 'NVIDIA Corporation              GT218 [NVS 300]                          512 GB          NVIDIA'
