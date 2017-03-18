@@ -300,8 +300,7 @@ fi
 #MacBook Pro (Retina, 13-inch, Early 2015):MacbookPro12,1 
 #MacBook Pro (Retina, 13-inch, Mid 2014):MacBookPro11,1
 #MacBook Pro (Retina, 13-inch, Late 2013):MacBookPro11,1
-#MacBook Pro (Retina, 13-inch, Early 2013):MacBookPro10,2
-#MacBook Pro (Retina, 13-inch, Late 2012):MacBookPro10,2
+#MacBook Pro (Retina, 13-inch, Late 2012 or Early 2013):MacBookPro10,2
 #MacBook Pro (13-inch, Mid 2012):MacBookPro9,2
 #MacBook Pro (13-inch, Late 2011):MacBookPro8,1
 #MacBook Pro (13-inch, Early 2011):MacBookPro8,1
