@@ -259,6 +259,7 @@ fi
 # MacBook Air
 # https://support.apple.com/en-us/HT201862
 # -----------------------------------------------------
+#MacBook Air (13-inch, 2017):MacBookAir7,2
 #MacBook Air (13-inch, Early 2015):MacBookAir7,2
 #MacBook Air (11-inch, Early 2015):MacBookAir7,1
 #MacBook Air (13-inch, Early 2014):MacBookAir6,2
@@ -278,6 +279,7 @@ fi
 # MacBook
 # https://support.apple.com/en-us/HT201608
 # -----------------------------------------------------
+#MacBook (Retina, 12-inch, 2017):MacBook10,1
 #MacBook (Retina, 12-inch, Early 2016):MacBook9,1
 #MacBook (Retina, 12-inch, Early 2015):MacBook8,1
 #MacBook (13-inch, Mid 2010):MacBook7,1
@@ -295,12 +297,15 @@ fi
 # MacBook Pro, 13"
 # https://support.apple.com/en-us/HT201300
 # -----------------------------------------------------
+#MacBook Pro (13-inch, 2017, Four Thunderbolt 3 ports):MacBookPro14,2
+#MacBook Pro (13-inch, 2017, Two Thunderbolt 3 ports):MacBookPro14,1
 #MacBook Pro (13-inch, Late 2016, Four Thunderbolt 3 ports):MacBookPro13,2
 #MacBook Pro (13-inch, Late 2016, Two Thunderbolt 3 ports):MacBookPro13,1
 #MacBook Pro (Retina, 13-inch, Early 2015):MacbookPro12,1 
 #MacBook Pro (Retina, 13-inch, Mid 2014):MacBookPro11,1
 #MacBook Pro (Retina, 13-inch, Late 2013):MacBookPro11,1
-#MacBook Pro (Retina, 13-inch, Late 2012 or Early 2013):MacBookPro10,2
+#MacBook Pro (Retina, 13-inch, Early 2013):MacBookPro10,2
+#MacBook Pro (Retina, 13-inch, Late 2012):MacBookPro10,2
 #MacBook Pro (13-inch, Mid 2012):MacBookPro9,2
 #MacBook Pro (13-inch, Late 2011):MacBookPro8,1
 #MacBook Pro (13-inch, Early 2011):MacBookPro8,1
@@ -310,6 +315,7 @@ fi
 # MacBook Pro, 15"
 # https://support.apple.com/en-us/HT201300
 # -----------------------------------------------------
+#MacBook Pro (15-inch, 2017):MacBookPro14,3
 #MacBook Pro (15-inch, Late 2016):MacBookPro13,3
 #MacBook Pro (Retina, 15-inch, Mid 2015):MacbookPro 11,4
 #MacBook Pro (Retina, 15-inch, Mid 2015):MacbookPro 11,5
@@ -335,6 +341,9 @@ fi
 # iMac
 # https://support.apple.com/en-us/HT201634
 # -----------------------------------------------------
+#iMac (Retina 5K, 27-inch, 2017):iMac18,3
+#iMac (Retina 4K, 21.5-inch, 2017):iMac18,2
+#iMac (21.5-inch, 2017):iMac18,1
 #iMac (Retina 4K, 21.5-inch, Late 2015):iMac16,2
 #iMac (21.5-inch, Late 2015):iMac16,1
 #iMac (Retina 5K, 27-inch, Late 2015):iMac17,1
