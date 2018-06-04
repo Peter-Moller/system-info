@@ -80,6 +80,12 @@ if [ -z "${OS/Linux/}" ]; then
   # KernelVer='3.10'
   Kernel_version_label="Kernel version"
 
+  # Get the Serial Number
+  SerialNumber="$(dmidecode -t system 2>/dev/null | grep Serial | cut -d: -f2 | sed 's/ //')"
+  [[ -z "$SerialNumber" ]] && SerialNumber="No serial number found (or 'dmidecode' missing)"
+  if [ $Info -eq 1 ]; then SNInfo="dmidecode -t system | grep Serial"; else SNInfo=""; fi
+  # SerialNumber='F5KM20KXF694'
+
   # Are we running in a VM environment?
   # This one is a bit tricky since there are many ways to cover this.
   # Read this for more info: http://unix.stackexchange.com/questions/89714/easy-way-to-determine-virtualization-technology
@@ -168,6 +174,13 @@ elif [ -z "${OS/Darwin/}" ]; then
   ModelIdentifierName="$(grep "#.*:${ModelIdentifier}$" "${DirName}/${ScriptName}" | cut -d: -f1 | sed -e 's/#/ - "/' -e 's/$/"/')"
   # ModelIdentifierName='- iMac (27-inch, Late 2013)'
   # If the first three letters of $ModelIdentifier doesn't include 'Mac' och 'iMa', we are probably running inside a VM
+
+  # Get the Serial Number
+  SerialNumber="$(ioreg -l 2>/dev/null | grep IOPlatformSerialNumber | cut -d\" -f4)"
+  [[ -z "$SerialNumber" ]] && SerialNumber="No serial number found"
+  if [ $Info -eq 1 ]; then SNInfo="ioreg -l | grep IOPlatformSerialNumber"; else SNInfo=""; fi
+  # SerialNumber='F5KM20KXF694'
+  
   if [ ! "$(echo $ModelIdentifier | cut -c1-3)" = "Mac" -a ! "$(echo $ModelIdentifier | cut -c1-3)" = "iMa" -a ! "$(echo $ModelIdentifier | cut -c1-3)" = "Xse" ]; then
     VMenv="$ModelIdentifier"
     ModelIdentifier="Virtual Mac"
@@ -232,6 +245,7 @@ if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profil
 if [ -n "$ModelIdentifier" ]; then
   printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier ${ModelIdentifierName:-Unknown Mac-model}" "${Information}"
 fi
+printf "$Formatstring\n" "Serial Number:" "$SerialNumber" "$SNInfo"
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then
   Information="(Use \"dsconfigad -show\" to see AD-connection details)"
 elif [ $Info -eq 1 -a -z "${OS/Linux/}" ]; then

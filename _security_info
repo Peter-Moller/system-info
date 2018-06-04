@@ -144,7 +144,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   [[ $Info -eq 1 ]] && Information="(Use \"fdesetup\" to configure FileVault)" || Information=""
   printf "$Formatstring\n" "FileVault:" "$FileVaultStatus" "${Information}"
 
-    # Little Snitch
+  # Little Snitch
   # If it's running, it should be a "/Library/Little Snitch/Little Snitch Daemon.bundle/Contents/MacOS/Little Snitch Daemon" running
   if [ -n "$(pgrep -fl "Little Snitch Daemon")" ]; then
     # LittleSnitchVer is an *awful* kludge, but something went bonkers the “normal” (sed) way...
@@ -156,6 +156,12 @@ elif [ -z "${OS/Darwin/}" ]; then
     [[ $Info -eq 1 ]] &&  Information="(\"Little Snitch\" is a third party firewall that you can find at https://www.obdev.at/products/littlesnitch/index.html)" || Information=""
   fi
   printf "$Formatstring\n" "Little Snitch:" "${LittleSnitch}" "${Information}"
+
+  # Backup info
+  TimeMachine="$(/usr/bin/tmutil destinationinfo | grep "^Name" | cut -d: -f2 | sed 's/ //')"
+  [[ -z "$TimeMachine" ]] && TimeMachine="Time Machine is not used on this computer"
+  [[ $Info -eq 1 ]] &&  Information="(Use \"tmutil\" to get info about Time Machine" || Information=""
+  printf "$Formatstring\n" "Time Machine Backup:" "${TimeMachine}" "${Information}"
 fi
 
 # sshd settings
