@@ -159,9 +159,15 @@ elif [ -z "${OS/Darwin/}" ]; then
 
   # Backup info
   TimeMachine="$(/usr/bin/tmutil destinationinfo | grep "^Name" | cut -d: -f2 | sed 's/ //')"
-  [[ -z "$TimeMachine" ]] && TimeMachine="Time Machine is not used on this computer"
+  if [ -n "$TimeMachine" ]; then
+    TimeMachineLatest="$(tmutil latestbackup | awk -F\/ '{print $NF}')"
+    # TimeMachineLatest='2018-06-04-085932'
+  else
+    TimeMachine="Time Machine is not used on this computer"
+  fi
   [[ $Info -eq 1 ]] &&  Information="(Use \"tmutil\" to get info about Time Machine" || Information=""
   printf "$Formatstring\n" "Time Machine Backup:" "${TimeMachine}" "${Information}"
+  [[ -n "$TimeMachineLatest" ]] && printf "$Formatstring\n" "Last TM-backup:" "${TimeMachineLatest}" ""
 fi
 
 # sshd settings
