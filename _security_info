@@ -165,7 +165,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   else
     TimeMachine="Time Machine is not used on this computer"
   fi
-  [[ $Info -eq 1 ]] &&  Information="(Use \"tmutil\" to get info about Time Machine" || Information=""
+  [[ $Info -eq 1 ]] &&  Information="(Use \"tmutil\" to get info about Time Machine)" || Information=""
   printf "$Formatstring\n" "Time Machine Backup:" "${TimeMachine}" "${Information}"
   [[ -n "$TimeMachineLatest" ]] && printf "$Formatstring\n" "Last TM-backup:" "${TimeMachineLatest}" ""
 fi
