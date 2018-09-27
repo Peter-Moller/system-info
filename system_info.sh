@@ -297,6 +297,7 @@ fi
 # MacBook Pro, 13"
 # https://support.apple.com/en-us/HT201300
 # -----------------------------------------------------
+#MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports):MacBookPro15,2
 #MacBook Pro (13-inch, 2017, Four Thunderbolt 3 ports):MacBookPro14,2
 #MacBook Pro (13-inch, 2017, Two Thunderbolt 3 ports):MacBookPro14,1
 #MacBook Pro (13-inch, Late 2016, Four Thunderbolt 3 ports):MacBookPro13,2
@@ -315,6 +316,7 @@ fi
 # MacBook Pro, 15"
 # https://support.apple.com/en-us/HT201300
 # -----------------------------------------------------
+#MacBook Pro (15-inch, 2018):MacBookPro15,1
 #MacBook Pro (15-inch, 2017):MacBookPro14,3
 #MacBook Pro (15-inch, Late 2016):MacBookPro13,3
 #MacBook Pro (Retina, 15-inch, Mid 2015):MacbookPro 11,4
@@ -341,6 +343,7 @@ fi
 # iMac
 # https://support.apple.com/en-us/HT201634
 # -----------------------------------------------------
+#iMac Pro (2017):iMacPro1,1
 #iMac (Retina 5K, 27-inch, 2017):iMac18,3
 #iMac (Retina 4K, 21.5-inch, 2017):iMac18,2
 #iMac (21.5-inch, 2017):iMac18,1
