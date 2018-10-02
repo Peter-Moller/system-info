@@ -135,6 +135,8 @@ elif [ -z "${OS/Darwin/}" ]; then
     "10.10"*) Distro="OS X \"Yosemite\"" ;;
     "10.11"*) Distro="OS X \"El Capitan\"" ;;
     "10.12"*) Distro="macOS \"Sierra\"" ;;
+    "10.13"*) Distro="macOS \"High Sierra\"" ;;
+    "10.14"*) Distro="macOS \"Mojave\"" ;;
     *) Distro="macOS" ;;
   esac
   KernelVer="$(sw_vers -buildVersion)"
