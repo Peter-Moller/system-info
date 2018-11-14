@@ -241,11 +241,14 @@ fi
 
 ######################################################################################
 ### Listing of Mac models
+### Easiest way to find names and model numbers is by browsing at
+### https://browser.geekbench.com/mac-benchmarks/
 
 # Mac mini
 # https://support.apple.com/en-us/HT201894
 # http://www.unionrepair.com/how-to-identify-mac-mini-models/
 # -----------------------------------------------------
+#Mac mini (Late 2018):Macmini8,1
 #Mac mini (Late 2014):Macmini7,1
 #Mac mini (Late 2012):Macmini6,2
 #Mac mini (Late 2012):Macmini6,1
@@ -259,6 +262,7 @@ fi
 # MacBook Air
 # https://support.apple.com/en-us/HT201862
 # -----------------------------------------------------
+#MacBook Air (Late 2018):MacBookAir8,1
 #MacBook Air (13-inch, 2017):MacBookAir7,2
 #MacBook Air (13-inch, Early 2015):MacBookAir7,2
 #MacBook Air (11-inch, Early 2015):MacBookAir7,1
