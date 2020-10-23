@@ -77,8 +77,8 @@ if [ -z "${OS/Linux/}" ]; then
 
   # Gather information about LISTEN processes (if lsof exists)
   if [ $(command -v lsof) ]; then
-    lsof +c 0 -i 4 -n 2>/dev/null | grep LISTEN | sort -f -k 1,1 | cut -d\( -f1 | awk '{ print "4 - "$1" "$3" "$9 }' | sed 's/:/\ /g' | sed 's/\ [[:digit:]]\{2,5\}$/\ anonymous_port/g' | uniq > /tmp/NetworkTemp
-    lsof +c 0 -i 6 -n 2>/dev/null | egrep LISTEN | awk '{ print "- 6 "$1" "$3" "$9 }' | sort -f | sed 's/\ \[.*\]/\ \*/g' | sed 's/:/\ /g' | sed 's/\ [[:digit:]]\{2,5\}$/\ anonymous_port/g' | uniq >> /tmp/NetworkTemp
+    lsof +c 0 -i 4 -n -P 2>/dev/null | grep LISTEN | sort -f -k 1,1 | cut -d\( -f1 | awk '{ print "4 - "$1" "$3" "$9 }' | sed 's/:/\ /g' | uniq > /tmp/NetworkTemp
+    lsof +c 0 -i 6 -n -P 2>/dev/null | egrep LISTEN | awk '{ print "- 6 "$1" "$3" "$9 }' | sort -f | sed 's/\ \[.*\]/\ \*/g' | sed 's/:/\ /g' | uniq >> /tmp/NetworkTemp
   else
     print_warning "\"lsof\" not found; no listing of ports possible (you may need to execute script as root to use it)"
     lsof_warning="t"
@@ -118,12 +118,12 @@ elif [ -z "${OS/Darwin/}" ]; then
   [[ $Info -eq 1 ]] && printf "${InfoColor}(Use \"ifconfig\" and \"networksetup\" to see network details)${Reset}\n"
 
   # Gather information about LISTEN processes:
-  lsof +c 0 -i 4 -n 2>/dev/null | grep LISTEN | sort -f -k 1,1 | cut -d\( -f1 | awk '{ print "4 - "$1" "$3" "$9 }' | sed 's/:/\ /g' | sed 's/\ [[:digit:]]\{2,5\}$/\ anonymous_port/g' | uniq > /tmp/NetworkTemp
-  lsof +c 0 -i 6 -n 2>/dev/null | egrep LISTEN | awk '{ print "- 6 "$1" "$3" "$9 }' | sort -f | sed 's/\ \[.*\]/\ \*/g' | sed 's/:/\ /g' | sed 's/\ [[:digit:]]\{2,5\}$/\ anonymous_port/g' | uniq >> /tmp/NetworkTemp
+  lsof +c 0 -i 4 -n -P 2>/dev/null | grep LISTEN | sort -f -k 1,1 | cut -d\( -f1 | awk '{ print "4 - "$1" "$3" "$9 }' | sed 's/:/\ /g' | uniq > /tmp/NetworkTemp
+  lsof +c 0 -i 6 -n -P 2>/dev/null | egrep LISTEN | awk '{ print "- 6 "$1" "$3" "$9 }' | sort -f | sed 's/\ \[.*\]/\ \*/g' | sed 's/:/\ /g' | uniq >> /tmp/NetworkTemp
 fi
 
 # Print LISTEN information
-FormatstringListen="%-6s%-6s%-18s%-15s%6s%2s%-17s%-15s"
+FormatstringListen="%-6s%-6s%-25s%-15s%6s%2s%-17s%-15s"
 # Only proceed if we have a file and no warning
 if [ "$lsof_warning" = "" ]; then
   # First, sort by application:
@@ -162,7 +162,8 @@ if [ "$lsof_warning" = "" ]; then
         if [ ! -z "$LastProgram" ]; then
           # Print!!
           #printf "${ESC}${BGColor};${FontColor}m$FormatstringListen$Reset\n" "$LastIPv4" "$LastIPv6" "$LastProgram" "$LastUser" "`grep "^$LastPort\b" /etc/services | head -1 | awk '{ print $2 }' | cut -d/ -f1`" " " "`echo $LastPort | sed 's/_/\ /g'`" "$LastRange"
-          printf "$FormatstringListen\n" "$LastIPv4" "$LastIPv6" "$LastProgram" "$LastUser" "`grep "^$LastPort\b" /etc/services | head -1 | awk '{ print $2 }' | cut -d/ -f1`" " " "`echo $LastPort | sed 's/_/\ /g'`" "$LastRange"
+          #printf "$FormatstringListen\n" "$LastIPv4" "$LastIPv6" "$LastProgram" "$LastUser" "`grep "^$LastPort\b" /etc/services | head -1 | awk '{ print $2 }' | cut -d/ -f1`" " " "`echo $LastPort | sed 's/_/\ /g'`" "$LastRange"
+          printf "$FormatstringListen\n" "$LastIPv4" "$LastIPv6" "$LastProgram" "$LastUser" "$(echo $LastPort | sed 's/_/\ /g')" " " "$(grep "\b$LastPort\b" /etc/services | head -1 | awk '{ print $1 }')" "$LastRange"
         fi
         LastIPv4="$IPv4"
         LastIPv6="$IPv6"
