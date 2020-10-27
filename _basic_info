@@ -257,7 +257,7 @@ else
 fi
 printf "$Formatstring\n" "Directory Service:" "${DirectoryService:-Not bound}" "${Information}"
 if [ -z "${OS/Darwin/}" ]; then
-  # Find out if we are running JAMP (a.k.a. Casper)
+  # Find out if we are running JAMF (a.k.a. Casper)
   if [ -n "$(ps -ef | grep "[j]amf\/bin\/jamf")" ]; then
     [[ $Info -eq 1 ]] && Information="(Use \"jamf -version\" to see JamF version)" || Information=""
     EnterpriseMgmt="JAMF running, $(jamf -version)"
@@ -266,4 +266,40 @@ if [ -z "${OS/Darwin/}" ]; then
   printf "$Formatstring\n" "Enterprise Mgmt:" "${EnterpriseMgmt:--None detected-}" "${Information}"
   [[ $Info -eq 1 ]] && Information="(Use \"profiles -P\" to see details about installed Profiles)" || Information=""
   printf "$Formatstring\n" "Managed profiles:" "${Profiles:--None detected-}" "${Information}"
+fi
+
+########################################
+## Docker info (currently only on Linux)
+if [ -z "${OS/Linux/}" ]; then
+  # Start by checking if we have docker installed on the system
+  DockerInstalled="$(which -a docker 2>/dev/null)"    # Ex: DockerInstalled='/usr/bin/docker'
+  DockerVersion="$(docker --version 2>/dev/null | sed -e 's/^Docker //' -e 's/, build [a-f0-9]*//')"    # Ex: Dockerversion='version 19.03.8'
+  if [ -n "$DockerInstalled" ]; then
+    DockerRunning="$(pgrep dockerd)"    # Ex: DockerRunning='32009'
+    # If you are root, you'll get more info
+    if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
+      DockerList="$(docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}")"
+      # Ex. DockerList='gitlab              Up 4 days (healthy)   0.0.0.0:22->22/tcp, 0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, 0.0.0.0:5050->5050/tcp'
+    else
+      # OK, so we're not root. Get number of running dockers:
+      NrRunningDocker="$(pgrep containerd-shim | wc -l)"    # Ex: NrRunningDocker='2'
+      DockerPorts="$(ps -ef | grep [d]ocker-proxy | egrep -o "\-host\-port [0-9]* " | awk '{print $NF}' | sort -n)"    # Ex: DockerPorts='80\n443\n3306'
+    fi
+  fi
+  # Print info about docker (regardless of weather it's installed or not)
+  printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mDocker                                                                     ${Reset}\n"
+  [[ -n "$DockerVersion" ]] && echo "Docker $DockerVersion is installed on this system$([[ -n "$DockerRunning" ]] && echo " and is active:" || echo " but is not active")" || echo "Docker is not installed on this system"
+  # If Docker is running on the system, provide som details
+  if [ -n "$DockerRunning" ]; then
+    #echo "Docker is running. Details:"
+    # If we are root, provide more specific details:
+    if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
+      echo "$DockerList"
+    else
+      echo "$NrRunningDocker Docker is running, but since we are not running as user \"root\", we cannot see the details."
+      echo "Ports in use by Docker: $(echo $DockerPorts | sed 's/ /, /g')"
+    fi
+  else
+    echo "Docker is not running on the system"
+  fi
 fi
