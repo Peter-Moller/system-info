@@ -295,8 +295,8 @@ if [ -z "${OS/Linux/}" ]; then
     if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
       echo "$DockerList"
     else
-      echo "$NrRunningDocker Docker$([[ $NrRunningDocker -e 1 ]] && echo " is" || echo "s are") running, but since we are not running as user \"root\", we cannot see the details."
-      echo "Ports in use by $([[ $NrRunningDocker -e 1 ]] && echo " this Docker" || echo "these Dockers"): $(echo $DockerPorts | sed 's/ /, /g')"
+      echo "$NrRunningDocker Docker$([[ $NrRunningDocker -eq 1 ]] && echo " is" || echo "s are") running, but since we are not running as user \"root\", we cannot see the details."
+      echo "Ports in use by $([[ $NrRunningDocker -eq 1 ]] && echo " this Docker" || echo "these Dockers"): $(echo $DockerPorts | sed 's/ /, /g')"
     fi
   else
     echo "Docker is not running on the system"
