@@ -291,13 +291,12 @@ if [ -z "${OS/Linux/}" ]; then
   [[ -n "$DockerVersion" ]] && echo "Docker $DockerVersion is installed on this system$([[ -n "$DockerRunning" ]] && echo " and is active:" || echo " but is not active")" || echo "Docker is not installed on this system"
   # If Docker is running on the system, provide som details
   if [ -n "$DockerRunning" ]; then
-    #echo "Docker is running. Details:"
     # If we are root, provide more specific details:
     if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
       echo "$DockerList"
     else
-      echo "$NrRunningDocker Docker is running, but since we are not running as user \"root\", we cannot see the details."
-      echo "Ports in use by Docker: $(echo $DockerPorts | sed 's/ /, /g')"
+      echo "$NrRunningDocker Docker$([[ $NrRunningDocker -e 1 ]] && echo " is" || echo "s are") running, but since we are not running as user \"root\", we cannot see the details."
+      echo "Ports in use by $([[ $NrRunningDocker -e 1 ]] && echo " this Docker" || echo "these Dockers"): $(echo $DockerPorts | sed 's/ /, /g')"
     fi
   else
     echo "Docker is not running on the system"
