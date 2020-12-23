@@ -27,7 +27,7 @@
 
 ##### Set basic variables
 fetch_new=f
-VER="0.91"
+VER="0.95"
 
 Info=0
 # Find where the script resides (so updates update the correct version) -- without trailing slash
