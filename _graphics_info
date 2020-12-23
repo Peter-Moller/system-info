@@ -53,7 +53,7 @@ if [ -z "${OS/Linux/}" ]; then
     # For a list of VendorID:s, see: https://pci-ids.ucw.cz/read/PC?restrict=
     VendorCardNr="$(lspci -vnn | egrep "VGA|3D|2D" | grep "$BusId" | egrep -o "\[[0-9a-z]{4}:" | sed -e 's/://g' -e 's/\[//g')"
     # Ex: VendorCardNr='102b'
-    VendorCardName="$(grep -i "^#$VendorCardNr" ${DirName}/${ScriptName} | cut -d: -f2)"
+    VendorCardName="$(grep -i "^#$VendorCardNr" ${DirName}/GPU_vendors.txt | cut -d: -f2)"
     # Ex: VendorCardName='Matrox Electronic Systems Ltd.'
     GraphicsCard="$(lspci -s $BusId | grep -oP ".*$VendorCardName\s+\K.*\](?=\ )")"
     # Ex: GraphicsCard='MGA G200e [Pilot] ServerEngines'

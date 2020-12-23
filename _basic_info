@@ -121,22 +121,26 @@ if [ -z "${OS/Linux/}" ]; then
 
 
 elif [ -z "${OS/Darwin/}" ]; then
-  DistroVer="$(sw_vers -productVersion 2>/dev/null)"
-  [[ $Info -eq 1 ]] &&  DistroVerInfo="(Run \"sw_vers -productVersion\" for OS info)" || DistroVerInfo=""
+  DistroVer="$(sw_vers -buildVersion 2>/dev/null)"   # DistroVer='20C69'
+  [[ $Info -eq 1 ]] &&  DistroVerInfo="(Run \"sw_vers -buildVersion\" for OS info)" || DistroVerInfo=""
 
-  # Get a full name for the version:
+  # Get the OS version
+  OSver="$(sw_vers -productVersion 2>/dev/null)"
+  # Get a full name for the version (see https://en.wikipedia.org/wiki/Darwin_(operating_system)):
   case "$DistroVer" in
-    "10.4"*) Distro="Mac OS X \"Tiger\"" ;;
-    "10.5"*) Distro="Mac OS X \"Leopard\"" ;;
-    "10.6"*) Distro="Mac OS X \"Snow Leopard\"" ;;
-    "10.7"*) Distro="Mac OS X \"Lion\"" ;;
-    "10.8"*) Distro="OS X \"Mountain Lion\"" ;;
-    "10.9"*) Distro="OS X \"Mavericks\"" ;;
-    "10.10"*) Distro="OS X \"Yosemite\"" ;;
-    "10.11"*) Distro="OS X \"El Capitan\"" ;;
-    "10.12"*) Distro="macOS \"Sierra\"" ;;
-    "10.13"*) Distro="macOS \"High Sierra\"" ;;
-    "10.14"*) Distro="macOS \"Mojave\"" ;;
+    8*) Distro="Mac OS X ${OSver} \"Tiger\"" ;;
+    9*) Distro="Mac OS X ${OSver} \"Leopard\"" ;;
+    10*) Distro="Mac OS X ${OSver} \"Snow Leopard\"" ;;
+    11*) Distro="Mac OS X ${OSver} \"Lion\"" ;;
+    12*) Distro="OS X ${OSver} \"Mountain Lion\"" ;;
+    13*) Distro="OS X ${OSver} \"Mavericks\"" ;;
+    14*) Distro="OS X ${OSver} \"Yosemite\"" ;;
+    15*) Distro="OS X ${OSver} \"El Capitan\"" ;;
+    16*) Distro="macOS ${OSver} \"Sierra\"" ;;
+    17*) Distro="macOS ${OSver} \"High Sierra\"" ;;
+    18*) Distro="macOS ${OSver} \"Mojave\"" ;;
+    19*) Distro="macOS ${OSver} \"Catalina\"" ;;
+    20*) Distro="macOS ${OSver} \"Big Sur\"" ;;
     *) Distro="macOS" ;;
   esac
   KernelVer="$(sw_vers -buildVersion)"
@@ -172,9 +176,9 @@ elif [ -z "${OS/Darwin/}" ]; then
   # What Mac model is it?
   ModelIdentifier="$(egrep "^\s*Model Identifier:" $OSTempFile | cut -d: -f2 | sed 's/^ //')"
   # ModelIdentifier='iMac14,2' or 'VMware7,1'
-  # Get the long name for it
-  ModelIdentifierName="$(grep "#.*:${ModelIdentifier}$" "${DirName}/${ScriptName}" | cut -d: -f1 | sed -e 's/#/ - "/' -e 's/$/"/')"
-  # ModelIdentifierName='- iMac (27-inch, Late 2013)'
+  # Get the long name for it and the URL for technical specifications
+  ModelIdentifierName="$(grep ".*:${ModelIdentifier}:" "${DirName}/Mac-models.txt" |  awk -F: '{print $1"  (https:"$4")"}')"
+  # ModelIdentifierName='iMac (Retina 5K, 27-inch, 2020)  (https://support.apple.com/kb/SP821)'
   # If the first three letters of $ModelIdentifier doesn't include 'Mac' och 'iMa', we are probably running inside a VM
 
   # Get the Serial Number

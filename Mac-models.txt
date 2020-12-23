@@ -1,0 +1,168 @@
+######################################################################################
+### Listing of Mac models
+### Easiest way to find names and model numbers is by browsing at
+### https://browser.geekbench.com/mac-benchmarks/
+
+# Mac mini
+# https://support.apple.com/en-us/HT201894
+# http://www.unionrepair.com/how-to-identify-mac-mini-models/
+# -----------------------------------------------------
+Mac mini (M1, 2020):Macmini9,1:https://support.apple.com/kb/SP823
+Mac mini (Late 2018):Macmini8,1:https://support.apple.com/kb/SP782
+Mac mini (Late 2014):Macmini7,1:https://support.apple.com/kb/SP710
+Mac mini (Late 2012):Macmini6,2:https://support.apple.com/kb/SP659
+Mac mini (Late 2012):Macmini6,1:https://support.apple.com/kb/SP659
+Mac mini (Mid 2011):Macmini5,1:https://support.apple.com/kb/SP632
+Mac mini (Mid 2011):Macmini5,2:https://support.apple.com/kb/SP632
+Mac mini (Mid 2011):Macmini5,3:
+Mac mini (Mid 2010):Macmini4,1:https://support.apple.com/kb/SP585
+Mac mini (Late 2009):Macmini3,1:https://support.apple.com/kb/SP577
+Mac mini (Early 2009):Macmini3,1:https://support.apple.com/kb/SP505
+
+# MacBook Air
+# https://support.apple.com/en-us/HT201862
+# -----------------------------------------------------
+MacBook Air (M1, 2020):MacBookAir10,1:https://support.apple.com/kb/SP825
+MacBook Air (Retina, 13-inch, 2020):MacBookAir9,1:https://support.apple.com/kb/SP813
+MacBook Air (Retina, 13-inch, 2019):MacBookAir8,2:https://support.apple.com/kb/SP798
+MacBook Air (Retina, 13-inch, 2018):MacBookAir8,1:https://support.apple.com/kb/SP783
+MacBook Air (13-inch, 2017):MacBookAir7,2:https://support.apple.com/kb/SP753
+MacBook Air (13-inch, Early 2015):MacBookAir7,2:https://support.apple.com/kb/SP714
+MacBook Air (11-inch, Early 2015):MacBookAir7,1:https://support.apple.com/kb/SP713
+MacBook Air (13-inch, Early 2014):MacBookAir6,2:https://support.apple.com/kb/SP700
+MacBook Air (11-inch, Early 2014):MacBookAir6,1:https://support.apple.com/kb/SP699
+MacBook Air (13-inch, Mid 2013):MacBookAir6,2:https://support.apple.com/kb/SP678
+MacBook Air (11-inch, Mid 2013):MacBookAir6,1:https://support.apple.com/kb/SP677
+MacBook Air (13-inch, Mid 2012):MacBookAir5,2:https://support.apple.com/kb/SP670
+MacBook Air (11-inch, Mid 2012):MacBookAir5,1:https://support.apple.com/kb/SP650
+MacBook Air (13-inch, Mid 2011):MacBookAir4,2:https://support.apple.com/kb/SP683
+MacBook Air (11-inch, Mid 2011):MacBookAir4,1:https://support.apple.com/kb/SP631
+MacBook Air (13-inch, Late 2010):MacBookAir3,2:https://support.apple.com/kb/SP618
+MacBook Air (11-inch, Late 2010):MacBookAir3,1:https://support.apple.com/kb/SP617
+MacBook Air (Mid 2009):MacBookAir2,1:https://support.apple.com/kb/SP548
+MacBook Air (Late 2008):MacBookAir2,1:
+MacBook Air:MacBookAir1,1:
+
+# MacBook
+# https://support.apple.com/en-us/HT201608
+# -----------------------------------------------------
+MacBook (Retina, 12-inch, 2017):MacBook10,1:https://support.apple.com/kb/SP757
+MacBook (Retina, 12-inch, Early 2016):MacBook9,1:https://support.apple.com/kb/SP741
+MacBook (Retina, 12-inch, Early 2015):MacBook8,1:https://support.apple.com/kb/SP712
+MacBook (13-inch, Mid 2010):MacBook7,1:https://support.apple.com/kb/SP584
+MacBook (13-inch, Late 2009):MacBook 6,1:https://support.apple.com/kb/SP579
+MacBook (13-inch, Mid 2009):MacBook5,2:https://support.apple.com/kb/SP512
+MacBook (13-inch, Early 2009):MacBook5,2:https://support.apple.com/kb/SP504
+MacBook (13-inch, Aluminum, Late 2008):MacBook5,1:
+MacBook (13-inch, Late 2008):MacBook4,1:
+MacBook (13-inch, Early 2008):MacBook4,1:
+MacBook (13-inch, Late 2007):MacBook3,1:
+MacBook (13-inch, Mid 2007):MacBook2,1:
+MacBook (Late 2006):MacBook2,1:
+MacBook:MacBook1,1:
+
+# MacBook Pro, 13"
+# https://support.apple.com/en-us/HT201300
+# -----------------------------------------------------
+MacBook Pro (13-inch, M1, 2020):MacBookPro17,1:https://support.apple.com/kb/SP824
+MacBook Pro (13-inch, 2020, Two Thunderbolt 3 ports):MacBookPro16,3:https://support.apple.com/kb/SP818
+MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports):MacBookPro16,2:https://support.apple.com/kb/SP819
+MacBook Pro (13-inch, 2019, Two Thunderbolt 3 ports):MacBookPro15,4:https://support.apple.com/kb/SP799
+MacBook Pro (13-inch, 2019, Four Thunderbolt 3 ports):MacBookPro15,2:https://support.apple.com/kb/SP795
+MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports):MacBookPro15,2:https://support.apple.com/kb/SP775
+MacBook Pro (13-inch, 2017, Four Thunderbolt 3 ports):MacBookPro14,2:https://support.apple.com/kb/SP755
+MacBook Pro (13-inch, 2017, Two Thunderbolt 3 ports):MacBookPro14,1:https://support.apple.com/kb/SP754
+MacBook Pro (13-inch, Late 2016, Four Thunderbolt 3 ports):MacBookPro13,2:https://support.apple.com/kb/SP748
+MacBook Pro (13-inch, Late 2016, Two Thunderbolt 3 ports):MacBookPro13,1:https://support.apple.com/kb/SP747
+MacBook Pro (Retina, 13-inch, Early 2015):MacbookPro12,1:https://support.apple.com/kb/SP715
+MacBook Pro (Retina, 13-inch, Mid 2014):MacBookPro11,1:https://support.apple.com/kb/SP703
+MacBook Pro (Retina, 13-inch, Late 2013):MacBookPro11,1:https://support.apple.com/kb/SP691
+MacBook Pro (Retina, 13-inch, Early 2013):MacBookPro10,2:https://support.apple.com/kb/SP668
+MacBook Pro (Retina, 13-inch, Late 2012):MacBookPro10,2:https://support.apple.com/kb/SP658
+MacBook Pro (13-inch, Mid 2012):MacBookPro9,2:https://support.apple.com/kb/SP649
+MacBook Pro (13-inch, Late 2011):MacBookPro8,1:https://support.apple.com/kb/SP645
+MacBook Pro (13-inch, Early 2011):MacBookPro8,1:https://support.apple.com/kb/SP619
+MacBook Pro (13-inch, Mid 2010):MacBookPro7,1:https://support.apple.com/kb/SP583
+MacBook Pro (13-inch, Mid 2009):MacBookPro5,5:https://support.apple.com/kb/SP541
+
+# MacBook Pro, 15" & 16"
+# https://support.apple.com/en-us/HT201300
+# -----------------------------------------------------
+MacBook Pro (16-inch, 2019):MacBookPro16,4:https://support.apple.com/kb/SP809
+MacBook Pro (16-inch, 2019):MacBookPro16,1:https://support.apple.com/kb/SP809
+MacBook Pro (15-inch, 2019):MacBookPro15,3:https://support.apple.com/kb/SP794
+MacBook Pro (15-inch, 2018):MacBookPro15,1:https://support.apple.com/kb/SP776
+MacBook Pro (15-inch, 2017):MacBookPro14,3:https://support.apple.com/kb/SP756
+MacBook Pro (15-inch, Late 2016):MacBookPro13,3:https://support.apple.com/kb/SP749
+MacBook Pro (Retina, 15-inch, Mid 2015):MacbookPro 11,4:
+MacBook Pro (Retina, 15-inch, Mid 2015):MacbookPro 11,5:
+MacBook Pro (Retina, 15-inch, Mid 2014 or Late 2013):MacBook Pro11,2:
+MacBook Pro (Retina, 15-inch, Mid 2014 or Late 2013):MacBook Pro11,3:
+MacBook Pro (Retina, 15-inch, Early 2013 or Mid 2012):MacBookPro10,1:https://support.apple.com/kb/SP669
+MacBook Pro (15-inch, Mid 2012):MacBookPro9,1:https://support.apple.com/kb/SP694
+MacBook Pro (15-inch, Late 2011):MacBookPro8,2:https://support.apple.com/kb/SP644
+MacBook Pro (15-inch, Early 2011):MacBookPro8,2:https://support.apple.com/kb/SP620
+MacBook Pro (15-inch, Mid 2010):MacBookPro6,2:https://support.apple.com/kb/SP582
+MacBook Pro (15-inch, Mid 2009):MacBookPro5,3:https://support.apple.com/kb/SP544
+MacBook Pro (15-inch, 2.53GHz, Mid 2009):MacBookPro5,3:https://support.apple.com/kb/SP544
+MacBook Pro (15-inch, Late 2008):MacBookPro5,1:https://support.apple.com/kb/SP499
+MacBook Pro (15-inch, Early 2008):MacBookPro4,1:https://support.apple.com/kb/SP4
+
+# MacBook Pro, 17"
+# https://support.apple.com/en-us/HT201300
+# -----------------------------------------------------
+MacBook Pro (17-inch, Late 2011):MacBookPro8,3:https://support.apple.com/kb/SP646
+MacBook Pro (17-inch, Early 2011):MacBookPro8,3:https://support.apple.com/kb/SP621
+MacBook Pro (17-inch, Mid 2010):MacBookPro6,1:https://support.apple.com/kb/SP581
+MacBook Pro (17-inch, Mid 2009):MacBookPro5,2:https://support.apple.com/kb/SP546
+MacBook Pro (17-inch, Early 2009):MacBookPro5,2:https://support.apple.com/kb/SP503
+MacBook Pro (17-inch, Late 2008):MacBookPro5,1:https://support.apple.com/kb/SP4
+MacBook Pro (17-inch, Early 2008):MacBookPro4,1:https://support.apple.com/kb/SP4
+
+# iMac
+# https://support.apple.com/en-us/HT201634
+# -----------------------------------------------------
+iMac (Retina 5K, 27-inch, 2020):iMac20,2:https://support.apple.com/kb/SP821
+iMac (Retina 5K, 27-inch, 2020):iMac20,1:https://support.apple.com/kb/SP821
+iMac (Retina 4K, 21.5-inch, 2019):iMac19,2:https://support.apple.com/kb/SP789
+iMac (Retina 5K, 27-inch, 2019):iMac19,1:https://support.apple.com/kb/SP790
+iMac Pro (2017):iMacPro1,1:https://support.apple.com/kb/SP771
+iMac (Retina 5K, 27-inch, 2017):iMac18,3:https://support.apple.com/kb/SP760
+iMac (Retina 4K, 21.5-inch, 2017):iMac18,2:https://support.apple.com/kb/SP759
+iMac (21.5-inch, 2017):iMac18,1:https://support.apple.com/kb/SP758
+iMac (Retina 4K, 21.5-inch, Late 2015):iMac16,2:https://support.apple.com/kb/SP732
+iMac (21.5-inch, Late 2015):iMac16,1:https://support.apple.com/kb/SP733
+iMac (Retina 5K, 27-inch, Late 2015):iMac17,1:https://support.apple.com/kb/SP731
+iMac (Retina 5K, 27-inch, Late 2014 or Mid 2015):iMac15,1:https://support.apple.com/kb/SP718
+iMac (21.5-inch, Mid 2014):iMac14,4:https://support.apple.com/kb/SP701
+iMac (21.5-inch, Late 2013):iMac14,1:https://support.apple.com/kb/SP687
+iMac (27-inch, Late 2013):iMac14,2:https://support.apple.com/kb/SP688
+iMac (21.5-inch, Late 2012):iMac13,1:https://support.apple.com/kb/SP665
+iMac (27-inch, Late 2012):iMac13,2:https://support.apple.com/kb/sp667
+iMac (21.5-inch, Mid 2011):iMac12,1:https://support.apple.com/kb/SP623
+iMac (27-inch, Mid 2011):iMac12,2:https://support.apple.com/kb/SP689
+iMac (21.5-inch, Mid 2010):iMac11,2:https://support.apple.com/kb/SP588
+iMac (27-inch, Mid 2010):iMac11,3:https://support.apple.com/kb/SP695
+iMac (21.5-inch, Late 2009):iMac10,1:https://support.apple.com/kb/SP576
+iMac (27-inch, Late 2009):iMac10,1:https://support.apple.com/kb/SP696
+iMac (20-inch, Early 2009):iMac9,1:https://support.apple.com/kb/SP507
+iMac (24-inch, Early 2009):iMac9,1:https://support.apple.com/kb/SP507
+iMac (20-inch, Early 2008):iMac8,1:
+iMac (24-inch, Early 2008):iMac8,1:
+
+# Mac Pro
+# https://support.apple.com/en-us/HT202888
+# -----------------------------------------------------
+Mac Pro (2019):MacPro7,1:https://support.apple.com/kb/SP797
+Mac Pro (Late 2013):MacPro6,1:https://support.apple.com/kb/SP697
+Mac Pro (Mid 2010):MacPro5,1:https://support.apple.com/kb/SP589
+Mac Pro (Mid 2012):MacPro5,1:https://support.apple.com/kb/SP652
+Mac Pro (Early 2009):MacPro4,1:https://support.apple.com/kb/SP506
+Mac Pro (Early 2008):MacPro3,1:
+Mac Pro (8-core):MacPro2,1:
+Mac Pro:MacPro1,1:
+
+# Xserve
+Xserve Xeon 2.0/2.66/3.0 "Quad Core" (Late 2006):Xserve1,1:
+Xserve Xeon 2.8 "Quad Core" or 2.8/3.0 "Eight Core" (Early 2008):Xserve2,1:
+Xserve Xeon Nehalem 2.26 "Quad Core" or 2.26/2.66/2.93 "Eight Core":Xserve3,1:

@@ -114,9 +114,17 @@ elif [ -z "${OS/Darwin/}" ]; then
   CPU="$(sysctl -n machdep.cpu.brand_string)"
   # Ex: CPU='Intel(R) Xeon(R) CPU E5-1650 v2 @ 3.50GHz'
   # Ex: CPU='Intel(R) Core(TM)2 Duo CPU     P7350  @ 2.00GHz'
-  NbrCPUs=$(grep "Number of Processors:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
-  # Alternate method: NbrCPU="$(sysctl -n hw.packages)"
-  CoresTotal=$(grep "Total Number of Cores:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
+  # Ex: CPU='Apple M1'
+
+  # Take care of the Apple M-series chip since they present themselves differently
+  if [ -z "${CPU/Apple M[0-9]}" ]; then
+    NbrCPUs=1
+    CoresTotal=$(grep "Total Number of Cores:" $OSTempFile | cut -d: -f2 | awk '{print $1}')
+  else
+    NbrCPUs=$(grep "Number of Processors:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
+    # Alternate method: NbrCPU="$(sysctl -n hw.packages)"
+    CoresTotal=$(grep "Total Number of Cores:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
+  fi
   NbrCoresEachCPU=$(echo " $CoresTotal / $NbrCPUs" | bc)
 
   [[ $Info -eq 1 ]] &&  CPUInfo="(Use \"sysctl -n machdep.cpu.brand_string\" for CPU info)" || CPUInfo=""

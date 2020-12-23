@@ -1,0 +1,25 @@
+######################################################################################
+### Listing of PCI Vendors (for graphics cards)
+
+#121A:3dfx Interactive Inc
+#1002:Advanced Micro Devices, Inc.
+#A0A0:Aopen Inc.
+#1B21:Asustek - ASMedia Technology Inc.
+#1565:Biostar Microtech Intl Corp
+#1092:Diamond Computer Systems
+#1695:EPoX Computer Co., Ltd.
+#10B0:Gainward GmbH
+#1458:Giga-Byte Technologies
+#17AF:Hightech Information Systems, Ltd.
+#8087:Intel
+#8086:Intel Corporation
+#107D:Leadtek Research
+#102B:Matrox Electronic Systems Ltd.
+#1462:Micro-Star International Co Ltd
+#1414:Microsoft Corporation
+#10DE:NVIDIA Corporation
+#1569:Palit Microsystems Inc
+#5333:S3 Graphics Co., Ltd
+#14CD:Universal Scientific Ind.
+#15AD:VMware Inc.
+

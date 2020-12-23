@@ -27,14 +27,18 @@
 
 ##### Set basic variables
 fetch_new=f
-VER="0.9"
+VER="0.91"
 
 Info=0
-
 # Find where the script resides (so updates update the correct version) -- without trailing slash
-DirName="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DirName="$(dirname ${BASH_SOURCE[0]})"
 # What is the name of the script? (without any PATH)
-ScriptName="$(basename $0)"
+ScriptName="$(basename ${BASH_SOURCE[0]})"
+# Is it a link? In that case, get the real DirName
+if [ -L "${BASH_SOURCE[0]}" ]; then
+  DirName="$(dirname $(readlink ${BASH_SOURCE[0]}))"
+fi
+
 # Is the file writable?
 if [ -w "${DirName}"/"${ScriptName}" ]; then
   Writable="yes"
@@ -212,173 +216,3 @@ if [ -f "$ErrorFile" ]; then
   printf "$ESC${RedFont};${BoldFace}mAn error file, \"$ErrorFile\", har been created${Reset}\n"
   printf "$ESC${RedFont};${BoldFace}mYou may want to communicate it to the authors of the script${Reset}\n"
 fi
-
-
-######################################################################################
-### Listing of PCI Vendors (for graphics cards)
-
-#121A:3dfx Interactive Inc
-#1002:Advanced Micro Devices, Inc.
-#A0A0:Aopen Inc.
-#1B21:Asustek - ASMedia Technology Inc.
-#1565:Biostar Microtech Intl Corp
-#1092:Diamond Computer Systems
-#1695:EPoX Computer Co., Ltd.
-#10B0:Gainward GmbH
-#1458:Giga-Byte Technologies
-#17AF:Hightech Information Systems, Ltd.
-#8087:Intel
-#8086:Intel Corporation
-#107D:Leadtek Research
-#102B:Matrox Electronic Systems Ltd.
-#1462:Micro-Star International Co Ltd
-#1414:Microsoft Corporation
-#10DE:NVIDIA Corporation
-#1569:Palit Microsystems Inc
-#5333:S3 Graphics Co., Ltd
-#14CD:Universal Scientific Ind.
-#15AD:VMware Inc.
-
-######################################################################################
-### Listing of Mac models
-### Easiest way to find names and model numbers is by browsing at
-### https://browser.geekbench.com/mac-benchmarks/
-
-# Mac mini
-# https://support.apple.com/en-us/HT201894
-# http://www.unionrepair.com/how-to-identify-mac-mini-models/
-# -----------------------------------------------------
-#Mac mini (Late 2018):Macmini8,1
-#Mac mini (Late 2014):Macmini7,1
-#Mac mini (Late 2012):Macmini6,2
-#Mac mini (Late 2012):Macmini6,1
-#Mac mini (Mid 2011):Macmini5,1
-#Mac mini (Mid 2011):Macmini5,2
-#Mac mini (Mid 2011):Macmini5,3
-#Mac mini (Mid 2010):Macmini4,1
-#Mac mini (Late 2009):Macmini3,1
-#Mac mini (Early 2009):Macmini3,1
-
-# MacBook Air
-# https://support.apple.com/en-us/HT201862
-# -----------------------------------------------------
-#MacBook Air (Late 2018):MacBookAir8,1
-#MacBook Air (13-inch, 2017):MacBookAir7,2
-#MacBook Air (13-inch, Early 2015):MacBookAir7,2
-#MacBook Air (11-inch, Early 2015):MacBookAir7,1
-#MacBook Air (13-inch, Early 2014):MacBookAir6,2
-#MacBook Air (11-inch, Early 2014):MacBookAir6,1
-#MacBook Air (13-inch, Mid 2013):MacBookAir6,2
-#MacBook Air (11-inch, Mid 2013):MacBookAir6,1
-#MacBook Air (13-inch, Mid 2012):MacBookAir5,2
-#MacBook Air (11-inch, Mid 2012):MacBookAir5,1
-#MacBook Air (13-inch, Mid 2011):MacBookAir4,2
-#MacBook Air (11-inch, Mid 2011):MacBookAir4,1
-#MacBook Air (13-inch, Late 2010):MacBookAir3,2
-#MacBook Air (11-inch, Late 2010):MacBookAir3,1
-#MacBook Air (Mid 2009):MacBookAir2,1
-#MacBook Air (Late 2008):MacBookAir2,1
-#MacBook Air:MacBookAir1,1
-
-# MacBook
-# https://support.apple.com/en-us/HT201608
-# -----------------------------------------------------
-#MacBook (Retina, 12-inch, 2017):MacBook10,1
-#MacBook (Retina, 12-inch, Early 2016):MacBook9,1
-#MacBook (Retina, 12-inch, Early 2015):MacBook8,1
-#MacBook (13-inch, Mid 2010):MacBook7,1
-#MacBook (13-inch, Late 2009):MacBook 6,1
-#MacBook (13-inch, Mid 2009):MacBook5,2
-#MacBook (13-inch, Early 2009):MacBook5,2
-#MacBook (13-inch, Aluminum, Late 2008):MacBook5,1
-#MacBook (13-inch, Late 2008):MacBook4,1
-#MacBook (13-inch, Early 2008):MacBook4,1
-#MacBook (13-inch, Late 2007):MacBook3,1
-#MacBook (13-inch, Mid 2007):MacBook2,1
-#MacBook (Late 2006):MacBook2,1
-#MacBook:MacBook1,1
-
-# MacBook Pro, 13"
-# https://support.apple.com/en-us/HT201300
-# -----------------------------------------------------
-#MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports):MacBookPro15,2
-#MacBook Pro (13-inch, 2017, Four Thunderbolt 3 ports):MacBookPro14,2
-#MacBook Pro (13-inch, 2017, Two Thunderbolt 3 ports):MacBookPro14,1
-#MacBook Pro (13-inch, Late 2016, Four Thunderbolt 3 ports):MacBookPro13,2
-#MacBook Pro (13-inch, Late 2016, Two Thunderbolt 3 ports):MacBookPro13,1
-#MacBook Pro (Retina, 13-inch, Early 2015):MacbookPro12,1 
-#MacBook Pro (Retina, 13-inch, Mid 2014):MacBookPro11,1
-#MacBook Pro (Retina, 13-inch, Late 2013):MacBookPro11,1
-#MacBook Pro (Retina, 13-inch, Early 2013):MacBookPro10,2
-#MacBook Pro (Retina, 13-inch, Late 2012):MacBookPro10,2
-#MacBook Pro (13-inch, Mid 2012):MacBookPro9,2
-#MacBook Pro (13-inch, Late 2011):MacBookPro8,1
-#MacBook Pro (13-inch, Early 2011):MacBookPro8,1
-#MacBook Pro (13-inch, Mid 2010):MacBookPro7,1
-#MacBook Pro (13-inch, Mid 2009):MacBookPro5,5
-
-# MacBook Pro, 15"
-# https://support.apple.com/en-us/HT201300
-# -----------------------------------------------------
-#MacBook Pro (15-inch, 2018):MacBookPro15,1
-#MacBook Pro (15-inch, 2017):MacBookPro14,3
-#MacBook Pro (15-inch, Late 2016):MacBookPro13,3
-#MacBook Pro (Retina, 15-inch, Mid 2015):MacbookPro 11,4
-#MacBook Pro (Retina, 15-inch, Mid 2015):MacbookPro 11,5
-#MacBook Pro (Retina, 15-inch, Mid 2014 or Late 2013):MacBook Pro11,2
-#MacBook Pro (Retina, 15-inch, Mid 2014 or Late 2013):MacBook Pro11,3
-#MacBook Pro (Retina, 15-inch, Early 2013 or Mid 2012):MacBookPro10,1
-#MacBook Pro (15-inch, Mid 2012):MacBookPro9,1
-#MacBook Pro (15-inch, Late 2011 or Early 2011):MacBookPro8,2
-#MacBook Pro (15-inch, Mid 2010):MacBookPro6,2
-#MacBook Pro (15-inch, Mid 2009):MacBookPro5,3
-#MacBook Pro (15-inch, Late 2008):MacBookPro5,1
-#MacBook Pro (15-inch, Early 2008):MacBookPro4,1
-
-# MacBook Pro, 17"
-# https://support.apple.com/en-us/HT201300
-# -----------------------------------------------------
-#MacBook Pro (17-inch, Late 2011):MacBookPro8,3
-#MacBook Pro (17-inch, Early 2011):MacBookPro8,3
-#MacBook Pro (17-inch, Mid 2010):MacBookPro6,1
-#MacBook Pro (17-inch, Mid or Early 2009):MacBookPro5,2
-#MacBook Pro (17-inch, Late 2008):MacBookPro5,1
-
-# iMac
-# https://support.apple.com/en-us/HT201634
-# -----------------------------------------------------
-#iMac Pro (2017):iMacPro1,1
-#iMac (Retina 5K, 27-inch, 2017):iMac18,3
-#iMac (Retina 4K, 21.5-inch, 2017):iMac18,2
-#iMac (21.5-inch, 2017):iMac18,1
-#iMac (Retina 4K, 21.5-inch, Late 2015):iMac16,2
-#iMac (21.5-inch, Late 2015):iMac16,1
-#iMac (Retina 5K, 27-inch, Late 2015):iMac17,1
-#iMac (Retina 5K, 27-inch, Late 2014 or Mid 2015):iMac15,1
-#iMac (21.5-inch, Mid 2014):iMac14,4
-#iMac (21.5-inch, Late 2013):iMac14,1
-#iMac (27-inch, Late 2013):iMac14,2
-#iMac (21.5-inch, Late 2012):iMac13,1
-#iMac (27-inch, Late 2012):iMac13,2
-#iMac (21.5-inch, Mid 2011):iMac12,1
-#iMac (27-inch, Mid 2011):iMac12,2
-#iMac (21.5-inch, Mid 2010):iMac11,2
-#iMac (27-inch, Mid 2010):iMac11,3
-#iMac (21.5-inch, Late 2009 or 27-inch, Late 2009):iMac10,1
-#iMac (20-inch, Early 2009 or 24-inch, Early 2009):iMac9,1
-#iMac (20-inch, Early 2008 or 24-inch, Early 2008):iMac8,1
-
-# Mac Pro
-# https://support.apple.com/en-us/HT202888
-# -----------------------------------------------------
-#Mac Pro (Late 2013):MacPro6,1
-#Mac Pro (Mid 2012) or Mac Pro (Mid 2010):MacPro5,1
-#Mac Pro (Early 2009):MacPro4,1
-#Mac Pro (Early 2008):MacPro3,1
-#Mac Pro (8-core):MacPro2,1
-#Mac Pro:MacPro1,1
-
-# Xserve
-#Xserve Xeon 2.0/2.66/3.0 "Quad Core" (Late 2006):Xserve1,1
-#Xserve Xeon 2.8 "Quad Core" or 2.8/3.0 "Eight Core" (Early 2008):Xserve2,1
-#Xserve Xeon Nehalem 2.26 "Quad Core" or 2.26/2.66/2.93 "Eight Core":Xserve3,1
