@@ -124,7 +124,7 @@ if [ -z "${OS/Linux/}" ]; then
   echo "Mounted file systems:"
   
   # File system listing
-  FormatstringFS="%-20s%-10s%-12s%-20s%-35s"
+  FormatstringFS="%-24s%-10s%-12s%-20s%-35s"
   # 123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
   #          1         1         1         1         1         1         1         1         1         1         1         1
   # Partition   Filesys   Available    Label                 Mount Point
@@ -243,7 +243,7 @@ elif [ -z "${OS/Darwin/}" ]; then
   # Print head of disk list
   printf "${ESC}${UnderlineFace}m${FormatstringDisk}${Reset}\n" "BSD Name"  "Size" "Medium Type" "S.M.A.R.T." "TRIM" "Bus"
   # Iterate through the list of disks:
-  for i in $(diskutil list 2>/dev/null | egrep "^\/dev" | sed 's;/dev/;;' | egrep -v "virtual|disk image" | awk '{print $1}')
+  for i in $(diskutil list physical 2>/dev/null | egrep "^\/dev" | sed 's;/dev/;;' | egrep -v "virtual|disk image" | awk '{print $1}')
   # Ex: i='disk0'
   do
     # First: it may be a Core Storage volume (FileVault2 or the like)

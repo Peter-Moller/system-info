@@ -177,8 +177,10 @@ elif [ -z "${OS/Darwin/}" ]; then
   ModelIdentifier="$(egrep "^\s*Model Identifier:" $OSTempFile | cut -d: -f2 | sed 's/^ //')"
   # ModelIdentifier='iMac14,2' or 'VMware7,1'
   # Get the long name for it and the URL for technical specifications
-  ModelIdentifierName="$(grep ".*:${ModelIdentifier}:" "${DirName}/Mac-models.txt" |  awk -F: '{print $1"  (https:"$4")"}')"
+  ModelIdentifierName="$(grep ".*:${ModelIdentifier}:" "${DirName}/Mac-models.txt" |  awk -F: '{print $1}')"
   # ModelIdentifierName='iMac (Retina 5K, 27-inch, 2020)  (https://support.apple.com/kb/SP821)'
+  ModelIdentifierURL="$(grep ".*:${ModelIdentifier}:" "${DirName}/Mac-models.txt" |  awk -F: '{print $4}')"
+  # ModelIdentifierURL='//support.apple.com/kb/SP821'
   # If the first three letters of $ModelIdentifier doesn't include 'Mac' och 'iMa', we are probably running inside a VM
 
   # Get the Serial Number
@@ -238,7 +240,7 @@ printf "${ESC}${BlackBack};${WhiteFont}mSystem info for:${Reset} ${ESC}${WhiteBa
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mOperating System                                                           ${Reset}\n"
 
 
-printf "$Formatstring\n" "Operating System:" "$Distro $DistroVer $([[ -n "$OSX_server" ]] && echo "($OSX_server)")" "$DistroVerInfo"
+printf "$Formatstring\n" "Operating System:" "$Distro $([[ -n "$OSX_server" ]] && echo "($OSX_server)")" "$DistroVerInfo"
 printf "$Formatstring\n" "${Kernel_version_label}:" "$KernelVer" ""
 [[ $Info -eq 1 ]] &&  Information="(Use \"uname -m\" to get architecture details)" || Information=""
 printf "$Formatstring\n" "Architecture:" "${OS_arch} (${OS_size}-bit)" "$Information"
@@ -249,7 +251,10 @@ printf "$Formatstring\n" "Shell:" "$(echo "$(${SHELL} --version 2>/dev/null | he
 printf "$Formatstring\n" "Virtual env.:" "${VMenv:-No VM environment detected}" "$VMenvInfo"
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profiler SPHardwareDataType\" to see hardware details)"; else Information=""; fi
 if [ -n "$ModelIdentifier" ]; then
-  printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier ${ModelIdentifierName:-Unknown Mac-model}" "${Information}"
+  printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier \"${ModelIdentifierName:-Unknown Mac-model}\" "${Information}
+  if [ -n "$ModelIdentifierURL" ]; then
+    printf "$Formatstring\n" "- specifications:" "https${ModelIdentifierURL}" "${Information}"
+  fi
 fi
 printf "$Formatstring\n" "Serial Number:" "$SerialNumber" "$SNInfo"
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then
