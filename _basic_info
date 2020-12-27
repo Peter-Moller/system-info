@@ -297,15 +297,24 @@ if [ -z "${OS/Linux/}" ]; then
   fi
   # Print info about docker (regardless of weather it's installed or not)
   printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mDocker                                                                     ${Reset}\n"
-  [[ -n "$DockerVersion" ]] && echo "Docker $DockerVersion is installed on this system$([[ -n "$DockerRunning" ]] && echo " and is active:" || echo " but is not active")" || echo "Docker is not installed on this system"
+  if [ -n "$DockerVersion" ]; then
+    echo "Docker $DockerVersion is installed on this system$([[ -n "$DockerRunning" ]] && echo " and is active:" || echo " but is not active")"
+  else
+    echo "Docker is not installed on this system"
+  fi
   # If Docker is running on the system, provide som details
   if [ -n "$DockerRunning" ]; then
     # If we are root, provide more specific details:
     if [ -z "${USER/root/}" -o -z "${UID/0/}" ]; then
       echo "$DockerList"
     else
-      echo "$NrRunningDocker Docker$([[ $NrRunningDocker -eq 1 ]] && echo " is" || echo "s are") running, but since we are not running as user \"root\", we cannot see the details."
-      echo "Ports in use by $([[ $NrRunningDocker -eq 1 ]] && echo " this Docker" || echo "these Dockers"): $(echo $DockerPorts | sed 's/ /, /g')"
+      # Only present information if there really are dockers running
+      if [ $NrRunningDocker -ge 1 ]; then
+        echo "$NrRunningDocker Docker$([[ $NrRunningDocker -eq 1 ]] && echo " is" || echo "s are") running, but since we are not running as user \"root\", we cannot see the details."
+        echo "Ports in use by $([[ $NrRunningDocker -eq 1 ]] && echo " this Docker" || echo "these Dockers"): $(echo $DockerPorts | sed 's/ /, /g')"
+      else
+       echo "- no dockers are currently running"
+      fi
     fi
   else
     echo "Docker is not running on the system"
