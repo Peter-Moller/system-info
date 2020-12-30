@@ -195,7 +195,13 @@ elif [ -z "${OS/Darwin/}" ]; then
     ModelIdentifierName=" "
   fi
   [[ $Info -eq 1 ]] &&  VMenvInfo="(If \"Model Identifier\" from \"system_profiler SPHardwareDataType\" doesn't start with \"Mac\" or \"iMac\", then it's a virtual machine)" || VMenvInfo=""
-
+  
+  # Deal with the situation where the Mac model is unknown
+  if [ -z "$ModelIdentifierName" ]; then
+    ModelIdentifierName="Unknown Mac-model"
+    ModelIdentifierURL="No URL"
+  fi
+  
   # Are we bound to AD?
   # See: https://www.jamf.com/jamf-nation/discussions/7039/how-to-check-if-a-computer-is-actually-bound-to-the-ad for details
   ADDomain="$(dsconfigad -show 2>/dev/null | grep "Active Directory Domain" | cut -d= -f2 | sed 's/^ *//')"
@@ -251,9 +257,9 @@ printf "$Formatstring\n" "Shell:" "$(echo "$(${SHELL} --version 2>/dev/null | he
 printf "$Formatstring\n" "Virtual env.:" "${VMenv:-No VM environment detected}" "$VMenvInfo"
 if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profiler SPHardwareDataType\" to see hardware details)"; else Information=""; fi
 if [ -n "$ModelIdentifier" ]; then
-  printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier \"${ModelIdentifierName:-Unknown Mac-model}\" "${Information}
+  printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier \"${ModelIdentifierName/$'\n'/ or }\" "${Information}
   if [ -n "$ModelIdentifierURL" ]; then
-    printf "$Formatstring\n" "- specifications:" "https${ModelIdentifierURL}" "${Information}"
+    printf "$Formatstring\n" "- specifications:" "https${ModelIdentifierURL/$'\n'/ or }" "${Information}"
   fi
 fi
 printf "$Formatstring\n" "Serial Number:" "$SerialNumber" "$SNInfo"
