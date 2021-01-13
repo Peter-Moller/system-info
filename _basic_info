@@ -259,7 +259,7 @@ if [ $Info -eq 1 -a -z "${OS/Darwin/}" ]; then Information="(Use \"system_profil
 if [ -n "$ModelIdentifier" ]; then
   printf "$Formatstring\n" "Model Identifier:" "$ModelIdentifier \"${ModelIdentifierName/$'\n'/ or }\" "${Information}
   if [ -n "$ModelIdentifierURL" ]; then
-    printf "$Formatstring\n" "- specifications:" "https${ModelIdentifierURL/$'\n'/ or }" "${Information}"
+    printf "$Formatstring\n" "- specifications:" "https:${ModelIdentifierURL/$'\n'/ or }" "${Information}"
   fi
 fi
 printf "$Formatstring\n" "Serial Number:" "$SerialNumber" "$SNInfo"
