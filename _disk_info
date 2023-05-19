@@ -82,6 +82,8 @@ if [ -z "${OS/Linux/}" ]; then
     if [ $ROTA -eq 1 ]; then
       RotationRate="$(udevadm info --query=all --name=$KNAME | egrep "ROTATION_RATE" | cut -d= -f2)"
       Medium_Type="Rotating disk (${RotationRate:-??} rpm)"
+    elif [ "$MODEL0 $MODEL1" = "Virtual disk" ]; then
+      Medium_Type="Virtual disk"
     else
       Medium_Type="Solid State Device"
     fi
