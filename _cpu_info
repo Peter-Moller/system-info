@@ -34,7 +34,6 @@ CPUTempFile="/tmp/.${ScriptName}_CPU.$$.txt"
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mCPU info                                                                   ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
-if [ -z "${OS/Linux/}" ]; then
     # Use 'lscpu' for CPU info:
     LSCPU="$(lscpu | grep -E "^Architecture:|^CPU\(s\):|^\s*Model name:|^Vendor ID:|^\s*Socket\(s\):")"
     # Ex: LSCPU='Architecture:                       x86_64
