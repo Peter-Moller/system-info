@@ -34,102 +34,63 @@ CPUTempFile="/tmp/.${ScriptName}_CPU.$$.txt"
 printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mCPU info                                                                   ${Reset}\n"
 
 if [ -z "${OS/Linux/}" ]; then
-  # /proc/cpuinfo is used. It consists of a number of specifications like this, each specifying a computational
-  # unit (a “real” core or a HyperThreaded “core” of which there usually are two per physical, “real”, core):
-  # processor       : 0
-  # vendor_id       : GenuineIntel
-  # cpu family      : 6
-  # model           : 45
-  # model name      : Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz
-  # stepping        : 7
-  # microcode       : 0x70d
-  # cpu MHz         : 1200.000
-  # cache size      : 15360 KB
-  # physical id     : 0
-  # siblings        : 12
-  # core id         : 0
-  # cpu cores       : 6
-  # apicid          : 0
-  # initial apicid  : 0
-  # fpu             : yes
-  # fpu_exception   : yes
-  # cpuid level     : 13
-  # wp              : yes
-  # flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid dca sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx lahf_lm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
-  # bogomips        : 3990.25
-  # clflush size    : 64
-  # cache_alignment : 64
-  # address sizes   : 46 bits physical, 48 bits virtual
-  # power management:
-  
-  # OR, for a PPC, you'll find:
-  # processor : 0
-  # cpu   : PPC970MP, altivec supported
-  # clock   : 2500.000000MHz
-  # revision  : 1.1 (pvr 0044 0101)
-  # 
-  # processor : 1
-  # cpu   : PPC970MP, altivec supported
-  # clock   : 2500.000000MHz
-  # revision  : 1.1 (pvr 0044 0101)
-  # 
-  # processor : 2
-  # cpu   : PPC970MP, altivec supported
-  # clock   : 2500.000000MHz
-  # revision  : 1.1 (pvr 0044 0101)
-  # 
-  # processor : 3
-  # cpu   : PPC970MP, altivec supported
-  # clock   : 2500.000000MHz
-  # revision  : 1.1 (pvr 0044 0101)
-  # 
-  # timebase  : 33333333
-  # platform  : PowerMac
-  # model   : PowerMac11,2
-  # machine   : PowerMac11,2
-  # motherboard : PowerMac11,2 MacRISC4 Power Macintosh 
-  # detected as : 337 (PowerMac G5 Dual Core)
-  # pmac flags  : 00000000
-  # L2 cache  : 1024K unified
-  # pmac-generation : NewWorld
+if [ -z "${OS/Linux/}" ]; then
+    # Use 'lscpu' for CPU info:
+    LSCPU="$(lscpu | grep -E "^Architecture:|^CPU\(s\):|^\s*Model name:|^Vendor ID:|^\s*Socket\(s\):")"
+    # Ex: LSCPU='Architecture:                       x86_64
+    #            CPU(s):                             2
+    #            Vendor ID:                          GenuineIntel
+    #            Model name:                         Intel(R) Xeon(R) CPU E5-2667 v4 @ 3.20GHz
+    #            Socket(s):                          2'
+    #
+    # Ex: LSCPU='Architecture:                       ppc64le
+    #            CPU(s):                             160
+    #            Socket(s):                          4
+    #            Model name:                         POWER8E (raw), altivec supported'
+    #
+    # Ex: LSCPU='Architecture:                         x86_64
+    #            CPU(s):                               1
+    #            Vendor ID:                            GenuineIntel
+    #            Model name:                           Intel(R) Xeon(R) CPU E5-2667 v4 @ 3.20GHz
+    #            Socket(s):                            1'
+    # Ex: LSCPU='Architecture:                         x86_64
+    #            CPU(s):                               128
+    #            Vendor ID:                            AuthenticAMD
+    #            Model name:                           AMD EPYC 7713P 64-Core Processor
+    #            Socket(s):                            1'
+    # 
+    # Ex: LSCPU='Architecture:                         x86_64
+    #            CPU(s):                               24
+    #            Vendor ID:                            GenuineIntel
+    #            Model name:                           Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz
+    #            Socket(s):                            2'
 
-  # 
-  # Out of this, the following is used:
-  # * Model name: name of the CPU
-  # * siblings:   number of HyperThreaded cores on the physical CPU
-  # * cpu cores:  number of “real” cores on the physical CPU
-
-  CPU="$(less /proc/cpuinfo | grep -i "model name" | cut -d: -f2 | sed 's/ //' | sort -u)"
-  # Ex: CPU='Intel(R) Xeon(R) CPU E5-2640 v3 @ 2.60GHz'
-  [[ -z "$CPU" ]] && CPU="$(less /proc/cpuinfo | grep -i "^cpu" | cut -d: -f2 | sed 's/ //' | sort -u)"
-  # Ex: CPU='PPC970MP, altivec supported'
-  Siblings="$(grep "^siblings" /proc/cpuinfo | sort -u | cut -d: -f2)"
-  NbrCPUs=$(echo "$(grep "^processor" /proc/cpuinfo | wc -l) / ${Siblings:-1}" | bc)
-  NbrCoresEachCPU=$(grep "cpu cores" /proc/cpuinfo | sort -u | cut -d: -f2 | sed 's/^ //')
-  [[ $Info -eq 1 ]] &&  CPUInfo="(Use \"/proc/cpuinfo\" for CPU info)" || CPUInfo=""
-  [[ $Info -eq 1 ]] &&  NumCPUInfo="(Use \"/proc/cpuinfo\" for info on number of CPU:s)" || NumCPUInfo=""
-  [[ $Info -eq 1 ]] &&  NumCoresInfo="(Use \"/proc/cpuinfo\" for info on muber of cores/CPU)" || NumCoresInfo=""
-
+    CPU="$(echo "$LSCPU" | grep -E "^\s*Model name:" | cut -d: -f2 | sed 's/^\ *//; s/(R)/®/g;s/(TM)/™/g')"  # Ex: CPU='Intel® Xeon® CPU E5-2667 v4 @ 3.20GHz'
+    NbrCPUs=$(echo "$LSCPU" | grep -E "^\s*Socket\(s\):" | cut -d: -f2 | sed 's/^\ *//')                     # Ex: NbrCPUs=2
+    NbrCoresEachCPU=$(echo "$LSCPU" | grep -E "\s*Core\(s\) per socket:" | cut -d: -f2 | sed 's/^\ *//')     # Ex: NbrCoresEachCPU=5
+    [[ $Info -eq 1 ]] &&  CPUInfo="(Use \"lscpu\" for CPU info)" || CPUInfo=""
+    [[ $Info -eq 1 ]] &&  NumCPUInfo="(Use \"lscpu\" for info on number of CPU:s)" || NumCPUInfo=""
+    [[ $Info -eq 1 ]] &&  NumCoresInfo="(Use \"lscpu\" for info on muber of cores/CPU)" || NumCoresInfo=""
 elif [ -z "${OS/Darwin/}" ]; then
-  CPU="$(sysctl -n machdep.cpu.brand_string)"
-  # Ex: CPU='Intel(R) Xeon(R) CPU E5-1650 v2 @ 3.50GHz'
-  # Ex: CPU='Intel(R) Core(TM)2 Duo CPU     P7350  @ 2.00GHz'
-  # Ex: CPU='Apple M1'
+    CPU="$(sysctl -n machdep.cpu.brand_string)"
+    # Ex: CPU='Intel(R) Xeon(R) CPU E5-1650 v2 @ 3.50GHz'
+    # Ex: CPU='Intel(R) Core(TM)2 Duo CPU     P7350  @ 2.00GHz'
+    # Ex: CPU='Apple M1'
 
-  # Take care of the Apple M-series chip since they present themselves differently
-  if [ -z "${CPU/Apple M[0-9]}" ]; then
-    NbrCPUs=1
-    CoresTotal=$(grep "Total Number of Cores:" $OSTempFile | cut -d: -f2 | awk '{print $1}')
-  else
-    NbrCPUs=$(grep "Number of Processors:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
-    # Alternate method: NbrCPU="$(sysctl -n hw.packages)"
-    CoresTotal=$(grep "Total Number of Cores:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
-  fi
-  NbrCoresEachCPU=$(echo " $CoresTotal / $NbrCPUs" | bc)
+    # Take care of the Apple M-series chip since they present themselves differently
+    if [ -z "${CPU/Apple M[0-9]}" ]; then
+        NbrCPUs=1
+        CoresTotal=$(grep "Total Number of Cores:" $OSTempFile | cut -d: -f2 | awk '{print $1}')
+    else
+        NbrCPUs=$(grep "Number of Processors:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
+        # Alternate method: NbrCPU="$(sysctl -n hw.packages)"
+        CoresTotal=$(grep "Total Number of Cores:" $OSTempFile | cut -d: -f2 | sed 's/\ *//')
+    fi
+    NbrCoresEachCPU=$(echo " $CoresTotal / $NbrCPUs" | bc)
 
-  [[ $Info -eq 1 ]] &&  CPUInfo="(Use \"sysctl -n machdep.cpu.brand_string\" for CPU info)" || CPUInfo=""
-  [[ $Info -eq 1 ]] &&  NumCPUInfo="(Use \"system_profiler SPHardwareDataType\" for info on number of CPU:s)" || NumCPUInfo=""
-  [[ $Info -eq 1 ]] &&  NumCoresInfo="(Use \"system_profiler SPHardwareDataType\" for info on muber of cores/CPU)" || NumCoresInfo=""
+    [[ $Info -eq 1 ]] &&  CPUInfo="(Use \"sysctl -n machdep.cpu.brand_string\" for CPU info)" || CPUInfo=""
+    [[ $Info -eq 1 ]] &&  NumCPUInfo="(Use \"system_profiler SPHardwareDataType\" for info on number of CPU:s)" || NumCPUInfo=""
+    [[ $Info -eq 1 ]] &&  NumCoresInfo="(Use \"system_profiler SPHardwareDataType\" for info on muber of cores/CPU)" || NumCoresInfo=""
 fi
 
 #printf "$Formatstring\n" "CPU:" "${CPU//(R)/®}"
