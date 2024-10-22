@@ -35,7 +35,7 @@ printf "\n${ESC}${WhiteBack};${BlackFont};${BoldFace}mCPU info                  
 
 if [ -z "${OS/Linux/}" ]; then
     # Use 'lscpu' for CPU info:
-    LSCPU="$(lscpu | grep -E "^Architecture:|^CPU\(s\):|^\s*Model name:|^Vendor ID:|^\s*Socket\(s\):")"
+    LSCPU="$(lscpu | grep -E "^Architecture:|^CPU\(s\):|^\s*Model name:|^Vendor ID:|^\s*Socket\(s\):|\s*Core\(s\) per socket:")"
     # Ex: LSCPU='Architecture:                       x86_64
     #            CPU(s):                             2
     #            Vendor ID:                          GenuineIntel
@@ -65,10 +65,12 @@ if [ -z "${OS/Linux/}" ]; then
     #            Socket(s):                            2'
 
     CPU="$(echo "$LSCPU" | grep -E "^\s*Model name:" | cut -d: -f2 | sed 's/^\ *//; s/(R)/®/g;s/(TM)/™/g')"  # Ex: CPU='Intel® Xeon® CPU E5-2667 v4 @ 3.20GHz'
-    NbrCPUs=$(echo "$LSCPU" | grep -E "^\s*Socket\(s\):" | cut -d: -f2 | sed 's/^\ *//')                     # Ex: NbrCPUs=2
+    NbrCPUs=$(echo "$LSCPU" | grep -E "^\s*CPU\(s\):" | cut -d: -f2 | sed 's/^\ *//')                        # Ex: NbrCPUs=160
+    NbrSockets=$(echo "$LSCPU" | grep -E "^\s*Socket\(s\):" | cut -d: -f2 | sed 's/^\ *//')                  # Ex: NbrSockets=4
     NbrCoresEachCPU=$(echo "$LSCPU" | grep -E "\s*Core\(s\) per socket:" | cut -d: -f2 | sed 's/^\ *//')     # Ex: NbrCoresEachCPU=5
     [[ $Info -eq 1 ]] &&  CPUInfo="(Use \"lscpu\" for CPU info)" || CPUInfo=""
     [[ $Info -eq 1 ]] &&  NumCPUInfo="(Use \"lscpu\" for info on number of CPU:s)" || NumCPUInfo=""
+    [[ $Info -eq 1 ]] &&  NumSocketsInfo="(Use \"lscpu\" for info on number of Sockets)" || NumSocketsInfo=""
     [[ $Info -eq 1 ]] &&  NumCoresInfo="(Use \"lscpu\" for info on muber of cores/CPU)" || NumCoresInfo=""
 elif [ -z "${OS/Darwin/}" ]; then
     CPU="$(sysctl -n machdep.cpu.brand_string)"
@@ -92,9 +94,9 @@ elif [ -z "${OS/Darwin/}" ]; then
     [[ $Info -eq 1 ]] &&  NumCoresInfo="(Use \"system_profiler SPHardwareDataType\" for info on muber of cores/CPU)" || NumCoresInfo=""
 fi
 
-#printf "$Formatstring\n" "CPU:" "${CPU//(R)/®}"
 printf "$Formatstring\n" "CPU:" "$CPU" "$CPUInfo"
-printf "$Formatstring\n" "Number of CPUs:" "${NbrCPUs}" "$NumCPUInfo"
+printf "$Formatstring\n" "Number of CPU:s:" "${NbrSockets:-1}" "$NumSocketsInfo"
+printf "$Formatstring\n" "Number of cores:" "${NbrCPUs:-1}" "$NumCPUInfo"
 printf "$Formatstring\n" "Cores/CPU:" "${NbrCoresEachCPU:-1}" "$NumCoresInfo"
 
 
