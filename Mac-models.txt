@@ -7,6 +7,7 @@
 # https://support.apple.com/en-us/HT201894
 # http://www.unionrepair.com/how-to-identify-mac-mini-models/
 # -----------------------------------------------------
+Mac mini (2024):Mac16,11, Mac16,10:https://support.apple.com/en-us/121555
 Mac mini (2023):Mac14,3:https://support.apple.com/kb/SP891
 Mac mini (2023):Mac14,1:https://support.apple.com/kb/SP891
 Mac mini (M1, 2020):Macmini9,1:https://support.apple.com/kb/SP823
@@ -24,6 +25,10 @@ Mac mini (Early 2009):Macmini3,1:https://support.apple.com/kb/SP505
 # MacBook Air
 # https://support.apple.com/en-us/HT201862
 # -----------------------------------------------------
+MacBook Air (15-inch, M4, 2025):Mac16,13:Tech Specs for MacBook Air (15-inch, M4, 2025)
+MacBook Air (13-inch, M4, 2025):Mac16,12:https://support.apple.com/en-us/122209
+MacBook Air (15-inch, M3, 2024):Mac15,13:https://support.apple.com/en-us/118552
+MacBook Air (13-inch, M3, 2024):Mac15,12:https://support.apple.com/en-us/118551
 MacBook Air (15-inch, M2, 2023):Mac14,15:https://support.apple.com/kb/SP893
 MacBook Air (M2, 2022):Mac14,2:https://support.apple.com/kb/SP869
 MacBook Air (M1, 2020):MacBookAir10,1:https://support.apple.com/kb/SP825
@@ -66,7 +71,7 @@ MacBook (Late 2006):MacBook2,1:
 MacBook:MacBook1,1:
 
 # MacBook Pro, 13"
-# https://support.apple.com/en-us/HT201300
+# https://support.apple.com/en-us/108052
 # -----------------------------------------------------
 MacBook Pro (13-inch, M2, 2022):Mac14,7:https://support.apple.com/kb/SP870
 MacBook Pro (13-inch, M1, 2020):MacBookPro17,1:https://support.apple.com/kb/SP824
@@ -90,8 +95,10 @@ MacBook Pro (13-inch, Mid 2010):MacBookPro7,1:https://support.apple.com/kb/SP583
 MacBook Pro (13-inch, Mid 2009):MacBookPro5,5:https://support.apple.com/kb/SP541
 
 # MacBook Pro, 14"
-# https://support.apple.com/en-us/
+# https://support.apple.com/en-us/108052
 # -----------------------------------------------------
+MacBook Pro (14-inch, 2024):Mac16,1:https://support.apple.com/en-us/121552
+MacBook Pro (14-inch, 2024):Mac16,6, Mac16,8:https://support.apple.com/en-us/121553
 MacBook Pro (14-inch, Nov 2023):Mac15,6, Mac15,8, Mac15,10:https://support.apple.com/kb/SP898
 MacBook Pro (14-inch, Nov 2023):Mac15,3:https://support.apple.com/kb/SP900
 MacBook Pro (14-inch, 2023):Mac14,5, Mac14,9:https://support.apple.com/kb/SP889
@@ -101,8 +108,9 @@ MacBook Pro (14-inch, 2021):MacBookPro18,4:https://support.apple.com/kb/SP854
 
 
 # MacBook Pro, 15" & 16"
-# https://support.apple.com/en-us/HT201300
+# https://support.apple.com/en-us/108052
 # -----------------------------------------------------
+MacBook Pro (16-inch, 2024):Mac16,7, Mac16,5:https://support.apple.com/en-us/121554
 MacBook Pro (16-inch, Nov 2023):Mac15,7, Mac15,9, Mac15,11:https://support.apple.com/kb/SP899
 MacBook Pro (16-inch, 2023):Mac14,6, Mac14,10:https://support.apple.com/kb/SP890
 MacBook Pro (16-inch, 2021):MacBookPro18,1, MacBookPro18,2:https://support.apple.com/kb/SP858
@@ -142,6 +150,8 @@ MacBook Pro (17-inch, Early 2008):MacBookPro4,1:https://support.apple.com/kb/SP4
 # iMac
 # https://support.apple.com/en-us/HT201634
 # -----------------------------------------------------
+iMac (24-inch, 2024, Four ports):Mac16,3:https://support.apple.com/en-us/121557
+iMac (24-inch, 2024, Two ports):Mac16,2:https://support.apple.com/en-us/121556
 iMac (24-inch, 2023):Mac15,5:https://support.apple.com/kb/SP897
 iMac (24-inch, 2023):Mac15,4:https://support.apple.com/kb/SP896
 iMac (24-inch, M1, 2021):iMac21,1:https://support.apple.com/kb/SP839
@@ -156,7 +166,6 @@ iMac (Retina 4K, 21.5-inch, 2017):iMac18,2:https://support.apple.com/kb/SP759
 iMac (21.5-inch, 2017):iMac18,1:https://support.apple.com/kb/SP758
 iMac (Retina 4K, 21.5-inch, Late 2015):iMac16,2:https://support.apple.com/kb/SP732
 iMac (21.5-inch, Late 2015):iMac16,1:https://support.apple.com/kb/SP733
-
 iMac (Retina 5K, 27-inch, Late 2014 or Mid 2015):iMac15,1:https://support.apple.com/kb/SP718
 iMac (21.5-inch, Mid 2014):iMac14,4:https://support.apple.com/kb/SP701
 iMac (21.5-inch, Late 2013):iMac14,1:https://support.apple.com/kb/SP687
@@ -191,6 +200,8 @@ Mac Pro:MacPro1,1:
 # Mac Studio
 # https://support.apple.com/en-us/102231
 # -----------------------------------------------------
+Mac Studio (2025):Mac16,9:https://support.apple.com/en-us/122211
+Mac Studio (2025):Mac15,14:https://support.apple.com/en-us/122211
 Mac Studio (2023):Mac14,14:https://support.apple.com/kb/SP894
 Mac Studio (2023):Mac14,13:https://support.apple.com/kb/SP894
 Mac Studio (2022):Mac13,2:https://support.apple.com/kb/SP865
@@ -200,6 +211,3 @@ Mac Studio (2022):Mac13,1:https://support.apple.com/kb/SP865
 Xserve Xeon 2.0/2.66/3.0 "Quad Core" (Late 2006):Xserve1,1:
 Xserve Xeon 2.8 "Quad Core" or 2.8/3.0 "Eight Core" (Early 2008):Xserve2,1:
 Xserve Xeon Nehalem 2.26 "Quad Core" or 2.26/2.66/2.93 "Eight Core":Xserve3,1:
-
-# Mac Studio
-Mac Studio:Mac13,2:
